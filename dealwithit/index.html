@@ -14,7 +14,7 @@ document.documentElement.className = document.documentElement.className.replace(
 if(typeof Muse == "undefined") window.Muse = {}; window.Muse.assets = {"required":["jquery-1.8.3.min.js", "museutils.js", "museconfig.js", "jquery.watch.js", "jquery.scrolleffects.js", "jquery.museresponsive.js", "require.js", "index.css"], "outOfDate":[]};
 </script>
   
-  <title>Home</title>
+  <title>Deal With It - With Josh</title>
   <!-- CSS -->
   <link rel="stylesheet" type="text/css" href="css/site_global.css?crc=3916556066"/>
   <link rel="stylesheet" type="text/css" href="css/index.css?crc=255995109" id="pagesheet"/>
@@ -68,6 +68,11 @@ window.Muse.assets.check($);/* body */
 Muse.Utils.transformMarkupToFixBrowserProblemsPreInit();/* body */
 Muse.Utils.prepHyperlinks(true);/* body */
 Muse.Utils.fullPage('#page');/* 100% height page */
+$('#bp_960').one('muse_this_bp_activate', function(){
+$('#u145-4').registerPositionScrollEffect([{"in":[-Infinity,1457.95],"speed":[-1.5,0]},{"in":[1457.95,Infinity],"speed":[0,0]}], $(this)); /* scroll effect */
+$('#u104').registerPositionScrollEffect([{"in":[-Infinity,508],"speed":[0,0]},{"in":[508,Infinity],"speed":[0,0]}], $(this)); /* scroll effect */
+$('#u114').registerPositionScrollEffect([{"in":[-Infinity,508],"speed":[0,-1]},{"in":[508,Infinity],"speed":[0,0]}], $(this)); /* scroll effect */
+});/* scroll effects for one breakpoint */
 $('#bp_320').one('muse_this_bp_activate', function(){
 $('#u145-4').registerPositionScrollEffect([{"in":[-Infinity,621],"speed":[-1.5,0]},{"in":[621,Infinity],"speed":[0,0]}], $(this)); /* scroll effect */
 $('#u104').registerPositionScrollEffect([{"in":[-Infinity,331.26],"speed":[0,0]},{"in":[331.26,Infinity],"speed":[0,0]}], $(this)); /* scroll effect */
@@ -75,11 +80,6 @@ $('#u114').registerPositionScrollEffect([{"in":[-Infinity,331.3],"speed":[0,-1]}
 });/* scroll effects for one breakpoint */
 $('#bp_infinity').one('muse_this_bp_activate', function(){
 $('#u145-4').registerPositionScrollEffect([{"in":[-Infinity,1459],"speed":[-1.5,0]},{"in":[1459,Infinity],"speed":[0,0]}], $(this)); /* scroll effect */
-$('#u104').registerPositionScrollEffect([{"in":[-Infinity,508],"speed":[0,0]},{"in":[508,Infinity],"speed":[0,0]}], $(this)); /* scroll effect */
-$('#u114').registerPositionScrollEffect([{"in":[-Infinity,508],"speed":[0,-1]},{"in":[508,Infinity],"speed":[0,0]}], $(this)); /* scroll effect */
-});/* scroll effects for one breakpoint */
-$('#bp_960').one('muse_this_bp_activate', function(){
-$('#u145-4').registerPositionScrollEffect([{"in":[-Infinity,1457.95],"speed":[-1.5,0]},{"in":[1457.95,Infinity],"speed":[0,0]}], $(this)); /* scroll effect */
 $('#u104').registerPositionScrollEffect([{"in":[-Infinity,508],"speed":[0,0]},{"in":[508,Infinity],"speed":[0,0]}], $(this)); /* scroll effect */
 $('#u114').registerPositionScrollEffect([{"in":[-Infinity,508],"speed":[0,-1]},{"in":[508,Infinity],"speed":[0,0]}], $(this)); /* scroll effect */
 });/* scroll effects for one breakpoint */

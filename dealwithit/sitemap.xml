@@ -7,13 +7,19 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>http://dftporter.githup.io/dealwithit/images/glasses.png</loc>
+    <lastmod>2016-10-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>http://dftporter.githup.io/dealwithit/images/josh.png</loc>
     <lastmod>2016-10-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>http://dftporter.githup.io/dealwithit/images/glasses.png</loc>
+    <loc>http://dftporter.githup.io/dealwithit/images/josh464x309.png</loc>
     <lastmod>2016-10-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
