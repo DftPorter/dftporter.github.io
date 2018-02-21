@@ -1,0 +1,13 @@
+{
+"companyName": "PDG",
+"productName": "Contamination Control",
+"dataUrl": "ccontrol.data.unityweb",
+"asmCodeUrl": "ccontrol.asm.code.unityweb",
+"asmMemoryUrl": "ccontrol.asm.memory.unityweb",
+"asmFrameworkUrl": "ccontrol.asm.framework.unityweb",
+"TOTAL_MEMORY": 268435456,
+"graphicsAPI": ["WebGL 1.0"],
+"webglContextAttributes": {"preserveDrawingBuffer": false},
+"splashScreenStyle": "Light",
+"backgroundColor": "#FFFFFF"
+}
