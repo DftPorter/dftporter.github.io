@@ -1,0 +1,4 @@
+sceneSetups:
+- path: Assets/Scenes/find_the_card_gameplay_scene.unity
+  isLoaded: 1
+  isActive: 1
