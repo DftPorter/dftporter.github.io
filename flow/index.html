@@ -101,8 +101,8 @@
   .amber  .role-dot   { background: var(--amber-mid); }
   .coral  .role-badge { background: rgba(232,120,74,0.12); color: var(--coral-light); }
   .coral  .role-dot   { background: var(--coral-mid); }
-  .step-title { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--text-primary); line-height: 1.25; }
-  .step-desc { font-size: 18px; color: var(--text-secondary); line-height: 1.65; font-weight: 300; }
+  .step-title { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--text-primary); line-height: 1.25; }
+  .step-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.65; font-weight: 300; }
   .step-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
   .chip {
     font-size: 12px; padding: 4px 10px; border-radius: 6px;
@@ -118,6 +118,25 @@
   .legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-muted); }
   .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
   .footer-label { font-size: 11px; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 500; }
+
+  @media (max-width: 480px) {
+    body { padding: 36px 16px 60px; }
+    .header { margin-bottom: 40px; }
+    .header-eyebrow { font-size: 10px; margin-bottom: 12px; }
+    .header-title { font-size: 28px; margin-bottom: 12px; }
+    .header-subtitle { font-size: 15px; }
+    .step { padding: 20px 18px; }
+    .step-inner { grid-template-columns: 40px 1fr; gap: 14px; }
+    .step-num { width: 40px; height: 40px; border-radius: 10px; font-size: 18px; }
+    .role-badge { font-size: 10px; padding: 3px 8px 3px 7px; }
+    .step-title { font-size: 17px; }
+    .step-desc { font-size: 14px; line-height: 1.6; }
+    .chip { font-size: 12px; padding: 4px 9px; }
+    .connector { height: 36px; }
+    .footer { margin-top: 40px; padding-top: 24px; flex-direction: column; align-items: flex-start; gap: 12px; }
+    .footer-legend { gap: 12px; }
+    .legend-item { font-size: 12px; }
+  }
 </style>
 </head>
 <body>
@@ -144,12 +163,30 @@
         </div>
       </div>
     </div>
+    
+        <div class="connector"><div class="connector-inner"><div class="connector-line"></div><div class="connector-arrow"></div></div></div>
+
+    <div class="step amber">
+      <div class="step-inner">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <span class="role-badge"><span class="role-dot"></span>Quality Control</span>
+          <div class="step-title">QC Review</div>
+          <p class="step-desc">Quality Control audits the storyboard for errors, inconsistencies, and required corrections. Any issues are documented and communicated back to the team before the asset advances further.</p>
+          <div class="step-chips">
+            <span class="chip">Error &amp; accuracy check</span>
+            <span class="chip">Storyboard alignment</span>
+            <span class="chip">Feedback to team</span>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div class="connector"><div class="connector-inner"><div class="connector-line"></div><div class="connector-arrow"></div></div></div>
 
     <div class="step teal">
       <div class="step-inner">
-        <div class="step-num">2</div>
+        <div class="step-num">3</div>
         <div class="step-content">
           <span class="role-badge"><span class="role-dot"></span>Visual Designer</span>
           <div class="step-title">Asset Build</div>
@@ -167,11 +204,11 @@
 
     <div class="step amber">
       <div class="step-inner">
-        <div class="step-num">3</div>
+        <div class="step-num">4</div>
         <div class="step-content">
           <span class="role-badge"><span class="role-dot"></span>Quality Control</span>
           <div class="step-title">QC Review</div>
-          <p class="step-desc">Quality Control audits the completed asset against the storyboard for errors, inconsistencies, and required corrections. Any issues are documented and communicated back to the team before the asset advances further.</p>
+          <p class="step-desc">Quality Control audits the graphics-complete asset against the storyboard for errors, inconsistencies, and required corrections. Any issues are documented and communicated back to the team before the asset advances further.</p>
           <div class="step-chips">
             <span class="chip">Error &amp; accuracy check</span>
             <span class="chip">Storyboard alignment</span>
@@ -185,7 +222,7 @@
 
     <div class="step coral">
       <div class="step-inner">
-        <div class="step-num">4</div>
+        <div class="step-num">5</div>
         <div class="step-content">
           <span class="role-badge"><span class="role-dot"></span>Full Team</span>
           <div class="step-title">Internal Review &amp; Client Draft</div>
