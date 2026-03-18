@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Asset Workflow</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0F0F11;
+    --surface: #18181C;
+    --surface2: #222228;
+    --border: rgba(255,255,255,0.07);
+    --text-primary: #EDECEA;
+    --text-secondary: #9896A0;
+    --text-muted: #5C5A65;
+    --purple-light: #C4BEFF;
+    --purple-mid: #8B80F9;
+    --purple-bg: rgba(139,128,249,0.08);
+    --teal-light: #9FDFCC;
+    --teal-mid: #3DC9A0;
+    --teal-bg: rgba(61,201,160,0.08);
+    --amber-light: #FFCF74;
+    --amber-mid: #E09B28;
+    --amber-bg: rgba(224,155,40,0.08);
+    --coral-light: #FFC2A8;
+    --coral-mid: #E8784A;
+    --coral-bg: rgba(232,120,74,0.08);
+  }
+  body {
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 60px 24px 80px;
+  }
+  .page { width: 100%; max-width: 720px; }
+  .header { text-align: center; margin-bottom: 64px; }
+  .header-eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--text-muted); margin-bottom: 16px;
+  }
+  .header-title {
+    font-family: 'DM Serif Display', serif; font-size: 42px;
+    line-height: 1.1; color: var(--text-primary); margin-bottom: 16px;
+  }
+  .header-subtitle {
+    font-size: 16px; color: var(--text-secondary); line-height: 1.6;
+    max-width: 480px; margin: 0 auto; font-weight: 300;
+  }
+  .workflow { position: relative; display: flex; flex-direction: column; }
+  .connector { display: flex; justify-content: center; align-items: center; height: 52px; }
+  .connector-inner { display: flex; flex-direction: column; align-items: center; gap: 0; height: 100%; }
+  .connector-line { width: 1px; flex: 1; background: var(--border); }
+  .connector-arrow {
+    width: 0; height: 0;
+    border-left: 5px solid transparent; border-right: 5px solid transparent;
+    border-top: 7px solid var(--text-muted); opacity: 0.35;
+  }
+  .step {
+    border-radius: 16px; border: 1px solid var(--border);
+    padding: 28px 32px; position: relative; overflow: hidden;
+  }
+  .step::before {
+    content: ''; position: absolute; left: 0; top: 20%; bottom: 20%;
+    width: 2px; border-radius: 0 2px 2px 0;
+  }
+  .step.purple { background: linear-gradient(135deg, var(--purple-bg) 0%, var(--surface) 60%); }
+  .step.purple::before { background: var(--purple-mid); }
+  .step.teal   { background: linear-gradient(135deg, var(--teal-bg) 0%, var(--surface) 60%); }
+  .step.teal::before   { background: var(--teal-mid); }
+  .step.amber  { background: linear-gradient(135deg, var(--amber-bg) 0%, var(--surface) 60%); }
+  .step.amber::before  { background: var(--amber-mid); }
+  .step.coral  { background: linear-gradient(135deg, var(--coral-bg) 0%, var(--surface) 60%); }
+  .step.coral::before  { background: var(--coral-mid); }
+  .step-inner { display: grid; grid-template-columns: 52px 1fr; gap: 20px; align-items: start; }
+  .step-num {
+    width: 52px; height: 52px; border-radius: 12px; display: flex;
+    align-items: center; justify-content: center;
+    font-family: 'DM Serif Display', serif; font-size: 22px; flex-shrink: 0; margin-top: 2px;
+  }
+  .purple .step-num { background: var(--purple-bg); color: var(--purple-light); border: 1px solid rgba(139,128,249,0.2); }
+  .teal   .step-num { background: var(--teal-bg);   color: var(--teal-light);   border: 1px solid rgba(61,201,160,0.2); }
+  .amber  .step-num { background: var(--amber-bg);  color: var(--amber-light);  border: 1px solid rgba(224,155,40,0.2); }
+  .coral  .step-num { background: var(--coral-bg);  color: var(--coral-light);  border: 1px solid rgba(232,120,74,0.2); }
+  .step-content { display: flex; flex-direction: column; gap: 10px; }
+  .role-badge {
+    display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px;
+    border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; width: fit-content;
+  }
+  .role-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .purple .role-badge { background: rgba(139,128,249,0.12); color: var(--purple-light); }
+  .purple .role-dot   { background: var(--purple-mid); }
+  .teal   .role-badge { background: rgba(61,201,160,0.12); color: var(--teal-light); }
+  .teal   .role-dot   { background: var(--teal-mid); }
+  .amber  .role-badge { background: rgba(224,155,40,0.12); color: var(--amber-light); }
+  .amber  .role-dot   { background: var(--amber-mid); }
+  .coral  .role-badge { background: rgba(232,120,74,0.12); color: var(--coral-light); }
+  .coral  .role-dot   { background: var(--coral-mid); }
+  .step-title { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--text-primary); line-height: 1.25; }
+  .step-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.65; font-weight: 300; }
+  .step-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .chip {
+    font-size: 12px; padding: 4px 10px; border-radius: 6px;
+    background: var(--surface2); color: var(--text-muted);
+    border: 1px solid var(--border); line-height: 1.4;
+  }
+  .footer {
+    margin-top: 56px; padding-top: 32px; border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+  }
+  .footer-legend { display: flex; flex-wrap: wrap; gap: 18px; }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .footer-label { font-size: 11px; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="header-eyebrow">Team Process</div>
+    <h1 class="header-title">Digital Asset Workflow</h1>
+    <p class="header-subtitle">A structured process that ensures each team member's expertise is applied at the right stage — from concept to client delivery.</p>
+  </div>
+
+  <div class="workflow">
+    <div class="step purple">
+      <div class="step-inner">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <span class="role-badge"><span class="role-dot"></span>Solution Designer</span>
+          <div class="step-title">Storyboard Authoring</div>
+          <p class="step-desc">The Solution Designer creates the storyboard, defining structure, narrative flow, and content — without adding graphics. Ideas and instructions for visuals are captured as review comments, preserving a clean foundation for the Visual Designer.</p>
+          <div class="step-chips">
+            <span class="chip">Storyboard draft</span>
+            <span class="chip">No graphics included</span>
+            <span class="chip">Visual notes in comments</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector"><div class="connector-inner"><div class="connector-line"></div><div class="connector-arrow"></div></div></div>
+
+    <div class="step teal">
+      <div class="step-inner">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <span class="role-badge"><span class="role-dot"></span>Visual Designer</span>
+          <div class="step-title">Asset Build</div>
+          <p class="step-desc">The Visual Designer brings the asset to life using the approved storyboard as a blueprint. They apply their visual design expertise — layout, typography, color, and illustration — while drawing on the Solution Designer's commentary for guidance.</p>
+          <div class="step-chips">
+            <span class="chip">Works from storyboard</span>
+            <span class="chip">Interprets visual comments</span>
+            <span class="chip">Full design execution</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector"><div class="connector-inner"><div class="connector-line"></div><div class="connector-arrow"></div></div></div>
+
+    <div class="step amber">
+      <div class="step-inner">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <span class="role-badge"><span class="role-dot"></span>Quality Control</span>
+          <div class="step-title">QC Review</div>
+          <p class="step-desc">Quality Control audits the completed asset against the storyboard for errors, inconsistencies, and required corrections. Any issues are documented and communicated back to the team before the asset advances further.</p>
+          <div class="step-chips">
+            <span class="chip">Error &amp; accuracy check</span>
+            <span class="chip">Storyboard alignment</span>
+            <span class="chip">Feedback to team</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector"><div class="connector-inner"><div class="connector-line"></div><div class="connector-arrow"></div></div></div>
+
+    <div class="step coral">
+      <div class="step-inner">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <span class="role-badge"><span class="role-dot"></span>Full Team</span>
+          <div class="step-title">Internal Review &amp; Client Draft</div>
+          <p class="step-desc">The team conducts one final internal review pass to ensure the asset meets standards and reflects all QC feedback. Once approved internally, the draft is delivered to the client for their review.</p>
+          <div class="step-chips">
+            <span class="chip">Internal sign-off</span>
+            <span class="chip">Client draft delivery</span>
+            <span class="chip">Review cycle begins</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#8B80F9"></div>Solution Designer</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#3DC9A0"></div>Visual Designer</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#E09B28"></div>Quality Control</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#E8784A"></div>Full Team</div>
+    </div>
+    <div class="footer-label">Digital Asset Process</div>
+  </div>
+</div>
+</body>
+</html>
