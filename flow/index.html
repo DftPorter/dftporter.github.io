@@ -101,9 +101,25 @@
   .amber  .role-dot   { background: var(--amber-mid); }
   .coral  .role-badge { background: rgba(232,120,74,0.12); color: var(--coral-light); }
   .coral  .role-dot   { background: var(--coral-mid); }
+  .step { cursor: pointer; transition: border-color 0.2s; }
+  .step:hover { border-color: rgba(255,255,255,0.14); }
+  .step-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .step-title { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--text-primary); line-height: 1.25; }
+  .step-chevron {
+    flex-shrink: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted); transition: transform 0.3s ease;
+  }
+  .step-chevron svg { display: block; }
+  .step.open .step-chevron { transform: rotate(180deg); }
+  .step-details {
+    display: grid; grid-template-rows: 0fr;
+    transition: grid-template-rows 0.32s ease;
+  }
+  .step.open .step-details { grid-template-rows: 1fr; }
+  .step-details-inner { overflow: hidden; }
+  .step-details-pad { padding-top: 14px; display: flex; flex-direction: column; gap: 10px; }
   .step-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.65; font-weight: 300; }
-  .step-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .step-chips { display: flex; flex-wrap: wrap; gap: 6px; }
   .chip {
     font-size: 12px; padding: 4px 10px; border-radius: 6px;
     background: var(--surface2); color: var(--text-muted);
@@ -131,6 +147,7 @@
     .role-badge { font-size: 10px; padding: 3px 8px 3px 7px; }
     .step-title { font-size: 17px; }
     .step-desc { font-size: 14px; line-height: 1.6; }
+    .step-chevron { width: 18px; height: 18px; }
     .chip { font-size: 12px; padding: 4px 9px; }
     .connector { height: 36px; }
     .footer { margin-top: 40px; padding-top: 24px; flex-direction: column; align-items: flex-start; gap: 12px; }
@@ -148,108 +165,138 @@
   </div>
 
   <div class="workflow">
-    <div class="step purple">
+    <div class="step purple" onclick="toggleStep(this)">
       <div class="step-inner">
         <div class="step-num">1</div>
         <div class="step-content">
           <span class="role-badge"><span class="role-dot"></span>Solution Designer</span>
-          <div class="step-title">Storyboard Authoring</div>
-          <p class="step-desc">The Solution Designer creates the storyboard, defining structure, narrative flow, and content — without adding graphics. Ideas and instructions for visuals are captured as review comments, preserving a clean foundation for the Visual Designer.</p>
-          <div class="step-chips">
-            <span class="chip">Storyboard draft</span>
-            <span class="chip">No graphics included</span>
-            <span class="chip">Visual notes in comments</span>
+          <div class="step-header">
+            <div class="step-title">Storyboard Authoring</div>
+            <div class="step-chevron"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4.5L7 9.5L12 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
           </div>
+          <div class="step-details"><div class="step-details-inner"><div class="step-details-pad">
+            <p class="step-desc">The Solution Designer creates the storyboard, defining structure, narrative flow, and content — without adding graphics. Ideas and instructions for visuals are captured as review comments, preserving a clean foundation for the Visual Designer.</p>
+            <div class="step-chips">
+              <span class="chip">Storyboard draft</span>
+              <span class="chip">No graphics included</span>
+              <span class="chip">Visual notes in comments</span>
+            </div>
+          </div></div></div>
         </div>
       </div>
     </div>
 
     <div class="connector"><div class="connector-inner"><div class="connector-line"></div><div class="connector-arrow"></div></div></div>
 
-    <div class="step amber">
+    <div class="step amber" onclick="toggleStep(this)">
       <div class="step-inner">
         <div class="step-num">2</div>
         <div class="step-content">
           <span class="role-badge"><span class="role-dot"></span>Quality Control</span>
-          <div class="step-title">Storyboard QC Review</div>
-          <p class="step-desc">Quality Control reviews the storyboard for errors, gaps, and inconsistencies before any visual work begins. Catching issues at this stage prevents rework downstream and ensures the Visual Designer has a solid, accurate brief to work from.</p>
-          <div class="step-chips">
-            <span class="chip">Content accuracy check</span>
-            <span class="chip">Storyboard sign-off</span>
-            <span class="chip">Feedback to team</span>
+          <div class="step-header">
+            <div class="step-title">Storyboard QC Review</div>
+            <div class="step-chevron"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4.5L7 9.5L12 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
           </div>
+          <div class="step-details"><div class="step-details-inner"><div class="step-details-pad">
+            <p class="step-desc">Quality Control reviews the storyboard for errors, gaps, and inconsistencies before any visual work begins. Catching issues at this stage prevents rework downstream and ensures the Visual Designer has a solid, accurate brief to work from.</p>
+            <div class="step-chips">
+              <span class="chip">Content accuracy check</span>
+              <span class="chip">Storyboard sign-off</span>
+              <span class="chip">Feedback to team</span>
+            </div>
+          </div></div></div>
         </div>
       </div>
     </div>
 
     <div class="connector"><div class="connector-inner"><div class="connector-line"></div><div class="connector-arrow"></div></div></div>
 
-    <div class="step teal">
+    <div class="step teal" onclick="toggleStep(this)">
       <div class="step-inner">
         <div class="step-num">3</div>
         <div class="step-content">
           <span class="role-badge"><span class="role-dot"></span>Visual Designer</span>
-          <div class="step-title">Visual Build</div>
-          <p class="step-desc">The Visual Designer brings the asset to life using the QC-approved storyboard as a blueprint. They apply their visual design expertise — layout, typography, color, and illustration — drawing on the Solution Designer's comments for guidance.</p>
-          <div class="step-chips">
-            <span class="chip">Works from approved storyboard</span>
-            <span class="chip">Interprets visual comments</span>
-            <span class="chip">Full design execution</span>
+          <div class="step-header">
+            <div class="step-title">Visual Build</div>
+            <div class="step-chevron"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4.5L7 9.5L12 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
           </div>
+          <div class="step-details"><div class="step-details-inner"><div class="step-details-pad">
+            <p class="step-desc">The Visual Designer brings the asset to life using the QC-approved storyboard as a blueprint. They apply their visual design expertise — layout, typography, color, and illustration — drawing on the Solution Designer's comments for guidance.</p>
+            <div class="step-chips">
+              <span class="chip">Works from approved storyboard</span>
+              <span class="chip">Interprets visual comments</span>
+              <span class="chip">Full design execution</span>
+            </div>
+          </div></div></div>
         </div>
       </div>
     </div>
 
     <div class="connector"><div class="connector-inner"><div class="connector-line"></div><div class="connector-arrow"></div></div></div>
 
-    <div class="step coral">
+    <div class="step coral" onclick="toggleStep(this)">
       <div class="step-inner">
         <div class="step-num">4</div>
         <div class="step-content">
           <span class="role-badge"><span class="role-dot"></span>Full Team + Client</span>
-          <div class="step-title">Internal Review &amp; Client Draft</div>
-          <p class="step-desc">The team conducts a final internal review pass before delivering the draft to the client. Both internal stakeholders and the client provide feedback, which is collected and consolidated for the next revision cycle.</p>
-          <div class="step-chips">
-            <span class="chip">Internal sign-off</span>
-            <span class="chip">Client draft delivery</span>
-            <span class="chip">Feedback consolidated</span>
+          <div class="step-header">
+            <div class="step-title">Internal Review &amp; Client Draft</div>
+            <div class="step-chevron"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4.5L7 9.5L12 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
           </div>
+          <div class="step-details"><div class="step-details-inner"><div class="step-details-pad">
+            <p class="step-desc">The team conducts a final internal review pass before delivering the draft to the client. Both internal stakeholders and the client provide feedback, which is collected and consolidated for the next revision cycle.</p>
+            <div class="step-chips">
+              <span class="chip">Internal sign-off</span>
+              <span class="chip">Client draft delivery</span>
+              <span class="chip">Feedback consolidated</span>
+            </div>
+          </div></div></div>
         </div>
       </div>
     </div>
 
     <div class="connector"><div class="connector-inner"><div class="connector-line"></div><div class="connector-arrow"></div></div></div>
 
-    <div class="step purple">
+    <div class="step purple" onclick="toggleStep(this)">
       <div class="step-inner">
         <div class="step-num">5</div>
         <div class="step-content">
           <span class="role-badge"><span class="role-dot"></span>Solution Designer</span>
-          <div class="step-title">Storyboard Updates</div>
-          <p class="step-desc">The Solution Designer revises the storyboard to incorporate all internal and client feedback. Updated visual instructions are added as comments where needed, giving the Visual Designer a clear, revised brief for the next build pass.</p>
-          <div class="step-chips">
-            <span class="chip">Implements all feedback</span>
-            <span class="chip">Revised visual comments</span>
-            <span class="chip">Updated storyboard issued</span>
+          <div class="step-header">
+            <div class="step-title">Storyboard Updates</div>
+            <div class="step-chevron"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4.5L7 9.5L12 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
           </div>
+          <div class="step-details"><div class="step-details-inner"><div class="step-details-pad">
+            <p class="step-desc">The Solution Designer revises the storyboard to incorporate all internal and client feedback. Updated visual instructions are added as comments where needed, giving the Visual Designer a clear, revised brief for the next build pass.</p>
+            <div class="step-chips">
+              <span class="chip">Implements all feedback</span>
+              <span class="chip">Revised visual comments</span>
+              <span class="chip">Updated storyboard issued</span>
+            </div>
+          </div></div></div>
         </div>
       </div>
     </div>
 
     <div class="connector"><div class="connector-inner"><div class="connector-line"></div><div class="connector-arrow"></div></div></div>
 
-    <div class="step teal">
+    <div class="step teal" onclick="toggleStep(this)">
       <div class="step-inner">
         <div class="step-num">6</div>
         <div class="step-content">
           <span class="role-badge"><span class="role-dot"></span>Visual Designer</span>
-          <div class="step-title">Visual Updates</div>
-          <p class="step-desc">The Visual Designer applies revisions to the asset based on the updated storyboard, addressing all feedback from the internal and client review. The updated asset is then ready for any further review rounds as needed.</p>
-          <div class="step-chips">
-            <span class="chip">Revisions from updated SB</span>
-            <span class="chip">Addresses all feedback</span>
-            <span class="chip">Asset ready for next review</span>
+          <div class="step-header">
+            <div class="step-title">Visual Updates</div>
+            <div class="step-chevron"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4.5L7 9.5L12 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
           </div>
+          <div class="step-details"><div class="step-details-inner"><div class="step-details-pad">
+            <p class="step-desc">The Visual Designer applies revisions to the asset based on the updated storyboard, addressing all feedback from the internal and client review. The updated asset is then ready for any further review rounds as needed.</p>
+            <div class="step-chips">
+              <span class="chip">Revisions from updated SB</span>
+              <span class="chip">Addresses all feedback</span>
+              <span class="chip">Asset ready for next review</span>
+            </div>
+          </div></div></div>
         </div>
       </div>
     </div>
@@ -265,5 +312,10 @@
     <div class="footer-label">Digital Asset Process</div>
   </div>
 </div>
+<script>
+  function toggleStep(el) {
+    el.classList.toggle('open');
+  }
+</script>
 </body>
 </html>
