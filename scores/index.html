@@ -47,9 +47,12 @@
   .featured-game{padding:20px;border-bottom:1px solid var(--border);}
   .game-label{font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--muted);margin-bottom:12px;font-family:'DM Mono',monospace;}
   .matchup{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-  .team-side{flex:1;text-align:center;}.team-abv{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.08em;color:#d1d5db;}
+  .team-side{flex:1;text-align:center;}
+  .team-abv{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.08em;color:#d1d5db;}
   .team-score{font-family:'Bebas Neue',sans-serif;font-size:48px;line-height:1;color:#fff;margin-top:2px;}
-  .team-score.winner{color:var(--team-color);}.team-score.no-score{font-size:28px;color:#4b5563;}
+  .team-score.winner{color:var(--team-color);}
+  .team-score.no-score{font-size:28px;color:#4b5563;}
+  .team-record{font-family:'DM Mono',monospace;font-size:10px;color:#6b7280;letter-spacing:.08em;margin-top:4px;}
   .vs-divider{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;}
   .vs-text{font-family:'DM Mono',monospace;font-size:11px;color:#374151;letter-spacing:.1em;}
   .vs-line{width:1px;height:20px;background:var(--border);}
@@ -141,7 +144,9 @@ function parseEvent(ev, teamId) {
   const oppAbbr   = (them.team?.abbreviation || 'OPP').toUpperCase();
   const phiScore  = (completed || state === 'in') ? parseScore(us.score)   : null;
   const oppScore  = (completed || state === 'in') ? parseScore(them.score) : null;
-  const getRecord = c => c.records?.find(r => r.type === 'total')?.displayValue || null;
+
+  // Records from competitor data (type 'total' = overall W-L record)
+  const getRecord = c => c.record?.find(r => r.type === 'total')?.displayValue || null;
   const phiRecord = getRecord(us);
   const oppRecord = getRecord(them);
 
@@ -170,8 +175,7 @@ async function fetchTeamData(key) {
   const now          = Date.now();
   const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
 
-  // Schedule events
-  // seasonType 4 = Off Season (ESPN standard across all sports)
+  // seasonType 4 = Off Season
   const isOffseason = schRes?.season?.type === 4;
 
   const rawEvents   = schRes?.events || schRes?.team?.events || [];
@@ -201,20 +205,21 @@ async function fetchTeamData(key) {
     }
   }
 
-  // If it's the offseason, don't show the last game — show Season Complete instead
+  // If offseason, show Season Complete instead of last game
   const featured = isOffseason ? null : (liveGame || lastCompleted || nextGame || null);
   const fs = isOffseason ? 'offseason' : (featured?.featuredStatus || 'offseason');
-  const record = schRes?.team?.recordSummary || null;
+  const showRecords = fs === 'live' || fs === 'final';
 
   return {
     featuredStatus: fs,
     featured: featured ? {
-      label:    fs === 'live' ? 'LIVE NOW' : fs === 'final' ? 'LAST GAME' : 'NEXT GAME',
-      oppAbbr:  featured.oppAbbr,
-      phiScore: featured.phiScore,
-      oppScore: featured.oppScore,
-      note:     featured.note,
-      record:   (fs === 'live' || fs === 'final') ? record : null,
+      label:     fs === 'live' ? 'LIVE NOW' : fs === 'final' ? 'LAST GAME' : 'NEXT GAME',
+      oppAbbr:   featured.oppAbbr,
+      phiScore:  featured.phiScore,
+      oppScore:  featured.oppScore,
+      note:      featured.note,
+      phiRecord: showRecords ? (featured.phiRecord || null) : null,
+      oppRecord: showRecords ? (featured.oppRecord || null) : null,
     } : null,
     recentGames: recentGames.slice(-3).reverse().map(g => ({
       opp: g.oppAbbr, home: g.isHome,
@@ -278,14 +283,14 @@ function renderCard(key, data) {
         <div class="matchup">
           <div class="team-side">
             <div class="team-abv">PHI</div>
-            ${scoreHtml(f.phiScore,phiWins,upcoming)}
-            ${f.phiRecord ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:#6b7280;letter-spacing:.08em;margin-top:4px">${f.phiRecord}</div>` : ''}
+            ${scoreHtml(f.phiScore, phiWins, upcoming)}
+            ${f.phiRecord ? `<div class="team-record">${f.phiRecord}</div>` : ''}
           </div>
           <div class="vs-divider"><div class="vs-line"></div><div class="vs-text">VS</div><div class="vs-line"></div></div>
           <div class="team-side">
             <div class="team-abv">${f.oppAbbr}</div>
-            ${scoreHtml(f.oppScore,oppWins,upcoming)}
-            ${f.oppRecord ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:#6b7280;letter-spacing:.08em;margin-top:4px">${f.oppRecord}</div>` : ''}
+            ${scoreHtml(f.oppScore, oppWins, upcoming)}
+            ${f.oppRecord ? `<div class="team-record">${f.oppRecord}</div>` : ''}
           </div>
         </div>
         <div class="game-info-row">${f.note}</div>
