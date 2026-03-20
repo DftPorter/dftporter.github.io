@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tim's Philly Sports HQ</title>
+<title>Philly Sports HQ</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔔</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;900&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -81,7 +81,7 @@
 <body>
 <header>
   <div class="header-left">
-    <h1>Tim's Philly Sports HQ</h1>
+    <h1>Philly Sports HQ</h1>
     <p>Eagles &bull; Phillies &bull; 76ers &bull; Flyers &bull; Union</p>
   </div>
   <div class="header-right">
@@ -233,6 +233,7 @@ async function fetchTeamData(key) {
       ? `${nextGame.isHome ? 'vs' : '@'} ${nextGame.oppAbbr} · ${fmtFull(nextGame.dateMs)}`
       : null,
     offseasonNote: fs === 'offseason' ? (isOffseason ? 'Season has ended' : 'No upcoming schedule found') : null,
+    featuredDateMs: featured?.dateMs || 0,
   };
 }
 
@@ -355,12 +356,17 @@ async function fetchScores() {
     const rank = s => ({live:0, final:1, upcoming:3, offseason:4}[s] ?? 4);
     const sorted = TEAM_ORDER
       .map(k => ({key:k, data:scores[k]}))
-      .sort((a,b) => rank(a.data.featuredStatus) - rank(b.data.featuredStatus));
+      .sort((a,b) => {
+        const rd = rank(a.data.featuredStatus) - rank(b.data.featuredStatus);
+        if (rd !== 0) return rd;
+        // Within same status, sort by most recent game date first
+        return b.data.featuredDateMs - a.data.featuredDateMs;
+      });
 
     document.getElementById('cards-container').innerHTML = sorted.map(({key,data}) => renderCard(key,data)).join('');
     const t = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     setStatus('ok', 'Updated ' + t);
-    document.getElementById('footer-text').textContent = `Live data via ESPN · Last updated ${t} · Philadelphia Sports HQ · porter.allen@gmail.com`;
+    document.getElementById('footer-text').textContent = `Live data via ESPN · Last updated ${t} · Philadelphia Sports HQ`;
   } catch(err) {
     console.error(err);
     setStatus('error','Update failed');
