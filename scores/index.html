@@ -6,184 +6,82 @@
 <title>Philly Sports HQ</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;900&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #060810;
-    --surface: #0d1117;
-    --border: rgba(255,255,255,0.06);
-    --text: #e8eaf0;
-    --muted: #6b7280;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Barlow Condensed', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
-    opacity: 0.035;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  header {
-    position: relative; z-index: 10;
-    padding: 28px 32px 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
-  }
-  .header-left h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(32px, 5vw, 52px);
-    letter-spacing: 0.05em; line-height: 1;
-    background: linear-gradient(135deg, #fff 40%, #aaa);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-  }
-  .header-left p { font-size: 13px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 4px; }
-  .header-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-
-  .live-badge {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--muted); font-family: 'DM Mono', monospace;
-  }
-  .pulse-dot {
-    width: 8px; height: 8px; border-radius: 50%; background: #22c55e;
-    animation: pulse 2s ease-in-out infinite; flex-shrink: 0;
-  }
-  .pulse-dot.loading { background: #fbbf24; }
-  .pulse-dot.error   { background: #f87171; animation: none; }
-  @keyframes pulse {
-    0%,100% { opacity:1; transform:scale(1); box-shadow:0 0 0 0 rgba(34,197,94,0.4); }
-    50%      { opacity:0.8; transform:scale(1.1); box-shadow:0 0 0 6px rgba(34,197,94,0); }
-  }
-  #update-time { color: #d1d5db; }
-
-  .refresh-btn {
-    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-    color: #9ca3af; font-family: 'DM Mono', monospace; font-size: 11px;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    padding: 8px 16px; border-radius: 8px; cursor: pointer;
-    transition: all 0.2s; display: flex; align-items: center; gap: 6px;
-  }
-  .refresh-btn:hover:not(:disabled) { background:rgba(255,255,255,0.1); color:#e5e7eb; border-color:rgba(255,255,255,0.15); }
-  .refresh-btn:disabled { opacity:0.4; cursor:not-allowed; }
-  .refresh-btn.spinning .spin { animation: spin 1s linear infinite; display:inline-block; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  main {
-    position: relative; z-index: 10;
-    max-width: 1400px; margin: 0 auto;
-    padding: 32px 20px 48px;
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;
-  }
-
-  /* Skeleton */
-  .skeleton-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
-    animation: fadeUp 0.4s ease both;
-  }
-  .skeleton-header { padding: 20px; border-bottom: 1px solid var(--border); display:flex; gap:12px; align-items:center; }
-  .sk { background: linear-gradient(90deg,#1a1f2e 25%,#232a3a 50%,#1a1f2e 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:6px; }
+  :root { --bg:#060810; --surface:#0d1117; --border:rgba(255,255,255,0.06); --text:#e8eaf0; --muted:#6b7280; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Barlow Condensed',sans-serif; min-height:100vh; overflow-x:hidden; }
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E"); opacity:.035; pointer-events:none; z-index:0; }
+  header { position:relative; z-index:10; padding:28px 32px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+  .header-left h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(32px,5vw,52px); letter-spacing:.05em; line-height:1; background:linear-gradient(135deg,#fff 40%,#aaa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .header-left p { font-size:13px; color:var(--muted); letter-spacing:.12em; text-transform:uppercase; margin-top:4px; }
+  .header-right { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .live-badge { display:flex; align-items:center; gap:8px; font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-family:'DM Mono',monospace; }
+  .pulse-dot { width:8px; height:8px; border-radius:50%; background:#22c55e; animation:pulse 2s ease-in-out infinite; flex-shrink:0; }
+  .pulse-dot.loading { background:#fbbf24; }
+  .pulse-dot.error { background:#f87171; animation:none; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(34,197,94,.4);} 50%{opacity:.8;transform:scale(1.1);box-shadow:0 0 0 6px rgba(34,197,94,0);} }
+  #update-time { color:#d1d5db; }
+  .refresh-btn { background:rgba(255,255,255,.05); border:1px solid var(--border); color:#9ca3af; font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; padding:8px 16px; border-radius:8px; cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:6px; }
+  .refresh-btn:hover:not(:disabled) { background:rgba(255,255,255,.1); color:#e5e7eb; border-color:rgba(255,255,255,.15); }
+  .refresh-btn:disabled { opacity:.4; cursor:not-allowed; }
+  .refresh-btn.spinning .spin { animation:spin 1s linear infinite; display:inline-block; }
+  @keyframes spin { to{transform:rotate(360deg);} }
+  main { position:relative; z-index:10; max-width:1400px; margin:0 auto; padding:32px 20px 48px; display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:20px; }
+  .skeleton-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+  .skeleton-header { padding:20px; border-bottom:1px solid var(--border); display:flex; gap:12px; align-items:center; }
+  .sk { background:linear-gradient(90deg,#1a1f2e 25%,#232a3a 50%,#1a1f2e 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:6px; }
   .sk-circle { width:44px; height:44px; border-radius:50%; flex-shrink:0; }
   .sk-line { height:14px; }
   .sk-body { padding:20px; display:flex; flex-direction:column; gap:10px; }
   @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-
-  /* Card */
-  .team-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-    overflow: hidden; position: relative;
-    transition: transform 0.2s, box-shadow 0.2s;
-    animation: fadeUp 0.5s ease both;
-  }
+  .team-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; position:relative; transition:transform .2s,box-shadow .2s; animation:fadeUp .5s ease both; }
   @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
-  .team-card:hover { transform:translateY(-3px); box-shadow:0 16px 48px rgba(0,0,0,0.5); }
-  .team-card::before {
-    content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--team-color);
-  }
-  .card-header {
-    padding: 20px 20px 14px; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--border);
-  }
-  .team-icon {
-    width:44px; height:44px; border-radius:50%; background:var(--team-color);
-    display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;
-  }
+  .team-card:hover { transform:translateY(-3px); box-shadow:0 16px 48px rgba(0,0,0,.5); }
+  .team-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--team-color); }
+  .card-header { padding:20px 20px 14px; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--border); }
+  .team-icon { width:44px; height:44px; border-radius:50%; background:var(--team-color); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
   .team-meta { flex:1; }
-  .team-name { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:0.04em; line-height:1; color:#fff; }
-  .team-sport { font-size:11px; text-transform:uppercase; letter-spacing:0.14em; color:var(--muted); margin-top:2px; }
-
-  .card-status {
-    font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.1em;
-    text-transform:uppercase; padding:4px 10px; border-radius:100px; font-weight:500; white-space:nowrap;
-  }
-  .status-live      { background:rgba(34,197,94,0.15);  color:#4ade80; border:1px solid rgba(34,197,94,0.3); }
-  .status-final     { background:rgba(255,255,255,0.05); color:var(--muted); border:1px solid var(--border); }
-  .status-upcoming  { background:rgba(251,191,36,0.12);  color:#fbbf24; border:1px solid rgba(251,191,36,0.25); }
-  .status-offseason { background:rgba(107,114,128,0.12); color:#6b7280; border:1px solid rgba(107,114,128,0.2); }
-
+  .team-name { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:.04em; line-height:1; color:#fff; }
+  .team-sport { font-size:11px; text-transform:uppercase; letter-spacing:.14em; color:var(--muted); margin-top:2px; }
+  .card-status { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; padding:4px 10px; border-radius:100px; font-weight:500; white-space:nowrap; }
+  .status-live { background:rgba(34,197,94,.15); color:#4ade80; border:1px solid rgba(34,197,94,.3); }
+  .status-final { background:rgba(255,255,255,.05); color:var(--muted); border:1px solid var(--border); }
+  .status-upcoming { background:rgba(251,191,36,.12); color:#fbbf24; border:1px solid rgba(251,191,36,.25); }
+  .status-offseason { background:rgba(107,114,128,.12); color:#6b7280; border:1px solid rgba(107,114,128,.2); }
   .featured-game { padding:20px; border-bottom:1px solid var(--border); }
-  .game-label { font-size:10px; text-transform:uppercase; letter-spacing:0.18em; color:var(--muted); margin-bottom:12px; font-family:'DM Mono',monospace; }
+  .game-label { font-size:10px; text-transform:uppercase; letter-spacing:.18em; color:var(--muted); margin-bottom:12px; font-family:'DM Mono',monospace; }
   .matchup { display:flex; align-items:center; justify-content:space-between; gap:8px; }
   .team-side { flex:1; text-align:center; }
-  .team-abv { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:0.08em; color:#d1d5db; }
+  .team-abv { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:.08em; color:#d1d5db; }
   .team-score { font-family:'Bebas Neue',sans-serif; font-size:48px; line-height:1; color:#fff; margin-top:2px; }
   .team-score.winner { color:var(--team-color); }
   .team-score.no-score { font-size:28px; color:#4b5563; }
   .vs-divider { display:flex; flex-direction:column; align-items:center; gap:4px; flex-shrink:0; }
-  .vs-text { font-family:'DM Mono',monospace; font-size:11px; color:#374151; letter-spacing:0.1em; }
+  .vs-text { font-family:'DM Mono',monospace; font-size:11px; color:#374151; letter-spacing:.1em; }
   .vs-line { width:1px; height:20px; background:var(--border); }
   .game-info-row { margin-top:10px; display:flex; align-items:center; justify-content:center; gap:6px; font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; text-align:center; flex-wrap:wrap; }
-
   .recent-results { padding:14px 20px 16px; }
-  .results-label { font-size:10px; text-transform:uppercase; letter-spacing:0.18em; color:var(--muted); margin-bottom:10px; font-family:'DM Mono',monospace; }
-  .result-row { display:flex; align-items:center; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.03); font-size:13px; gap:6px; }
+  .results-label { font-size:10px; text-transform:uppercase; letter-spacing:.18em; color:var(--muted); margin-bottom:10px; font-family:'DM Mono',monospace; }
+  .result-row { display:flex; align-items:center; padding:7px 0; border-bottom:1px solid rgba(255,255,255,.03); font-size:13px; gap:6px; }
   .result-row:last-child { border-bottom:none; }
-  .result-matchup { color:#9ca3af; letter-spacing:0.04em; flex:1; min-width:0; }
+  .result-matchup { color:#9ca3af; letter-spacing:.04em; flex:1; min-width:0; }
   .result-matchup span { color:#e5e7eb; font-weight:600; }
   .result-score { font-family:'DM Mono',monospace; font-size:12px; color:#e5e7eb; white-space:nowrap; }
-  .result-wl { font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:0.06em; width:18px; text-align:right; flex-shrink:0; }
-  .result-wl.win  { color:#4ade80; }
+  .result-wl { font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:.06em; width:18px; text-align:right; flex-shrink:0; }
+  .result-wl.win { color:#4ade80; }
   .result-wl.loss { color:#f87171; }
   .result-wl.draw { color:#fbbf24; }
   .result-date { font-family:'DM Mono',monospace; font-size:10px; color:#4b5563; width:36px; text-align:right; flex-shrink:0; }
-
-  .next-game-row {
-    display:flex; align-items:flex-start; gap:8px;
-    padding:8px 10px; background:rgba(251,191,36,0.06);
-    border:1px solid rgba(251,191,36,0.12); border-radius:8px; margin-top:10px;
-  }
-  .next-game-label { font-size:10px; text-transform:uppercase; letter-spacing:0.14em; color:#fbbf24; font-family:'DM Mono',monospace; flex-shrink:0; padding-top:1px; }
-  .next-game-info  { font-size:12px; color:#d1d5db; letter-spacing:0.02em; }
+  .next-game-row { display:flex; align-items:flex-start; gap:8px; padding:8px 10px; background:rgba(251,191,36,.06); border:1px solid rgba(251,191,36,.12); border-radius:8px; margin-top:10px; }
+  .next-game-label { font-size:10px; text-transform:uppercase; letter-spacing:.14em; color:#fbbf24; font-family:'DM Mono',monospace; flex-shrink:0; padding-top:1px; }
+  .next-game-info { font-size:12px; color:#d1d5db; letter-spacing:.02em; }
   .no-recent { padding:10px 0; font-size:12px; color:#4b5563; font-family:'DM Mono',monospace; text-align:center; }
-
-  #error-banner {
-    display:none; position:relative; z-index:10;
-    margin:16px auto 0; max-width:1400px; padding: 0 20px;
-  }
-  #error-banner-inner {
-    background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.25);
-    border-radius:10px; padding:14px 18px;
-    font-family:'DM Mono',monospace; font-size:12px; color:#fca5a5; letter-spacing:0.04em;
-  }
-
-  footer {
-    position:relative; z-index:10; text-align:center; padding:20px;
-    font-family:'DM Mono',monospace; font-size:11px; color:#374151; letter-spacing:0.08em;
-    border-top:1px solid var(--border);
-  }
-  @media (max-width:480px) {
-    main { padding:16px 12px 32px; gap:14px; }
-    header { padding:20px 16px; }
-  }
+  #error-banner { display:none; position:relative; z-index:10; margin:16px auto 0; max-width:1400px; padding:0 20px; }
+  #error-banner-inner { background:rgba(248,113,113,.1); border:1px solid rgba(248,113,113,.25); border-radius:10px; padding:14px 18px; font-family:'DM Mono',monospace; font-size:12px; color:#fca5a5; letter-spacing:.04em; }
+  footer { position:relative; z-index:10; text-align:center; padding:20px; font-family:'DM Mono',monospace; font-size:11px; color:#374151; letter-spacing:.08em; border-top:1px solid var(--border); }
+  @media(max-width:480px) { main{padding:16px 12px 32px;gap:14px;} header{padding:20px 16px;} }
 </style>
 </head>
 <body>
-
 <header>
   <div class="header-left">
     <h1>Philly Sports HQ</h1>
@@ -199,256 +97,261 @@
     </button>
   </div>
 </header>
-
 <div id="error-banner"><div id="error-banner-inner"></div></div>
 <main id="cards-container"></main>
-<footer id="footer-text">Powered by live web search &nbsp;&bull;&nbsp; Philadelphia Sports HQ</footer>
+<footer id="footer-text">Powered by ESPN &nbsp;&bull;&nbsp; Philadelphia Sports HQ</footer>
 
 <script>
-const TEAM_META = {
-  eagles:   { name:'Eagles',   sport:'NFL', icon:'🦅', color:'#004C54' },
-  sixers:   { name:'76ers',    sport:'NBA', icon:'🏀', color:'#006BB6' },
-  flyers:   { name:'Flyers',   sport:'NHL', icon:'🏒', color:'#F74902' },
-  phillies: { name:'Phillies', sport:'MLB', icon:'⚾', color:'#E81828' },
-  union:    { name:'Union',    sport:'MLS', icon:'⚽', color:'#8b6914' },
+// ESPN schedule endpoint returns: { events: [...], team: {...}, season: {...} }
+// events[] each have: { id, date, name, competitions: [{ competitors: [...], status: {...} }] }
+const TEAMS = {
+  eagles:   { name:'Eagles',   sport:'NFL', icon:'🦅', color:'#004C54', path:'football/nfl',   teamId:'22'    },
+  sixers:   { name:'76ers',    sport:'NBA', icon:'🏀', color:'#006BB6', path:'basketball/nba', teamId:'20'    },
+  flyers:   { name:'Flyers',   sport:'NHL', icon:'🏒', color:'#F74902', path:'hockey/nhl',     teamId:'4'     },
+  phillies: { name:'Phillies', sport:'MLB', icon:'⚾', color:'#E81828', path:'baseball/mlb',   teamId:'22'    },
+  union:    { name:'Union',    sport:'MLS', icon:'⚽', color:'#8b6914', path:'soccer/usa.1',   teamId:'10739' },
 };
 const TEAM_ORDER = ['eagles','sixers','flyers','phillies','union'];
 
+function fmtShort(ms) {
+  return new Date(ms).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+function fmtFull(ms) {
+  const d = new Date(ms);
+  return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) +
+         ', ' + d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+}
+
+function parseEvent(ev, teamId) {
+  const comp = ev.competitions?.[0];
+  if (!comp) return null;
+
+  // Find our team among competitors; ESPN uses string IDs
+  const us   = comp.competitors?.find(c => String(c.team?.id) === String(teamId));
+  const them = comp.competitors?.find(c => String(c.team?.id) !== String(teamId));
+  if (!us || !them) return null;
+
+  // Status lives on competitions[0] in the schedule endpoint, and on ev in the scoreboard
+  const status    = comp.status ?? ev.status;
+  const state     = status?.type?.state;           // 'pre' | 'in' | 'post'
+  const completed = !!status?.type?.completed;
+  const detail    = status?.type?.shortDetail || '';
+  const dateMs    = new Date(ev.date).getTime();
+  const isHome    = us.homeAway === 'home';
+  const oppAbbr   = (them.team?.abbreviation || 'OPP').toUpperCase();
+  const parseScore = s => s == null ? 0 : (typeof s === 'object' ? (s.value ?? parseInt(s.displayValue) ?? 0) : (parseInt(s) || 0));
+  const phiScore  = (completed || state === 'in') ? parseScore(us.score)   : null;
+  const oppScore  = (completed || state === 'in') ? parseScore(them.score) : null;
+
+  const featuredStatus =
+    state === 'in'   ? 'live'     :
+    completed        ? 'final'    :
+    state === 'pre'  ? 'upcoming' : 'offseason';
+
+  const note =
+    state === 'in'  ? detail :
+    state === 'pre' ? fmtFull(dateMs) :
+                      detail || 'Final';
+
+  return { featuredStatus, isHome, oppAbbr, phiScore, oppScore, dateMs, note, completed };
+}
+
+async function fetchTeamData(key) {
+  const { path, teamId } = TEAMS[key];
+  const base = `https://site.api.espn.com/apis/site/v2/sports/${path}`;
+
+  // Fetch schedule + today's scoreboard in parallel
+  const [schRes, sbRes] = await Promise.all([
+    espnFetch(`${base}/teams/${teamId}/schedule`).catch(() => null),
+    espnFetch(`${base}/scoreboard`).catch(() => null),
+  ]);
+
+  const now          = Date.now();
+  const sevenDaysAgo = now - 14 * 24 * 60 * 60 * 1000; // 14-day window to be safe
+
+  // ESPN schedule can nest events in different places depending on sport
+  const rawEvents = schRes?.events
+    || schRes?.team?.events
+    || schRes?.schedule?.flatMap(w => w.events || [])
+    || [];
+
+  const schedEvents = rawEvents.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+  const recentGames = [];
+  let lastCompleted = null;
+  let nextGame      = null;
+
+  for (const ev of schedEvents) {
+    const p = parseEvent(ev, teamId);
+    if (!p) continue;
+    if (p.completed) {
+      lastCompleted = p;
+      if (p.dateMs >= sevenDaysAgo && p.dateMs <= now) recentGames.push(p);
+    } else if (p.featuredStatus === 'upcoming' && p.dateMs > now && !nextGame) {
+      nextGame = p;
+    }
+  }
+
+  // ── Scoreboard: look for a live/today game ─────────────────────────────────
+  let liveGame = null;
+  if (sbRes?.events) {
+    for (const ev of sbRes.events) {
+      const p = parseEvent(ev, teamId);
+      if (p) { liveGame = p; if (p.featuredStatus === 'live') break; }
+    }
+  }
+
+  // Priority: live > last completed > next upcoming
+  const featured = liveGame || lastCompleted || nextGame || null;
+  const fs = featured?.featuredStatus || 'offseason';
+
+  return {
+    featuredStatus: fs,
+    featured: featured ? {
+      label:    fs === 'live' ? 'LIVE NOW' : fs === 'final' ? 'LAST GAME' : 'NEXT GAME',
+      oppAbbr:  featured.oppAbbr,
+      phiScore: featured.phiScore,
+      oppScore: featured.oppScore,
+      note:     featured.note,
+    } : null,
+    recentGames: recentGames.slice(-3).reverse().map(g => ({
+      opp: g.oppAbbr, home: g.isHome,
+      phiScore: g.phiScore, oppScore: g.oppScore,
+      date: fmtShort(g.dateMs),
+    })),
+    nextGame: nextGame
+      ? `${nextGame.isHome ? 'vs' : '@'} ${nextGame.oppAbbr} · ${fmtFull(nextGame.dateMs)}`
+      : null,
+    offseasonNote: fs === 'offseason' ? 'No upcoming schedule found' : null,
+  };
+}
+
+// ── Rendering ─────────────────────────────────────────────────────────────────
+
 function showSkeletons() {
-  document.getElementById('cards-container').innerHTML = TEAM_ORDER.map(() =>
-    '<div class="skeleton-card">' +
-      '<div class="skeleton-header">' +
-        '<div class="sk sk-circle"></div>' +
-        '<div style="flex:1;display:flex;flex-direction:column;gap:8px;">' +
-          '<div class="sk sk-line" style="width:60%"></div>' +
-          '<div class="sk sk-line" style="width:35%;height:10px"></div>' +
-        '</div>' +
-      '</div>' +
-      '<div class="sk-body">' +
-        '<div class="sk sk-line" style="height:60px"></div>' +
-        '<div class="sk sk-line" style="height:14px;width:80%"></div>' +
-        '<div class="sk sk-line" style="height:14px;width:65%"></div>' +
-        '<div class="sk sk-line" style="height:14px;width:72%"></div>' +
-      '</div>' +
-    '</div>'
-  ).join('');
+  document.getElementById('cards-container').innerHTML = TEAM_ORDER.map(() => `
+    <div class="skeleton-card">
+      <div class="skeleton-header">
+        <div class="sk sk-circle"></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+          <div class="sk sk-line" style="width:60%"></div>
+          <div class="sk sk-line" style="width:35%;height:10px"></div>
+        </div>
+      </div>
+      <div class="sk-body">
+        <div class="sk sk-line" style="height:60px"></div>
+        <div class="sk sk-line" style="width:80%"></div>
+        <div class="sk sk-line" style="width:65%"></div>
+        <div class="sk sk-line" style="width:72%"></div>
+      </div>
+    </div>`).join('');
 }
 
 function setStatus(state, text) {
-  const dot = document.getElementById('status-dot');
-  dot.className = 'pulse-dot' + (state !== 'ok' ? ' ' + state : '');
+  document.getElementById('status-dot').className = 'pulse-dot' + (state !== 'ok' ? ' '+state : '');
   document.getElementById('update-time').textContent = text;
 }
+function showError(msg) { document.getElementById('error-banner').style.display='block'; document.getElementById('error-banner-inner').textContent='⚠ '+msg; }
+function hideError()    { document.getElementById('error-banner').style.display='none'; }
 
-function showError(msg) {
-  document.getElementById('error-banner').style.display = 'block';
-  document.getElementById('error-banner-inner').textContent = '\u26a0 ' + msg;
-}
-function hideError() {
-  document.getElementById('error-banner').style.display = 'none';
-}
-
-function getWL(p, o) {
-  return p > o ? {cls:'win',char:'W'} : p < o ? {cls:'loss',char:'L'} : {cls:'draw',char:'D'};
+function scoreHtml(score, winner, upcoming) {
+  if (upcoming || score === null) return '<div class="team-score no-score">&ndash;</div>';
+  return `<div class="team-score${winner?' winner':''}">${score}</div>`;
 }
 
-function scoreHtml(score, isWinner, upcoming) {
-  if (upcoming) return '<div class="team-score no-score">&ndash;</div>';
-  var cls = 'team-score' + (isWinner ? ' winner' : '');
-  var val = (score !== null && score !== undefined) ? score : '?';
-  return '<div class="' + cls + '">' + val + '</div>';
-}
+function renderCard(key, data) {
+  const { name, sport, icon, color } = TEAMS[key];
+  const fs = data.featuredStatus || 'offseason';
+  const statusLabel = {live:'● Live',final:'Final',upcoming:'Upcoming',offseason:'Off-Season'}[fs]||'Off-Season';
+  const statusCls   = {live:'status-live',final:'status-final',upcoming:'status-upcoming',offseason:'status-offseason'}[fs]||'status-offseason';
 
-function renderCard(teamKey, data) {
-  var meta = TEAM_META[teamKey];
-  var color = meta.color, icon = meta.icon, name = meta.name, sport = meta.sport;
-
-  var statusLabels = { live:'● Live', final:'Final', upcoming:'Upcoming', offseason:'Off-Season' };
-  var statusClasses = { live:'status-live', final:'status-final', upcoming:'status-upcoming', offseason:'status-offseason' };
-  var fs = data.featuredStatus || 'offseason';
-  var badge = '<span class="card-status ' + (statusClasses[fs]||'status-offseason') + '">' + (statusLabels[fs]||'Off-Season') + '</span>';
-
-  var featuredHtml = '';
+  let featuredHtml;
   if (data.featured && fs !== 'offseason') {
-    var f = data.featured;
-    var upcoming = (fs === 'upcoming');
-    var phiWins = !upcoming && Number(f.phiScore) > Number(f.oppScore);
-    var oppWins = !upcoming && Number(f.oppScore) > Number(f.phiScore);
-    featuredHtml =
-      '<div class="featured-game">' +
-        '<div class="game-label">' + (f.label || '') + '</div>' +
-        '<div class="matchup">' +
-          '<div class="team-side">' +
-            '<div class="team-abv">PHI</div>' +
-            scoreHtml(f.phiScore, phiWins, upcoming) +
-          '</div>' +
-          '<div class="vs-divider">' +
-            '<div class="vs-line"></div>' +
-            '<div class="vs-text">VS</div>' +
-            '<div class="vs-line"></div>' +
-          '</div>' +
-          '<div class="team-side">' +
-            '<div class="team-abv">' + (f.oppAbbr || 'OPP') + '</div>' +
-            scoreHtml(f.oppScore, oppWins, upcoming) +
-          '</div>' +
-        '</div>' +
-        '<div class="game-info-row">' + (f.note || '') + '</div>' +
-      '</div>';
+    const f = data.featured, upcoming = fs === 'upcoming';
+    const phiWins = !upcoming && f.phiScore > f.oppScore;
+    const oppWins = !upcoming && f.oppScore > f.phiScore;
+    featuredHtml = `
+      <div class="featured-game">
+        <div class="game-label">${f.label}</div>
+        <div class="matchup">
+          <div class="team-side"><div class="team-abv">PHI</div>${scoreHtml(f.phiScore,phiWins,upcoming)}</div>
+          <div class="vs-divider"><div class="vs-line"></div><div class="vs-text">VS</div><div class="vs-line"></div></div>
+          <div class="team-side"><div class="team-abv">${f.oppAbbr}</div>${scoreHtml(f.oppScore,oppWins,upcoming)}</div>
+        </div>
+        <div class="game-info-row">${f.note}</div>
+      </div>`;
   } else {
-    featuredHtml =
-      '<div class="featured-game" style="text-align:center;padding:24px 20px;">' +
-        '<div style="font-size:36px;margin-bottom:8px;">🏆</div>' +
-        '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:18px;color:#4b5563;letter-spacing:0.08em;">Season Complete</div>' +
-        (data.offseasonNote ? '<div style="font-size:11px;color:#6b7280;margin-top:6px;font-family:\'DM Mono\',monospace;">' + data.offseasonNote + '</div>' : '') +
-      '</div>';
+    featuredHtml = `
+      <div class="featured-game" style="text-align:center;padding:24px 20px">
+        <div style="font-size:36px;margin-bottom:8px">🏆</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:#4b5563;letter-spacing:.08em">Season Complete</div>
+        ${data.offseasonNote?`<div style="font-size:11px;color:#6b7280;margin-top:6px;font-family:'DM Mono',monospace">${data.offseasonNote}</div>`:''}
+      </div>`;
   }
 
-  var recentHtml = '';
-  if (data.recentGames && data.recentGames.length) {
-    recentHtml = data.recentGames.map(function(g) {
-      var wl = getWL(g.phiScore, g.oppScore);
-      return '<div class="result-row">' +
-        '<div class="result-matchup">' + (g.home ? 'vs' : '@') + ' <span>' + g.opp + '</span></div>' +
-        '<div class="result-score">' + g.phiScore + '&ndash;' + g.oppScore + '</div>' +
-        '<div class="result-wl ' + wl.cls + '">' + wl.char + '</div>' +
-        '<div class="result-date">' + (g.date || '') + '</div>' +
-      '</div>';
-    }).join('');
-  } else {
-    recentHtml = '<div class="no-recent">No games in the past week</div>';
-  }
+  const recentHtml = data.recentGames?.length
+    ? data.recentGames.map(g => {
+        const r = g.phiScore>g.oppScore?{c:'win',l:'W'}:g.phiScore<g.oppScore?{c:'loss',l:'L'}:{c:'draw',l:'D'};
+        return `<div class="result-row">
+          <div class="result-matchup">${g.home?'vs':'@'} <span>${g.opp}</span></div>
+          <div class="result-score">${g.phiScore}&ndash;${g.oppScore}</div>
+          <div class="result-wl ${r.c}">${r.l}</div>
+          <div class="result-date">${g.date}</div>
+        </div>`;
+      }).join('')
+    : '<div class="no-recent">No games in the past week</div>';
 
-  var nextHtml = data.nextGame
-    ? '<div class="next-game-row"><div class="next-game-label">Next &#9654;</div><div class="next-game-info">' + data.nextGame + '</div></div>'
+  const nextHtml = data.nextGame
+    ? `<div class="next-game-row"><div class="next-game-label">Next &#9654;</div><div class="next-game-info">${data.nextGame}</div></div>`
     : '';
 
-  return '<div class="team-card" style="--team-color:' + color + '">' +
-    '<div class="card-header">' +
-      '<div class="team-icon">' + icon + '</div>' +
-      '<div class="team-meta"><div class="team-name">' + name + '</div><div class="team-sport">' + sport + '</div></div>' +
-      badge +
-    '</div>' +
-    featuredHtml +
-    '<div class="recent-results">' +
-      '<div class="results-label">Past Week</div>' +
-      recentHtml +
-      nextHtml +
-    '</div>' +
-  '</div>';
-}
-
-function sortTeams(scores) {
-  var statusRank = { live:0, final:1, upcoming:3, offseason:4 };
-
-  function mostRecentMs(data) {
-    if (!data.recentGames || !data.recentGames.length) return 0;
-    var year = new Date().getFullYear();
-    var dates = data.recentGames
-      .map(function(g) { return new Date(g.date + ' ' + year).getTime(); })
-      .filter(function(t) { return !isNaN(t); });
-    return dates.length ? Math.max.apply(null, dates) : 0;
-  }
-
-  return TEAM_ORDER
-    .map(function(k) { return { key:k, data: scores[k] || { featuredStatus:'offseason', recentGames:[] } }; })
-    .sort(function(a, b) {
-      var ra = statusRank[a.data.featuredStatus] !== undefined ? statusRank[a.data.featuredStatus] : 4;
-      var rb = statusRank[b.data.featuredStatus] !== undefined ? statusRank[b.data.featuredStatus] : 4;
-      if (ra !== rb) return ra - rb;
-      return mostRecentMs(b.data) - mostRecentMs(a.data);
-    });
+  return `
+    <div class="team-card" style="--team-color:${color}">
+      <div class="card-header">
+        <div class="team-icon">${icon}</div>
+        <div class="team-meta"><div class="team-name">${name}</div><div class="team-sport">${sport}</div></div>
+        <span class="card-status ${statusCls}">${statusLabel}</span>
+      </div>
+      ${featuredHtml}
+      <div class="recent-results">
+        <div class="results-label">Past Week</div>
+        ${recentHtml}${nextHtml}
+      </div>
+    </div>`;
 }
 
 async function fetchScores() {
-  var btn = document.getElementById('refresh-btn');
-  btn.disabled = true;
-  btn.classList.add('spinning');
-  hideError();
-  setStatus('loading', 'Fetching live scores\u2026');
-  showSkeletons();
-
-  var today = new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-
-  var prompt = 'Today is ' + today + '. Search the web and return a JSON object with current score data for these 5 Philadelphia sports teams: Eagles (NFL), Phillies (MLB), 76ers (NBA), Flyers (NHL), and Union (MLS).\n\n'
-    + 'Return ONLY valid raw JSON with no markdown, no code fences, no explanation whatsoever. Just the JSON object.\n\n'
-    + 'Top-level structure:\n'
-    + '{ "eagles": <teamData>, "sixers": <teamData>, "flyers": <teamData>, "phillies": <teamData>, "union": <teamData> }\n\n'
-    + 'Each <teamData> object must have exactly these fields:\n'
-    + '{\n'
-    + '  "featuredStatus": one of: "live", "final", "upcoming", "offseason",\n'
-    + '  "featured": {\n'
-    + '    "label": short string like "LIVE NOW" or "LAST GAME" or "TONIGHT",\n'
-    + '    "oppAbbr": the opponent team abbreviation (2-3 letters, never PHI),\n'
-    + '    "phiScore": integer score for Philadelphia (use null only if upcoming/not started),\n'
-    + '    "oppScore": integer score for the opponent (use null only if upcoming/not started),\n'
-    + '    "note": short context string like game time or venue or inning/period\n'
-    + '  },\n'
-    + '  "offseasonNote": string describing last game result if offseason, otherwise null,\n'
-    + '  "recentGames": array of up to 3 completed games from the last 7 days, each: { "opp": string, "home": boolean, "phiScore": integer, "oppScore": integer, "date": "Mon DD" },\n'
-    + '  "nextGame": string like "vs BOS \u00b7 Fri Mar 21, 7:00 PM" or null\n'
-    + '}\n\n'
-    + 'IMPORTANT: phiScore and oppScore in "featured" must BOTH be actual integers for completed or live games. Never return null for a completed game score. If a team is in the offseason, set featured to null.\n'
-    + 'Only include real data you find via web search.';
+  const btn = document.getElementById('refresh-btn');
+  btn.disabled=true; btn.classList.add('spinning');
+  hideError(); setStatus('loading','Fetching live scores…'); showSkeletons();
 
   try {
-    var res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 4096,
-        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages: [{ role: 'user', content: prompt }]
-      })
+    const results = await Promise.allSettled(TEAM_ORDER.map(k => fetchTeamData(k)));
+    const scores  = {};
+    TEAM_ORDER.forEach((k,i) => {
+      scores[k] = results[i].status==='fulfilled'
+        ? results[i].value
+        : { featuredStatus:'offseason', featured:null, recentGames:[], nextGame:null, offseasonNote:'Data unavailable' };
+      if (results[i].status==='rejected') console.warn(k, results[i].reason);
     });
 
-    if (!res.ok) {
-      var e = await res.json().catch(function() { return {}; });
-      throw new Error(e.error && e.error.message ? e.error.message : 'HTTP ' + res.status);
-    }
+    const rank = s => ({live:0,final:1,upcoming:3,offseason:4}[s]??4);
+    const sorted = TEAM_ORDER.map(k=>({key:k,data:scores[k]})).sort((a,b)=>rank(a.data.featuredStatus)-rank(b.data.featuredStatus));
 
-    var data = await res.json();
-    var textBlocks = data.content.filter(function(b) { return b.type === 'text'; });
-    if (!textBlocks.length) throw new Error('No text in API response');
-
-    var scores = null;
-    for (var i = textBlocks.length - 1; i >= 0; i--) {
-      var raw = textBlocks[i].text.trim()
-        .replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/,'').trim();
-      try {
-        scores = JSON.parse(raw);
-        break;
-      } catch(_) {
-        var m = raw.match(/\{[\s\S]*\}/);
-        if (m) {
-          try { scores = JSON.parse(m[0]); break; } catch(_2) {}
-        }
-      }
-    }
-    if (!scores) throw new Error('Could not parse scores JSON \u2014 try refreshing.');
-
-    var sorted = sortTeams(scores);
-    document.getElementById('cards-container').innerHTML = sorted.map(function(item) {
-      return renderCard(item.key, item.data);
-    }).join('');
-
-    var t = new Date().toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
-    setStatus('ok', 'Updated ' + t);
-    document.getElementById('footer-text').textContent = 'Live data via web search \u00b7 Last updated ' + t + ' \u00b7 Philadelphia Sports HQ';
-
+    document.getElementById('cards-container').innerHTML = sorted.map(({key,data})=>renderCard(key,data)).join('');
+    const t = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    setStatus('ok','Updated '+t);
+    document.getElementById('footer-text').textContent = `Live data via ESPN · Last updated ${t} · Philadelphia Sports HQ`;
   } catch(err) {
     console.error(err);
-    setStatus('error', 'Update failed');
-    showError('Could not fetch live scores: ' + err.message);
-    document.getElementById('cards-container').innerHTML = '';
+    setStatus('error','Update failed');
+    showError('Could not fetch scores: '+err.message);
   } finally {
-    btn.disabled = false;
-    btn.classList.remove('spinning');
+    btn.disabled=false; btn.classList.remove('spinning');
   }
 }
 
-// Auto-refresh every 5 minutes
-setInterval(fetchScores, 5 * 60 * 1000);
+setInterval(fetchScores, 5*60*1000);
 fetchScores();
 </script>
 </body>
