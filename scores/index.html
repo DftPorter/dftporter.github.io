@@ -201,6 +201,7 @@ async function fetchTeamData(key) {
   // If it's the offseason, don't show the last game — show Season Complete instead
   const featured = isOffseason ? null : (liveGame || lastCompleted || nextGame || null);
   const fs = isOffseason ? 'offseason' : (featured?.featuredStatus || 'offseason');
+  const record = schRes?.team?.recordSummary || null;
 
   return {
     featuredStatus: fs,
@@ -210,6 +211,7 @@ async function fetchTeamData(key) {
       phiScore: featured.phiScore,
       oppScore: featured.oppScore,
       note:     featured.note,
+      record:   (fs === 'live' || fs === 'final') ? record : null,
     } : null,
     recentGames: recentGames.slice(-3).reverse().map(g => ({
       opp: g.oppAbbr, home: g.isHome,
@@ -276,6 +278,7 @@ function renderCard(key, data) {
           <div class="team-side"><div class="team-abv">${f.oppAbbr}</div>${scoreHtml(f.oppScore,oppWins,upcoming)}</div>
         </div>
         <div class="game-info-row">${f.note}</div>
+        ${f.record ? `<div style="text-align:center;margin-top:8px;font-family:'DM Mono',monospace;font-size:11px;color:#6b7280;letter-spacing:.1em;">${f.record}</div>` : ''}
       </div>`;
   } else {
     featuredHtml = `
