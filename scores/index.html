@@ -168,6 +168,9 @@ async function fetchTeamData(key) {
   const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
 
   // Schedule events
+  // seasonType 4 = Off Season (ESPN standard across all sports)
+  const isOffseason = schRes?.season?.type === 4;
+
   const rawEvents   = schRes?.events || schRes?.team?.events || [];
   const schedEvents = [...rawEvents].sort((a,b) => new Date(a.date) - new Date(b.date));
 
@@ -195,8 +198,9 @@ async function fetchTeamData(key) {
     }
   }
 
-  const featured = liveGame || lastCompleted || nextGame || null;
-  const fs = featured?.featuredStatus || 'offseason';
+  // If it's the offseason, don't show the last game — show Season Complete instead
+  const featured = isOffseason ? null : (liveGame || lastCompleted || nextGame || null);
+  const fs = isOffseason ? 'offseason' : (featured?.featuredStatus || 'offseason');
 
   return {
     featuredStatus: fs,
@@ -215,7 +219,7 @@ async function fetchTeamData(key) {
     nextGame: nextGame
       ? `${nextGame.isHome ? 'vs' : '@'} ${nextGame.oppAbbr} · ${fmtFull(nextGame.dateMs)}`
       : null,
-    offseasonNote: fs === 'offseason' ? 'No upcoming schedule found' : null,
+    offseasonNote: fs === 'offseason' ? (isOffseason ? 'Season has ended' : 'No upcoming schedule found') : null,
   };
 }
 
