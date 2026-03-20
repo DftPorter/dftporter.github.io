@@ -205,8 +205,10 @@ async function fetchTeamData(key) {
     }
   }
 
-  // If offseason, show Season Complete instead of last game
-  const featured = isOffseason ? null : (liveGame || lastCompleted || nextGame || null);
+  // Only use liveGame for truly in-progress games (scoreboard lacks record data)
+  // For completed games always use lastCompleted from schedule (which has records)
+  const activeLive = liveGame?.featuredStatus === 'live' ? liveGame : null;
+  const featured = isOffseason ? null : (activeLive || lastCompleted || nextGame || null);
   const fs = isOffseason ? 'offseason' : (featured?.featuredStatus || 'offseason');
   const showRecords = fs === 'live' || fs === 'final';
 
