@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Philly Sports HQ</title>
+<title>Tim's Philly Sports HQ</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔔</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;900&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -360,7 +360,7 @@ async function fetchScores() {
     document.getElementById('cards-container').innerHTML = sorted.map(({key,data}) => renderCard(key,data)).join('');
     const t = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     setStatus('ok', 'Updated ' + t);
-    document.getElementById('footer-text').textContent = `Live data via ESPN · Last updated ${t} · Philadelphia Sports HQ`;
+    document.getElementById('footer-text').textContent = `Live data via ESPN · Last updated ${t} · Philadelphia Sports HQ · porter.allen@gmail.com`;
   } catch(err) {
     console.error(err);
     setStatus('error','Update failed');
