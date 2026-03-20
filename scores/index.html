@@ -141,6 +141,9 @@ function parseEvent(ev, teamId) {
   const oppAbbr   = (them.team?.abbreviation || 'OPP').toUpperCase();
   const phiScore  = (completed || state === 'in') ? parseScore(us.score)   : null;
   const oppScore  = (completed || state === 'in') ? parseScore(them.score) : null;
+  const getRecord = c => c.records?.find(r => r.type === 'total')?.displayValue || null;
+  const phiRecord = getRecord(us);
+  const oppRecord = getRecord(them);
 
   const featuredStatus =
     state === 'in'  ? 'live'     :
@@ -152,7 +155,7 @@ function parseEvent(ev, teamId) {
     state === 'pre' ? fmtFull(dateMs) :
                       detail || 'Final';
 
-  return { featuredStatus, isHome, oppAbbr, phiScore, oppScore, dateMs, note, completed };
+  return { featuredStatus, isHome, oppAbbr, phiScore, oppScore, phiRecord, oppRecord, dateMs, note, completed };
 }
 
 async function fetchTeamData(key) {
@@ -273,12 +276,19 @@ function renderCard(key, data) {
       <div class="featured-game">
         <div class="game-label">${f.label}</div>
         <div class="matchup">
-          <div class="team-side"><div class="team-abv">PHI</div>${scoreHtml(f.phiScore,phiWins,upcoming)}</div>
+          <div class="team-side">
+            <div class="team-abv">PHI</div>
+            ${scoreHtml(f.phiScore,phiWins,upcoming)}
+            ${f.phiRecord ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:#6b7280;letter-spacing:.08em;margin-top:4px">${f.phiRecord}</div>` : ''}
+          </div>
           <div class="vs-divider"><div class="vs-line"></div><div class="vs-text">VS</div><div class="vs-line"></div></div>
-          <div class="team-side"><div class="team-abv">${f.oppAbbr}</div>${scoreHtml(f.oppScore,oppWins,upcoming)}</div>
+          <div class="team-side">
+            <div class="team-abv">${f.oppAbbr}</div>
+            ${scoreHtml(f.oppScore,oppWins,upcoming)}
+            ${f.oppRecord ? `<div style="font-family:'DM Mono',monospace;font-size:10px;color:#6b7280;letter-spacing:.08em;margin-top:4px">${f.oppRecord}</div>` : ''}
+          </div>
         </div>
         <div class="game-info-row">${f.note}</div>
-        ${f.record ? `<div style="text-align:center;margin-top:8px;font-family:'DM Mono',monospace;font-size:11px;color:#6b7280;letter-spacing:.1em;">${f.record}</div>` : ''}
       </div>`;
   } else {
     featuredHtml = `
