@@ -146,7 +146,7 @@ function parseEvent(ev, teamId) {
   const oppScore  = (completed || state === 'in') ? parseScore(them.score) : null;
 
   // Records from competitor data (type 'total' = overall W-L record)
-  const getRecord = c => c.record?.find(r => r.type === 'total')?.displayValue || null;
+  const getRecord = c => (c.record?.find(r => r.type === 'total') || c.record?.find(r => r.type === 'ytd') || c.record?.[0])?.displayValue || null;
   const phiRecord = getRecord(us);
   const oppRecord = getRecord(them);
 
