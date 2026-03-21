@@ -17,19 +17,35 @@
 <style>
   :root{--bg:#060810;--surface:#0d1117;--border:rgba(255,255,255,0.06);--text:#e8eaf0;--muted:#6b7280;}
   @media(prefers-color-scheme:light){
-    :root{--bg:#f0f2f5;--surface:#ffffff;--border:rgba(0,0,0,0.08);--text:#111827;--muted:#6b7280;}
-    .header-left h1{background:linear-gradient(135deg,#111 40%,#555);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-    .sk{background:linear-gradient(90deg,#e5e7eb 25%,#f3f4f6 50%,#e5e7eb 75%);background-size:200% 100%;}
+    :root{--bg:#e8edf2;--surface:#ffffff;--border:rgba(0,0,0,0.10);--text:#111827;--muted:#6b7280;}
+    body::before{opacity:.012;}
+    .header-left h1{background:linear-gradient(135deg,#111827 40%,#374151);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .header-left p{color:#4b5563;}
+    #update-time{color:#111827;}
+    .live-badge{color:#4b5563;}
+    .refresh-btn{background:rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.12);color:#374151;}
+    .refresh-btn:hover:not(:disabled){background:rgba(0,0,0,0.12);color:#111827;}
+    .sk{background:linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%);background-size:200% 100%;}
+    .team-name{color:#111827;}
+    .team-sport{color:#6b7280;}
+    .team-abv{color:#374151;}
     .team-score{color:#111827;}
+    .team-score.no-score{color:#9ca3af;}
+    .team-record{color:#9ca3af;}
     .vs-text{color:#9ca3af;}
-    .result-matchup{color:#6b7280;}
+    .vs-line{background:rgba(0,0,0,0.1);}
+    .game-label{color:#6b7280;}
+    .game-info-row{color:#6b7280;}
+    .results-label{color:#6b7280;}
+    .result-matchup{color:#4b5563;}
     .result-matchup span{color:#111827;}
     .result-score{color:#111827;}
+    .result-date{color:#9ca3af;}
+    .next-game-row{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);}
+    .next-game-info{color:#374151;}
+    .no-recent{color:#9ca3af;}
     .status-final{background:rgba(0,0,0,0.05);color:#6b7280;border:1px solid rgba(0,0,0,0.1);}
-    .refresh-btn{background:rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.1);color:#6b7280;}
-    .refresh-btn:hover:not(:disabled){background:rgba(0,0,0,0.1);color:#111827;border-color:rgba(0,0,0,0.2);}
-    .next-game-row{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);}
-    body::before{opacity:.015;}
+    .status-offseason{background:rgba(0,0,0,0.05);color:#9ca3af;border:1px solid rgba(0,0,0,0.08);}
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   body{background:var(--bg);color:var(--text);font-family:'Barlow Condensed',sans-serif;min-height:100vh;overflow-x:hidden;}
