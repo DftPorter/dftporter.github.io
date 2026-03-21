@@ -416,9 +416,11 @@ function setStatus(state,text){
 function showError(msg){ document.getElementById('error-banner').style.display='block'; document.getElementById('error-banner-inner').textContent='⚠ '+msg; }
 function hideError()   { document.getElementById('error-banner').style.display='none'; }
 
-function scoreHtml(score, winner, upcoming){
+function scoreHtml(score, winner, upcoming, isPhi){
   if(upcoming||score===null) return '<div class="team-score no-score">&ndash;</div>';
-  return `<div class="team-score${winner?' winner':''}">${score}</div>`;
+  if(winner && isPhi)  return `<div class="team-score winner">${score}</div>`;
+  if(winner && !isPhi) return `<div class="team-score opp-winning">${score}</div>`;
+  return `<div class="team-score">${score}</div>`;
 }
 
 function renderCard(key, data){
@@ -439,13 +441,13 @@ function renderCard(key, data){
         <div class="matchup">
           <div class="team-side">
             <div class="team-abv">PHI</div>
-            ${scoreHtml(f.phiScore,phiWins,upcoming)}
+            ${scoreHtml(f.phiScore,phiWins,upcoming,true)}
             ${f.phiRecord?`<div class="team-record">${f.phiRecord}</div>`:''}
           </div>
           <div class="vs-divider"><div class="vs-line"></div><div class="vs-text">VS</div><div class="vs-line"></div></div>
           <div class="team-side">
             <div class="team-abv">${f.oppAbbr}</div>
-            ${scoreHtml(f.oppScore,oppWins,upcoming)}
+            ${scoreHtml(f.oppScore,oppWins,upcoming,false)}
             ${f.oppRecord?`<div class="team-record">${f.oppRecord}</div>`:''}
           </div>
         </div>
