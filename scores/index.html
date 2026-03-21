@@ -227,8 +227,7 @@ async function fetchTeamData(key) {
 
   const sbRes = await espnFetch(`${base}/scoreboard`).catch(() => null);
 
-  const now          = Date.now();
-  const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
 
   // seasonType 4 = Off Season. Soccer nests the type differently.
   const seasonType = schRes?.season?.type;
@@ -246,7 +245,7 @@ async function fetchTeamData(key) {
     if (!p) continue;
     if (p.completed) {
       lastCompleted = p;
-      if (p.dateMs >= sevenDaysAgo && p.dateMs <= now) recentGames.push(p);
+      recentGames.push(p); // collect all completed, we'll slice later
     } else if (p.featuredStatus === 'upcoming' && p.dateMs > now && !nextGame) {
       nextGame = p;
     }
@@ -305,7 +304,7 @@ async function fetchTeamData(key) {
     } : null,
     streak:    isOffseason ? null : streak,
     standing:  isOffseason ? null : standing,
-    recentGames: recentGames.filter(g => g.dateMs !== (featured?.dateMs || -1)).slice(-3).reverse().map(g => ({
+    recentGames: isOffseason ? [] : recentGames.filter(g => g.dateMs !== (featured?.dateMs || -1)).slice(-3).reverse().map(g => ({
       opp: g.oppAbbr, home: g.isHome,
       phiScore: g.phiScore, oppScore: g.oppScore,
       date: fmtShort(g.dateMs),
@@ -423,7 +422,7 @@ function renderCard(key, data) {
       </div>
       ${featuredHtml}
       <div class="recent-results">
-        <div class="results-label">Past Week</div>
+        <div class="results-label">Recent Games</div>
         ${recentHtml}${nextHtml}
       </div>
     </div>`;
