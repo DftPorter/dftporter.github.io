@@ -210,13 +210,17 @@ async function fetchTeamData(key) {
   // date range instead and filter for the Union's games ourselves
   let schRes = null;
   if (isSoccer) {
-    const d = await espnFetch(`${base}/scoreboard?dates=20260101-20261231&limit=300`).catch(() => null);
-    if (d?.events) {
-      // Fake the same shape as a normal schedule response
+    // Soccer schedule only returns ~4 events; fetch scoreboard for events
+    // but still fetch the schedule endpoint for team info (standing, record)
+    const [sbBoard, teamInfo] = await Promise.all([
+      espnFetch(`${base}/scoreboard?dates=20260101-20261231&limit=300`).catch(() => null),
+      espnFetch(`${base}/teams/${teamId}/schedule`).catch(() => null),
+    ]);
+    if (sbBoard?.events) {
       schRes = {
-        season: d.leagues?.[0]?.season || { type: 2 },
-        team: { id: teamId },
-        events: d.events.filter(e =>
+        season: teamInfo?.season || sbBoard.leagues?.[0]?.season || { type: 2 },
+        team: teamInfo?.team || { id: teamId },
+        events: sbBoard.events.filter(e =>
           e.competitions?.[0]?.competitors?.some(c => String(c.team?.id) === String(teamId))
         ),
       };
