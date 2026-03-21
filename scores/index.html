@@ -84,6 +84,8 @@
   .next-game-label{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:#fbbf24;font-family:'DM Mono',monospace;flex-shrink:0;padding-top:1px;}
   .next-game-info{font-size:12px;color:#d1d5db;letter-spacing:.02em;}
   .no-recent{padding:10px 0;font-size:12px;color:#4b5563;font-family:'DM Mono',monospace;text-align:center;}
+  @keyframes scoreFlash{0%{box-shadow:0 0 0 0 rgba(255,255,255,0);}20%{box-shadow:0 0 24px 6px rgba(255,215,0,0.5);}100%{box-shadow:0 0 0 0 rgba(255,215,0,0);}}
+  .score-changed{animation:scoreFlash 1.5s ease-out;}
   #error-banner{display:none;position:relative;z-index:10;margin:16px auto 0;max-width:1400px;padding:0 20px;}
   #error-banner-inner{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);border-radius:10px;padding:14px 18px;font-family:'DM Mono',monospace;font-size:12px;color:#fca5a5;letter-spacing:.04em;}
   footer{position:relative;z-index:10;text-align:center;padding:20px;font-family:'DM Mono',monospace;font-size:11px;color:#374151;letter-spacing:.08em;border-top:1px solid var(--border);}
@@ -436,10 +438,28 @@ async function fetchScores() {
       });
 
     document.getElementById('cards-container').innerHTML = sorted.map(({key,data}) => renderCard(key,data)).join('');
+
+    // Flash any card whose score changed since last refresh
+    TEAM_ORDER.forEach(k => {
+      const curr = scores[k]?.featured;
+      const prev = prevScores[k]?.featured;
+      if (curr && prev &&
+          (curr.phiScore !== prev.phiScore || curr.oppScore !== prev.oppScore)) {
+        const cards = document.querySelectorAll('.team-card');
+        cards.forEach(card => {
+          if (card.querySelector('.team-name')?.textContent === TEAMS[k].name) {
+            card.classList.remove('score-changed');
+            void card.offsetWidth; // force reflow to restart animation
+            card.classList.add('score-changed');
+          }
+        });
+      }
+    });
+    prevScores = scores;
     const t = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     setStatus('ok', 'Updated ' + t);
     document.getElementById('footer-text').textContent = `Live data via ESPN · Last updated ${t} · porter.allen@gmail.com · Built with Claude.ai`;
-    startCountdown();
+    scheduleNextRefresh(scores);
   } catch(err) {
     console.error(err);
     setStatus('error','Update failed');
@@ -451,9 +471,25 @@ async function fetchScores() {
 
 let countdownSeconds = 300;
 let countdownInterval = null;
+let refreshInterval = null;
+let prevScores = {}; // track previous scores to detect changes
 
-function startCountdown() {
-  countdownSeconds = 300;
+function getRefreshInterval(scores) {
+  const vals = Object.values(scores);
+  if (vals.some(s => s.featuredStatus === 'live'))     return 30;       // live game → 30s
+  // Game today but not started yet?
+  const todayMs = new Date().setHours(0,0,0,0);
+  const todayEnd = todayMs + 86400000;
+  const gameToday = vals.some(s =>
+    s.featuredStatus === 'upcoming' &&
+    s.featuredDateMs >= todayMs && s.featuredDateMs < todayEnd
+  );
+  if (gameToday) return 300;   // game later today → 5 min
+  return 1800;                 // nothing today → 30 min
+}
+
+function startCountdown(seconds) {
+  countdownSeconds = seconds;
   clearInterval(countdownInterval);
   countdownInterval = setInterval(() => {
     countdownSeconds--;
@@ -464,7 +500,13 @@ function startCountdown() {
   }, 1000);
 }
 
-setInterval(fetchScores, 5 * 60 * 1000);
+function scheduleNextRefresh(scores) {
+  clearInterval(refreshInterval);
+  const secs = getRefreshInterval(scores);
+  startCountdown(secs);
+  refreshInterval = setTimeout(fetchScores, secs * 1000);
+}
+
 fetchScores();
 </script>
 </body>
