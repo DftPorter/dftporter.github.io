@@ -277,8 +277,8 @@ async function fetchTeamData(key) {
       phiRecord: showRecords ? (featured.phiRecord || null) : null,
       oppRecord: showRecords ? (featured.oppRecord || null) : null,
     } : null,
-    streak,
-    standing,
+    streak:    isOffseason ? null : streak,
+    standing:  isOffseason ? null : standing,
     recentGames: recentGames.filter(g => g.dateMs !== (featured?.dateMs || -1)).slice(-3).reverse().map(g => ({
       opp: g.oppAbbr, home: g.isHome,
       phiScore: g.phiScore, oppScore: g.oppScore,
