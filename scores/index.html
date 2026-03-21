@@ -387,7 +387,8 @@ function renderCard(key, data) {
         <div class="team-icon">${icon}</div>
         <div class="team-meta">
           <div class="team-name">${name}</div>
-          <div class="team-sport">${sport}${data.standing ? ` · <span style="color:#9ca3af;font-size:10px;text-transform:none;letter-spacing:.04em">${data.standing}</span>` : ''}</div>
+          <div class="team-sport">${sport}</div>
+          ${data.standing ? `<div class="team-sport" style="margin-top:2px">${data.standing}</div>` : ''}
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
           <span class="card-status ${statusCls}">${statusLabel}</span>
