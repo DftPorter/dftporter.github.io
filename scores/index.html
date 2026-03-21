@@ -54,6 +54,10 @@
   .team-score.winner{color:var(--team-color);}
   .team-score.no-score{font-size:28px;color:#4b5563;}
   .team-record{font-family:'DM Mono',monospace;font-size:10px;color:#6b7280;letter-spacing:.08em;margin-top:4px;}
+  .streak{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;padding:2px 7px;border-radius:100px;letter-spacing:.08em;font-weight:500;}
+  .streak-w{background:rgba(74,222,128,.15);color:#4ade80;border:1px solid rgba(74,222,128,.3);}
+  .streak-l{background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3);}
+  .streak-d{background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.3);}
   .vs-divider{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;}
   .vs-text{font-family:'DM Mono',monospace;font-size:11px;color:#374151;letter-spacing:.1em;}
   .vs-line{width:1px;height:20px;background:var(--border);}
@@ -155,6 +159,9 @@ function parseEvent(ev, teamId) {
   const phiRecord = getRecord(us);
   const oppRecord = getRecord(them);
 
+  // Venue
+  const venue = comp.venue ? `${comp.venue.fullName}, ${comp.venue.address?.city}` : null;
+
   const featuredStatus =
     state === 'in'  ? 'live'     :
     completed       ? 'final'    :
@@ -165,7 +172,7 @@ function parseEvent(ev, teamId) {
     state === 'pre' ? fmtFull(dateMs) :
                       detail || 'Final';
 
-  return { featuredStatus, isHome, oppAbbr, phiScore, oppScore, phiRecord, oppRecord, dateMs, note, completed };
+  return { featuredStatus, isHome, oppAbbr, phiScore, oppScore, phiRecord, oppRecord, venue, dateMs, note, completed };
 }
 
 async function fetchTeamData(key) {
@@ -235,6 +242,29 @@ async function fetchTeamData(key) {
   const fs = isOffseason ? 'offseason' : (featured?.featuredStatus || 'offseason');
   const showRecords = fs === 'live' || fs === 'final';
 
+  // Calculate streak from all completed games (newest first)
+  const allCompleted = [...schedEvents].reverse().filter(ev => {
+    const p = parseEvent(ev, teamId);
+    return p?.completed;
+  });
+  let streak = null;
+  if (allCompleted.length > 0) {
+    const outcomes = allCompleted.map(ev => {
+      const p = parseEvent(ev, teamId);
+      return p.phiScore > p.oppScore ? 'W' : p.phiScore < p.oppScore ? 'L' : 'D';
+    });
+    let count = 1;
+    for (let i = 1; i < outcomes.length; i++) {
+      if (outcomes[i] === outcomes[0]) count++;
+      else break;
+    }
+    streak = `${outcomes[0]}${count}`;
+  }
+
+  // Standing and venue from ESPN team data
+  const standing = schRes?.team?.standingSummary || null;
+  const venue = featured?.venue || null;
+
   return {
     featuredStatus: fs,
     featured: featured ? {
@@ -243,9 +273,12 @@ async function fetchTeamData(key) {
       phiScore:  featured.phiScore,
       oppScore:  featured.oppScore,
       note:      featured.note,
+      venue:     venue,
       phiRecord: showRecords ? (featured.phiRecord || null) : null,
       oppRecord: showRecords ? (featured.oppRecord || null) : null,
     } : null,
+    streak,
+    standing,
     recentGames: recentGames.filter(g => g.dateMs !== (featured?.dateMs || -1)).slice(-3).reverse().map(g => ({
       opp: g.oppAbbr, home: g.isHome,
       phiScore: g.phiScore, oppScore: g.oppScore,
@@ -319,7 +352,7 @@ function renderCard(key, data) {
             ${f.oppRecord ? `<div class="team-record">${f.oppRecord}</div>` : ''}
           </div>
         </div>
-        <div class="game-info-row">${f.note}</div>
+        <div class="game-info-row">${f.note}${f.venue ? ` · ${f.venue}` : ''}</div>
       </div>`;
   } else {
     featuredHtml = `
@@ -346,12 +379,20 @@ function renderCard(key, data) {
     ? `<div class="next-game-row"><div class="next-game-label">Next &#9654;</div><div class="next-game-info">${data.nextGame}</div></div>`
     : '';
 
+  const streakCls = data.streak?.startsWith('W') ? 'streak-w' : data.streak?.startsWith('L') ? 'streak-l' : 'streak-d';
+
   return `
     <div class="team-card" style="--team-color:${color}">
       <div class="card-header">
         <div class="team-icon">${icon}</div>
-        <div class="team-meta"><div class="team-name">${name}</div><div class="team-sport">${sport}</div></div>
-        <span class="card-status ${statusCls}">${statusLabel}</span>
+        <div class="team-meta">
+          <div class="team-name">${name}</div>
+          <div class="team-sport">${sport}${data.standing ? ` · <span style="color:#9ca3af;font-size:10px;text-transform:none;letter-spacing:.04em">${data.standing}</span>` : ''}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          <span class="card-status ${statusCls}">${statusLabel}</span>
+          ${data.streak ? `<span class="streak ${streakCls}">${data.streak}</span>` : ''}
+        </div>
       </div>
       ${featuredHtml}
       <div class="recent-results">
