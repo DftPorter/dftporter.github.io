@@ -167,17 +167,35 @@ function parseEvent(ev, teamId) {
 async function fetchTeamData(key) {
   const { path, teamId } = TEAMS[key];
   const base = `https://site.api.espn.com/apis/site/v2/sports/${path}`;
+  const isSoccer = path.startsWith('soccer');
 
-  const [schRes, sbRes] = await Promise.all([
-    espnFetch(`${base}/teams/${teamId}/schedule`).catch(() => null),
-    espnFetch(`${base}/scoreboard`).catch(() => null),
-  ]);
+  // Soccer schedule endpoint only returns ~4 events; use the scoreboard with a wide
+  // date range instead and filter for the Union's games ourselves
+  let schRes = null;
+  if (isSoccer) {
+    const d = await espnFetch(`${base}/scoreboard?dates=20260101-20261231&limit=300`).catch(() => null);
+    if (d?.events) {
+      // Fake the same shape as a normal schedule response
+      schRes = {
+        season: d.leagues?.[0]?.season || { type: 2 },
+        team: { id: teamId },
+        events: d.events.filter(e =>
+          e.competitions?.[0]?.competitors?.some(c => String(c.team?.id) === String(teamId))
+        ),
+      };
+    }
+  } else {
+    schRes = await espnFetch(`${base}/teams/${teamId}/schedule`).catch(() => null);
+  }
+
+  const sbRes = await espnFetch(`${base}/scoreboard`).catch(() => null);
 
   const now          = Date.now();
   const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
 
-  // seasonType 4 = Off Season
-  const isOffseason = schRes?.season?.type === 4;
+  // seasonType 4 = Off Season. Soccer nests the type differently.
+  const seasonType = schRes?.season?.type;
+  const isOffseason = (typeof seasonType === 'object' ? seasonType?.type : seasonType) === 4;
 
   const rawEvents   = schRes?.events || schRes?.team?.events || [];
   const schedEvents = [...rawEvents].sort((a,b) => new Date(a.date) - new Date(b.date));
