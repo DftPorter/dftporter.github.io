@@ -89,6 +89,10 @@
       <span class="pulse-dot" id="status-dot"></span>
       <span id="update-time">Fetching scores…</span>
     </div>
+    <div class="live-badge">
+      <span style="color:#4b5563">Next refresh in</span>
+      <span id="countdown" style="color:#d1d5db;font-family:'DM Mono',monospace;font-size:12px;">5:00</span>
+    </div>
     <button class="refresh-btn" id="refresh-btn" onclick="fetchScores()">
       <span class="spin">&#8635;</span> Refresh
     </button>
@@ -385,6 +389,7 @@ async function fetchScores() {
     const t = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     setStatus('ok', 'Updated ' + t);
     document.getElementById('footer-text').textContent = `Live data via ESPN · Last updated ${t} · porter.allen@gmail.com · Built with Claude.ai`;
+    startCountdown();
   } catch(err) {
     console.error(err);
     setStatus('error','Update failed');
@@ -392,6 +397,21 @@ async function fetchScores() {
   } finally {
     btn.disabled = false; btn.classList.remove('spinning');
   }
+}
+
+let countdownSeconds = 300;
+let countdownInterval = null;
+
+function startCountdown() {
+  countdownSeconds = 300;
+  clearInterval(countdownInterval);
+  countdownInterval = setInterval(() => {
+    countdownSeconds--;
+    if (countdownSeconds < 0) countdownSeconds = 0;
+    const m = Math.floor(countdownSeconds / 60);
+    const s = String(countdownSeconds % 60).padStart(2, '0');
+    document.getElementById('countdown').textContent = `${m}:${s}`;
+  }, 1000);
 }
 
 setInterval(fetchScores, 5 * 60 * 1000);
