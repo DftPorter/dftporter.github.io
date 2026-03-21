@@ -22,8 +22,9 @@
     body{color:#111827;}
     .header-left h1{background:linear-gradient(135deg,#111827 40%,#374151) !important;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent !important;background-clip:text !important;}
     .header-left p,.live-badge{color:#4b5563;}
-    #update-time{color:#111827;}
-    .refresh-btn{background:rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.12);color:#374151;}
+    .refresh-label{color:#6b7280 !important;}
+    #countdown{color:#111827 !important;}
+    .refresh-btn{background:rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.12);color:#111827;}
     .refresh-btn:hover:not(:disabled){background:rgba(0,0,0,0.12);color:#111827;}
     .sk{background:linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%) !important;background-size:200% 100%;}
     .team-name{color:#111827 !important;}
@@ -58,13 +59,15 @@
   .header-left h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,5vw,52px);letter-spacing:.05em;line-height:1;background:linear-gradient(135deg,#fff 40%,#aaa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
   .header-left p{font-size:13px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:4px;}
   .header-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
-  .live-badge{display:flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-family:'DM Mono',monospace;}
+  .live-badge{display:flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;font-family:'DM Mono',monospace;}
+  #update-time{color:#e5e7eb;}
+  #countdown{color:#e5e7eb;}
   .pulse-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 2s ease-in-out infinite;flex-shrink:0;}
   .pulse-dot.loading{background:#fbbf24;}.pulse-dot.error{background:#f87171;animation:none;}
   @keyframes pulse{0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(34,197,94,.4);}50%{opacity:.8;transform:scale(1.1);box-shadow:0 0 0 6px rgba(34,197,94,0);}}
   #update-time{color:#d1d5db;}
-  .refresh-btn{background:rgba(255,255,255,.05);border:1px solid var(--border);color:#9ca3af;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:8px 16px;border-radius:8px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;}
-  .refresh-btn:hover:not(:disabled){background:rgba(255,255,255,.1);color:#e5e7eb;border-color:rgba(255,255,255,.15);}
+  .refresh-btn{background:rgba(255,255,255,.05);border:1px solid var(--border);color:#d1d5db;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:8px 16px;border-radius:8px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;}
+  .refresh-btn:hover:not(:disabled){background:rgba(255,255,255,.1);color:#f9fafb;border-color:rgba(255,255,255,.15);}
   .refresh-btn:disabled{opacity:.4;cursor:not-allowed;}
   .refresh-btn.spinning .spin{animation:spin 1s linear infinite;display:inline-block;}
   @keyframes spin{to{transform:rotate(360deg);}}
@@ -139,8 +142,8 @@
       <span id="update-time">Fetching scores…</span>
     </div>
     <div class="live-badge">
-      <span style="color:#4b5563">Next refresh in</span>
-      <span id="countdown" style="color:#d1d5db;font-family:'DM Mono',monospace;font-size:12px;">5:00</span>
+      <span style="color:#9ca3af" class="refresh-label">Next refresh in</span>
+      <span id="countdown" style="color:#e5e7eb;font-family:'DM Mono',monospace;font-size:12px;">5:00</span>
     </div>
     <button class="refresh-btn" id="refresh-btn" onclick="fetchScores()">
       <span class="spin">&#8635;</span> Refresh
