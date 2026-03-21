@@ -15,6 +15,12 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔔</text></svg>">
 
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;900&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+  // Apply saved color scheme before page renders to avoid flash
+  const saved = localStorage.getItem('colorScheme') || 'device';
+  if (saved === 'dark')  document.documentElement.setAttribute('data-theme', 'dark');
+  if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+</script>
 <style>
   :root{--bg:#060810;--surface:#0d1117;--border:rgba(255,255,255,0.06);--text:#e8eaf0;--muted:#6b7280;}
   *{margin:0;padding:0;box-sizing:border-box;}
@@ -93,42 +99,85 @@
   footer{position:relative;z-index:10;text-align:center;padding:20px;font-family:'DM Mono',monospace;font-size:11px;color:#374151;letter-spacing:.08em;border-top:1px solid var(--border);}
   @media(max-width:480px){main{padding:16px 12px 32px;gap:14px;}header{padding:20px 16px;}}
 
-  /* ── Light mode ── */
+  /* ── Light mode (device preference OR manual override) ── */
   @media(prefers-color-scheme:light){
-    :root{--bg:#e8edf2;--surface:#ffffff;--border:rgba(0,0,0,0.10);--text:#111827;--muted:#4b5563;}
-    body{color:#111827;}
-    body::before{opacity:.012;}
-    .header-left h1{background:linear-gradient(135deg,#111827 40%,#374151) !important;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent !important;background-clip:text !important;}
-    .header-left p,.live-badge{color:#4b5563 !important;}
-    #update-time,#countdown{color:#111827 !important;}
-    .refresh-label{color:#6b7280 !important;}
-    .refresh-btn{background:rgba(0,0,0,0.06) !important;border:1px solid rgba(0,0,0,0.12) !important;color:#111827 !important;}
-    .refresh-btn:hover:not(:disabled){background:rgba(0,0,0,0.12) !important;color:#111827 !important;}
-    .sk{background:linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%) !important;background-size:200% 100%;}
-    .team-name{color:#111827 !important;}
-    .team-sport{color:#4b5563 !important;}
-    .team-abv{color:#374151 !important;}
-    .team-score{color:#111827 !important;}
-    .team-score.winner{color:var(--team-color) !important;}
-    .team-score.no-score{color:#9ca3af !important;}
-    .team-record{color:#6b7280 !important;}
-    .vs-text{color:#9ca3af !important;}
-    .vs-line{background:rgba(0,0,0,0.1) !important;}
-    .game-label{color:#6b7280 !important;}
-    .game-info-row{color:#4b5563 !important;}
-    .results-label{color:#6b7280 !important;}
-    .result-matchup{color:#374151 !important;}
-    .result-matchup span{color:#111827 !important;}
-    .result-score{color:#111827 !important;}
-    .result-date{color:#9ca3af !important;}
-    .next-game-row{background:rgba(251,191,36,.1) !important;border:1px solid rgba(251,191,36,.3) !important;}
-    .next-game-label{color:#d97706 !important;}
-    .next-game-info{color:#374151 !important;}
-    .no-recent{color:#9ca3af !important;}
-    .status-final{background:rgba(0,0,0,0.05) !important;color:#6b7280 !important;border:1px solid rgba(0,0,0,0.1) !important;}
-    .status-offseason{background:rgba(0,0,0,0.05) !important;color:#9ca3af !important;border:1px solid rgba(0,0,0,0.08) !important;}
-    footer{color:#6b7280 !important;}
+    :root:not([data-theme="dark"]){--bg:#e8edf2;--surface:#ffffff;--border:rgba(0,0,0,0.10);--text:#111827;--muted:#4b5563;}
   }
+  :root[data-theme="light"]{--bg:#e8edf2;--surface:#ffffff;--border:rgba(0,0,0,0.10);--text:#111827;--muted:#4b5563;}
+  :root[data-theme="dark"]{--bg:#060810;--surface:#0d1117;--border:rgba(255,255,255,0.06);--text:#e8eaf0;--muted:#6b7280;}
+
+  @media(prefers-color-scheme:light){
+    :root:not([data-theme="dark"]){
+      color-scheme:light;
+    }
+  }
+  :root[data-theme="light"]{ color-scheme:light; }
+
+  /* Light styles applied when: device=light (and not forced dark), OR forced light */
+  @media(prefers-color-scheme:light){
+    :root:not([data-theme="dark"]) body{color:#111827;}
+    :root:not([data-theme="dark"]) body::before{opacity:.012;}
+    :root:not([data-theme="dark"]) .header-left h1{background:linear-gradient(135deg,#111827 40%,#374151) !important;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent !important;background-clip:text !important;}
+    :root:not([data-theme="dark"]) .header-left p,:root:not([data-theme="dark"]) .live-badge{color:#4b5563 !important;}
+    :root:not([data-theme="dark"]) #update-time,:root:not([data-theme="dark"]) #countdown{color:#111827 !important;}
+    :root:not([data-theme="dark"]) .refresh-label{color:#6b7280 !important;}
+    :root:not([data-theme="dark"]) .refresh-btn{background:rgba(0,0,0,0.06) !important;border:1px solid rgba(0,0,0,0.12) !important;color:#111827 !important;}
+    :root:not([data-theme="dark"]) .sk{background:linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%) !important;background-size:200% 100%;}
+    :root:not([data-theme="dark"]) .team-name{color:#111827 !important;}
+    :root:not([data-theme="dark"]) .team-sport{color:#4b5563 !important;}
+    :root:not([data-theme="dark"]) .team-abv{color:#374151 !important;}
+    :root:not([data-theme="dark"]) .team-score{color:#111827 !important;}
+    :root:not([data-theme="dark"]) .team-score.winner{color:var(--team-color) !important;}
+    :root:not([data-theme="dark"]) .team-score.no-score{color:#9ca3af !important;}
+    :root:not([data-theme="dark"]) .team-record{color:#6b7280 !important;}
+    :root:not([data-theme="dark"]) .vs-text{color:#9ca3af !important;}
+    :root:not([data-theme="dark"]) .vs-line{background:rgba(0,0,0,0.1) !important;}
+    :root:not([data-theme="dark"]) .game-label{color:#6b7280 !important;}
+    :root:not([data-theme="dark"]) .game-info-row{color:#4b5563 !important;}
+    :root:not([data-theme="dark"]) .results-label{color:#6b7280 !important;}
+    :root:not([data-theme="dark"]) .result-matchup{color:#374151 !important;}
+    :root:not([data-theme="dark"]) .result-matchup span{color:#111827 !important;}
+    :root:not([data-theme="dark"]) .result-score{color:#111827 !important;}
+    :root:not([data-theme="dark"]) .result-date{color:#9ca3af !important;}
+    :root:not([data-theme="dark"]) .next-game-row{background:rgba(251,191,36,.1) !important;border:1px solid rgba(251,191,36,.3) !important;}
+    :root:not([data-theme="dark"]) .next-game-label{color:#d97706 !important;}
+    :root:not([data-theme="dark"]) .next-game-info{color:#374151 !important;}
+    :root:not([data-theme="dark"]) .no-recent{color:#9ca3af !important;}
+    :root:not([data-theme="dark"]) .status-final{background:rgba(0,0,0,0.05) !important;color:#6b7280 !important;border:1px solid rgba(0,0,0,0.1) !important;}
+    :root:not([data-theme="dark"]) .status-offseason{background:rgba(0,0,0,0.05) !important;color:#9ca3af !important;border:1px solid rgba(0,0,0,0.08) !important;}
+    :root:not([data-theme="dark"]) footer{color:#6b7280 !important;}
+  }
+  [data-theme="light"] body{color:#111827;}
+  [data-theme="light"] body::before{opacity:.012;}
+  [data-theme="light"] .header-left h1{background:linear-gradient(135deg,#111827 40%,#374151) !important;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent !important;background-clip:text !important;}
+  [data-theme="light"] .header-left p,[data-theme="light"] .live-badge{color:#4b5563 !important;}
+  [data-theme="light"] #update-time,[data-theme="light"] #countdown{color:#111827 !important;}
+  [data-theme="light"] .refresh-label{color:#6b7280 !important;}
+  [data-theme="light"] .refresh-btn{background:rgba(0,0,0,0.06) !important;border:1px solid rgba(0,0,0,0.12) !important;color:#111827 !important;}
+  [data-theme="light"] .sk{background:linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%) !important;background-size:200% 100%;}
+  [data-theme="light"] .team-name{color:#111827 !important;}
+  [data-theme="light"] .team-sport{color:#4b5563 !important;}
+  [data-theme="light"] .team-abv{color:#374151 !important;}
+  [data-theme="light"] .team-score{color:#111827 !important;}
+  [data-theme="light"] .team-score.winner{color:var(--team-color) !important;}
+  [data-theme="light"] .team-score.no-score{color:#9ca3af !important;}
+  [data-theme="light"] .team-record{color:#6b7280 !important;}
+  [data-theme="light"] .vs-text{color:#9ca3af !important;}
+  [data-theme="light"] .vs-line{background:rgba(0,0,0,0.1) !important;}
+  [data-theme="light"] .game-label{color:#6b7280 !important;}
+  [data-theme="light"] .game-info-row{color:#4b5563 !important;}
+  [data-theme="light"] .results-label{color:#6b7280 !important;}
+  [data-theme="light"] .result-matchup{color:#374151 !important;}
+  [data-theme="light"] .result-matchup span{color:#111827 !important;}
+  [data-theme="light"] .result-score{color:#111827 !important;}
+  [data-theme="light"] .result-date{color:#9ca3af !important;}
+  [data-theme="light"] .next-game-row{background:rgba(251,191,36,.1) !important;border:1px solid rgba(251,191,36,.3) !important;}
+  [data-theme="light"] .next-game-label{color:#d97706 !important;}
+  [data-theme="light"] .next-game-info{color:#374151 !important;}
+  [data-theme="light"] .no-recent{color:#9ca3af !important;}
+  [data-theme="light"] .status-final{background:rgba(0,0,0,0.05) !important;color:#6b7280 !important;border:1px solid rgba(0,0,0,0.1) !important;}
+  [data-theme="light"] .status-offseason{background:rgba(0,0,0,0.05) !important;color:#9ca3af !important;border:1px solid rgba(0,0,0,0.08) !important;}
+  [data-theme="light"] footer{color:#6b7280 !important;}
 </style>
 </head>
 <body>
@@ -146,6 +195,9 @@
       <span class="refresh-label" style="color:#9ca3af">Next refresh in</span>
       <span id="countdown" style="font-family:'DM Mono',monospace;font-size:12px;">5:00</span>
     </div>
+    <button class="refresh-btn" id="theme-btn" onclick="cycleTheme()" title="Toggle color scheme">
+      <span id="theme-icon">🖥️</span>
+    </button>
     <button class="refresh-btn" id="refresh-btn" onclick="fetchScores()">
       <span class="spin">&#8635;</span> Refresh
     </button>
@@ -529,6 +581,28 @@ async function fetchScores(){
     btn.disabled=false; btn.classList.remove('spinning');
   }
 }
+
+// ── Theme toggle ─────────────────────────────────────────────────────────────
+const THEMES = ['device','light','dark'];
+const THEME_ICONS = { device:'🖥️', light:'☀️', dark:'🌙' };
+
+function cycleTheme(){
+  const current = localStorage.getItem('colorScheme') || 'device';
+  const next = THEMES[(THEMES.indexOf(current)+1) % THEMES.length];
+  applyTheme(next);
+}
+
+function applyTheme(theme){
+  localStorage.setItem('colorScheme', theme);
+  const root = document.documentElement;
+  if(theme==='dark')       root.setAttribute('data-theme','dark');
+  else if(theme==='light') root.setAttribute('data-theme','light');
+  else                     root.removeAttribute('data-theme');
+  document.getElementById('theme-icon').textContent = THEME_ICONS[theme];
+}
+
+// Init icon on load
+applyTheme(localStorage.getItem('colorScheme') || 'device');
 
 fetchScores();
 </script>
