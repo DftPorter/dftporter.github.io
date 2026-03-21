@@ -185,6 +185,22 @@ function parseEvent(ev, teamId) {
   return { featuredStatus, isHome, oppAbbr, phiScore, oppScore, phiRecord, oppRecord, venue, dateMs, note, completed };
 }
 
+function nextSeasonNote(path) {
+  const now = new Date();
+  const yr = now.getFullYear();
+  if (path.startsWith('football/nfl')) {
+    // NFL: first Thursday of September
+    const sep1 = new Date(yr, 8, 1);
+    const firstThurs = new Date(sep1);
+    firstThurs.setDate(1 + (4 - sep1.getDay() + 7) % 7);
+    return `Next season starts ~${firstThurs.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}`;
+  }
+  if (path.startsWith('baseball/mlb')) {
+    return `Spring Training underway · Regular season starts late March`;
+  }
+  return 'Season has ended';
+}
+
 async function fetchTeamData(key) {
   const { path, teamId } = TEAMS[key];
   const base = `https://site.api.espn.com/apis/site/v2/sports/${path}`;
@@ -278,7 +294,7 @@ async function fetchTeamData(key) {
   return {
     featuredStatus: fs,
     featured: featured ? {
-      label:     fs === 'live' ? 'LIVE NOW' : fs === 'final' ? 'LAST GAME' : 'NEXT GAME',
+      label:     fs === 'live' ? 'LIVE NOW' : fs === 'upcoming' ? 'NEXT GAME' : null,
       oppAbbr:   featured.oppAbbr,
       phiScore:  featured.phiScore,
       oppScore:  featured.oppScore,
@@ -297,7 +313,7 @@ async function fetchTeamData(key) {
     nextGame: nextGame
       ? `${nextGame.isHome ? 'vs' : '@'} ${nextGame.oppAbbr} · ${fmtFull(nextGame.dateMs)}`
       : null,
-    offseasonNote: fs === 'offseason' ? (isOffseason ? 'Season has ended' : 'No upcoming schedule found') : null,
+    offseasonNote: fs === 'offseason' ? (isOffseason ? nextSeasonNote(path) : 'No upcoming schedule found') : null,
     featuredDateMs: featured?.dateMs || 0,
   };
 }
@@ -348,7 +364,7 @@ function renderCard(key, data) {
     const oppWins = !upcoming && f.oppScore > f.phiScore;
     featuredHtml = `
       <div class="featured-game">
-        <div class="game-label">${f.label}</div>
+        ${f.label ? `<div class="game-label">${f.label}</div>` : ''}
         <div class="matchup">
           <div class="team-side">
             <div class="team-abv">PHI</div>
