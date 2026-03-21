@@ -89,8 +89,10 @@
   .result-wl.win{color:#4ade80;}.result-wl.loss{color:#f87171;}.result-wl.draw{color:#fbbf24;}
   .result-date{font-family:'DM Mono',monospace;font-size:10px;color:#4b5563;width:36px;text-align:right;flex-shrink:0;}
   .next-game-row{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.12);border-radius:8px;margin-top:10px;}
+  .next-game-row.today{background:rgba(251,191,36,.18);border:1px solid rgba(251,191,36,.45);}
   .next-game-label{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:#fbbf24;font-family:'DM Mono',monospace;flex-shrink:0;padding-top:1px;}
-  .next-game-info{font-size:12px;color:#d1d5db;letter-spacing:.02em;}
+  .next-game-info{font-size:12px;color:#d1d5db;letter-spacing:.02em;flex:1;}
+  .today-badge{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.08em;color:#f59e0b;background:rgba(251,191,36,.2);border:1px solid rgba(251,191,36,.4);border-radius:100px;padding:1px 7px;margin-left:6px;vertical-align:middle;}
   .no-recent{padding:10px 0;font-size:12px;color:#4b5563;font-family:'DM Mono',monospace;text-align:center;}
   @keyframes scoreFlash{0%{box-shadow:0 0 0 0 rgba(255,255,255,0);}20%{box-shadow:0 0 24px 6px rgba(255,215,0,0.5);}100%{box-shadow:0 0 0 0 rgba(255,215,0,0);}}
   .score-changed{animation:scoreFlash 1.5s ease-out;}
@@ -172,6 +174,7 @@
   [data-theme="light"] .result-score{color:#111827 !important;}
   [data-theme="light"] .result-date{color:#9ca3af !important;}
   [data-theme="light"] .next-game-row{background:rgba(251,191,36,.1) !important;border:1px solid rgba(251,191,36,.3) !important;}
+  [data-theme="light"] .next-game-row.today{background:rgba(251,191,36,.25) !important;border:1px solid rgba(251,191,36,.6) !important;}
   [data-theme="light"] .next-game-label{color:#d97706 !important;}
   [data-theme="light"] .next-game-info{color:#374151 !important;}
   [data-theme="light"] .no-recent{color:#9ca3af !important;}
@@ -375,6 +378,7 @@ async function fetchTeamData(key){
       .slice(-3).reverse()
       .map(g=>({ opp:g.oppAbbr, home:g.isHome, phiScore:g.phiScore, oppScore:g.oppScore, date:fmtShort(g.dateMs) })),
     nextGame: nextGame ? `${nextGame.isHome?'vs':'@'} ${nextGame.oppAbbr} · ${fmtFull(nextGame.dateMs)}` : null,
+    nextGameToday: nextGame ? new Date(nextGame.dateMs).toDateString()===new Date().toDateString() : false,
     offseasonNote: fs==='offseason' ? (isOffseason ? nextSeasonNote(path) : 'No upcoming schedule found') : null,
     featuredDateMs: featured?.dateMs||0,
     streak:   isOffseason ? null : streak,
@@ -467,7 +471,10 @@ function renderCard(key, data){
     : '<div class="no-recent">No recent games</div>';
 
   const nextHtml = data.nextGame
-    ? `<div class="next-game-row"><div class="next-game-label">Next &#9654;</div><div class="next-game-info">${data.nextGame}</div></div>`
+    ? `<div class="next-game-row${data.nextGameToday?' today':''}">
+        <div class="next-game-label">Next &#9654;</div>
+        <div class="next-game-info">${data.nextGame}${data.nextGameToday?'<span class="today-badge">TODAY</span>':''}</div>
+       </div>`
     : '';
 
   return `
