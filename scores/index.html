@@ -16,6 +16,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;900&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{--bg:#060810;--surface:#0d1117;--border:rgba(255,255,255,0.06);--text:#e8eaf0;--muted:#6b7280;}
+  @media(prefers-color-scheme:light){
+    :root{--bg:#f0f2f5;--surface:#ffffff;--border:rgba(0,0,0,0.08);--text:#111827;--muted:#6b7280;}
+    .header-left h1{background:linear-gradient(135deg,#111 40%,#555);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .sk{background:linear-gradient(90deg,#e5e7eb 25%,#f3f4f6 50%,#e5e7eb 75%);background-size:200% 100%;}
+    .team-score{color:#111827;}
+    .vs-text{color:#9ca3af;}
+    .result-matchup{color:#6b7280;}
+    .result-matchup span{color:#111827;}
+    .result-score{color:#111827;}
+    .status-final{background:rgba(0,0,0,0.05);color:#6b7280;border:1px solid rgba(0,0,0,0.1);}
+    .refresh-btn{background:rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.1);color:#6b7280;}
+    .refresh-btn:hover:not(:disabled){background:rgba(0,0,0,0.1);color:#111827;border-color:rgba(0,0,0,0.2);}
+    .next-game-row{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);}
+    body::before{opacity:.015;}
+  }
   *{margin:0;padding:0;box-sizing:border-box;}
   body{background:var(--bg);color:var(--text);font-family:'Barlow Condensed',sans-serif;min-height:100vh;overflow-x:hidden;}
   body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");opacity:.035;pointer-events:none;z-index:0;}
