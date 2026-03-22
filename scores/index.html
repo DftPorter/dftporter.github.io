@@ -30,8 +30,7 @@
   .pulse-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 2s ease-in-out infinite;flex-shrink:0;}
   .pulse-dot.loading{background:#fbbf24;}.pulse-dot.error{background:#f87171;animation:none;}
   @keyframes pulse{0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(34,197,94,.4);}50%{opacity:.8;transform:scale(1.1);box-shadow:0 0 0 6px rgba(34,197,94,0);}}
-  #update-time{color:#e5e7eb;}
-  #countdown{color:#e5e7eb;}
+  #update-time{color:#e5e7eb;}#countdown{color:#e5e7eb;}
   .refresh-btn{background:rgba(255,255,255,.05);border:1px solid var(--border);color:#d1d5db;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:8px 16px;border-radius:8px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;}
   .refresh-btn:hover:not(:disabled){background:rgba(255,255,255,.1);color:#f9fafb;border-color:rgba(255,255,255,.15);}
   .refresh-btn:disabled{opacity:.4;cursor:not-allowed;}
@@ -110,11 +109,11 @@
   .news-team-tag{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:100px;font-weight:500;}
   .news-time{font-family:'DM Mono',monospace;font-size:10px;color:#4b5563;}
   .news-loading{padding:24px 20px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:#4b5563;}
+  #error-banner{display:none;position:relative;z-index:10;margin:16px auto 0;max-width:1400px;padding:0 20px;}
   #error-banner-inner{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);border-radius:10px;padding:14px 18px;font-family:'DM Mono',monospace;font-size:12px;color:#fca5a5;letter-spacing:.04em;}
   footer{position:relative;z-index:10;text-align:center;padding:20px;font-family:'DM Mono',monospace;font-size:11px;color:#374151;letter-spacing:.08em;border-top:1px solid var(--border);}
   @media(max-width:480px){main{padding:16px 12px 32px;gap:14px;}header{padding:20px 16px;}}
 
-  /* ── Light mode ── */
   @media(prefers-color-scheme:light){
     :root:not([data-theme="dark"]){--bg:#e8edf2;--surface:#ffffff;--border:rgba(0,0,0,0.10);--text:#111827;--muted:#4b5563;}
     :root:not([data-theme="dark"]) body{color:#111827;}
@@ -161,7 +160,7 @@
     :root:not([data-theme="dark"]) .news-item:hover{background:rgba(0,0,0,.03) !important;}
     :root:not([data-theme="dark"]) .news-item-title{color:#111827 !important;}
     :root:not([data-theme="dark"]) .news-time{color:#9ca3af !important;}
-    :root:not([data-theme="dark"]) .news-loading{color:#9ca3af !important;}
+    :root:not([data-theme="dark"]) footer{color:#6b7280 !important;}
   }
   [data-theme="light"]{--bg:#e8edf2;--surface:#ffffff;--border:rgba(0,0,0,0.10);--text:#111827;--muted:#4b5563;}
   [data-theme="light"] body{color:#111827;}
@@ -208,7 +207,7 @@
   [data-theme="light"] .news-item:hover{background:rgba(0,0,0,.03) !important;}
   [data-theme="light"] .news-item-title{color:#111827 !important;}
   [data-theme="light"] .news-time{color:#9ca3af !important;}
-  [data-theme="light"] .news-loading{color:#9ca3af !important;}
+  [data-theme="light"] footer{color:#6b7280 !important;}
 </style>
 </head>
 <body>
@@ -249,10 +248,10 @@ const TEAMS = {
 const TEAM_ORDER = ['eagles','sixers','flyers','phillies','union'];
 
 const NEWS_FEEDS = [
-  { team:'Sixers',   color:'#006BB6', url:'https://www.libertyballers.com/rss/index.xml'      },
-  { team:'Eagles',   color:'#004C54', url:'https://www.bleedinggreennation.com/rss/index.xml'  },
-  { team:'Flyers',   color:'#F74902', url:'https://www.broadstreethockey.com/rss/index.xml'    },
-  { team:'Phillies', color:'#E81828', url:'https://www.thegoodphight.com/rss/index.xml'        },
+  { team:'Sixers',   color:'#006BB6', url:'https://www.libertyballers.com/rss/index.xml'     },
+  { team:'Eagles',   color:'#004C54', url:'https://www.bleedinggreennation.com/rss/index.xml' },
+  { team:'Flyers',   color:'#F74902', url:'https://www.broadstreethockey.com/rss/index.xml'   },
+  { team:'Phillies', color:'#E81828', url:'https://www.thegoodphight.com/rss/index.xml'       },
 ];
 
 function fmtShort(ms){ return new Date(ms).toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
@@ -294,15 +293,15 @@ function parseEvent(ev, teamId){
   const oppRecord = getRecord(them);
   const venue     = comp.venue ? `${comp.venue.fullName}, ${comp.venue.address?.city}` : null;
   const featuredStatus =
-    state==='in'                ? 'live'     :
-    completed                   ? 'final'    :
+    state==='in'                 ? 'live'     :
+    completed                    ? 'final'    :
     state==='pre' && dateMs<=now ? 'starting' :
-    state==='pre'               ? 'upcoming' : 'offseason';
+    state==='pre'                ? 'upcoming' : 'offseason';
   const note =
-    state==='in'               ? detail :
+    state==='in'                ? detail :
     featuredStatus==='starting' ? 'Starting now…' :
-    state==='pre'              ? fmtFull(dateMs) :
-                                 detail||'Final';
+    state==='pre'               ? fmtFull(dateMs) :
+                                  detail||'Final';
   return { featuredStatus, isHome, oppAbbr, oppId, phiScore, oppScore, phiRecord, oppRecord, venue, dateMs, note, completed };
 }
 
@@ -318,53 +317,7 @@ function nextSeasonNote(path){
   return 'Season has ended';
 }
 
-// ── Schedule cache (1 hour TTL) ───────────────────────────────────────────────
-const scheduleCache = {};
-const SCHEDULE_TTL  = 60 * 60 * 1000;
-
-async function fetchScheduleCached(key){
-  const cached = scheduleCache[key];
-  // Invalidate cache if a game was recently scheduled to start (within past 2 hours)
-  // This ensures we don't serve stale "upcoming" data once a game goes live
-  if(cached){
-    const now = Date.now();
-    const age = now - cached.fetchedAt;
-    const data = cached.data;
-    const events = data?.events || [];
-    const hasRecentStart = events.some(ev => {
-      const comp = ev.competitions?.[0];
-      const status = comp?.status ?? ev.status;
-      const notCompleted = !status?.type?.completed;
-      const ms = new Date(ev.date).getTime();
-      return notCompleted && ms > now - 2*60*60*1000 && ms < now;
-    });
-    // Use cache if fresh enough AND no game recently started
-    if(age < SCHEDULE_TTL && !hasRecentStart) return data;
-  }
-  const { path, teamId } = TEAMS[key];
-  const base     = `https://site.api.espn.com/apis/site/v2/sports/${path}`;
-  const isSoccer = path.startsWith('soccer');
-  let data = null;
-  if(isSoccer){
-    const [sbBoard, teamInfo] = await Promise.all([
-      espnFetch(`${base}/scoreboard?dates=20260101-20261231&limit=300`).catch(()=>null),
-      espnFetch(`${base}/teams/${teamId}/schedule`).catch(()=>null),
-    ]);
-    if(sbBoard?.events){
-      data = {
-        season: teamInfo?.season||sbBoard.leagues?.[0]?.season||{type:2},
-        team:   teamInfo?.team||{id:teamId},
-        events: sbBoard.events.filter(e=>e.competitions?.[0]?.competitors?.some(c=>String(c.team?.id)===String(teamId))),
-      };
-    }
-  } else {
-    data = await espnFetch(`${base}/teams/${teamId}/schedule`).catch(()=>null);
-  }
-  if(data) scheduleCache[key] = { data, fetchedAt: Date.now() };
-  return data;
-}
-
-// ── MLS standings cache (fetched once on load) ────────────────────────────────
+// ── MLS standings cache ───────────────────────────────────────────────────────
 let mlsRecords = {};
 (async()=>{
   try{
@@ -377,16 +330,32 @@ let mlsRecords = {};
   } catch(err){ console.warn('MLS standings fetch failed', err); }
 })();
 
-// ── Fetch team data ───────────────────────────────────────────────────────────
-async function fetchTeamData(key, skipScoreboard=false){
+// ── Fetch team data (no caching — always fresh) ───────────────────────────────
+async function fetchTeamData(key){
   const { path, teamId } = TEAMS[key];
   const base     = `https://site.api.espn.com/apis/site/v2/sports/${path}`;
   const isSoccer = path.startsWith('soccer');
 
-  const schRes = await fetchScheduleCached(key);
-  const sbRes  = skipScoreboard ? null : await espnFetch(`${base}/scoreboard`).catch(()=>null);
+  let schRes = null;
+  if(isSoccer){
+    const [sbBoard, teamInfo] = await Promise.all([
+      espnFetch(`${base}/scoreboard?dates=20260101-20261231&limit=300`).catch(()=>null),
+      espnFetch(`${base}/teams/${teamId}/schedule`).catch(()=>null),
+    ]);
+    if(sbBoard?.events){
+      schRes = {
+        season: teamInfo?.season||sbBoard.leagues?.[0]?.season||{type:2},
+        team:   teamInfo?.team||{id:teamId},
+        events: sbBoard.events.filter(e=>e.competitions?.[0]?.competitors?.some(c=>String(c.team?.id)===String(teamId))),
+      };
+    }
+  } else {
+    schRes = await espnFetch(`${base}/teams/${teamId}/schedule`).catch(()=>null);
+  }
 
-  const now         = Date.now();
+  const sbRes = await espnFetch(`${base}/scoreboard`).catch(()=>null);
+  const now   = Date.now();
+
   const seasonType  = schRes?.season?.type;
   const isOffseason = (typeof seasonType==='object' ? seasonType?.type : seasonType)===4;
   const rawEvents   = schRes?.events||schRes?.team?.events||[];
@@ -407,7 +376,7 @@ async function fetchTeamData(key, skipScoreboard=false){
     }
   }
 
-  // Only use scoreboard for truly live games
+  // Use scoreboard for live games
   let liveGame = null;
   if(sbRes?.events){
     for(const ev of sbRes.events){
@@ -416,26 +385,24 @@ async function fetchTeamData(key, skipScoreboard=false){
     }
   }
 
-  const activeLive = liveGame?.featuredStatus==='live' ? liveGame : null;
-  const featured   = isOffseason ? null : (activeLive||lastCompleted||nextGame||null);
-  const fs         = isOffseason ? 'offseason' : (featured?.featuredStatus||'offseason');
+  const activeLive  = liveGame?.featuredStatus==='live' ? liveGame : null;
+  const featured    = isOffseason ? null : (activeLive||lastCompleted||nextGame||null);
+  const fs          = isOffseason ? 'offseason' : (featured?.featuredStatus||'offseason');
   const showRecords = fs==='live'||fs==='final'||fs==='starting';
 
-  // For soccer use MLS standings for records (scoreboard events lack record data)
   const soccerPhiRecord = isSoccer ? (mlsRecords[String(teamId)]||schRes?.team?.recordSummary||null) : null;
   const soccerOppRecord = isSoccer ? (mlsRecords[featured?.oppId||'']||null) : null;
 
-  // Streak
   let streak = null;
   const allCompleted = [...schedEvents].reverse().filter(ev=>parseEvent(ev,teamId)?.completed);
   if(allCompleted.length>0){
     const outcomes = allCompleted.map(ev=>{
-      const p = parseEvent(ev,teamId);
+      const p=parseEvent(ev,teamId);
       return p.phiScore>p.oppScore?'W':p.phiScore<p.oppScore?'L':'D';
     });
     let count=1;
     for(let i=1;i<outcomes.length;i++){ if(outcomes[i]===outcomes[0]) count++; else break; }
-    streak = `${outcomes[0]}${count}`;
+    streak=`${outcomes[0]}${count}`;
   }
 
   return {
@@ -468,28 +435,25 @@ async function fetchTeamData(key, skipScoreboard=false){
 // ── News feed ─────────────────────────────────────────────────────────────────
 const RSS_PROXY = 'https://api.rss2json.com/v1/api.json?rss_url=';
 let newsCache = { items:[], fetchedAt:0 };
-const NEWS_TTL = 15 * 60 * 1000; // 15 minutes
+const NEWS_TTL = 15 * 60 * 1000;
 
 function parseRssDate(str){
   if(!str) return 0;
-  // rss2json returns dates as UTC but without the 'Z' suffix — add it explicitly
-  return new Date(str.replace(' ','T') + 'Z').getTime() || 0;
+  return new Date(str.replace(' ','T')+'Z').getTime()||0;
 }
-
 function timeAgo(dateStr){
   const diff = Date.now() - parseRssDate(dateStr);
-  if(diff < 0 || diff < 60000) return 'just now';
+  if(diff<0||diff<60000) return 'just now';
   const mins = Math.floor(diff/60000);
-  if(mins < 60) return `${mins}m ago`;
+  if(mins<60) return `${mins}m ago`;
   const hrs = Math.round(mins/60);
-  if(hrs < 24)  return `${hrs}h ago`;
+  if(hrs<24)  return `${hrs}h ago`;
   return `${Math.floor(hrs/24)}d ago`;
 }
-
 async function fetchNews(){
-  if(Date.now() - newsCache.fetchedAt < NEWS_TTL) return newsCache.items;
-  try {
-    const results = await Promise.all(NEWS_FEEDS.map(async feed => {
+  if(Date.now()-newsCache.fetchedAt < NEWS_TTL) return newsCache.items;
+  try{
+    const results = await Promise.all(NEWS_FEEDS.map(async feed=>{
       const d = await fetch(`${RSS_PROXY}${encodeURIComponent(feed.url)}`).then(r=>r.json()).catch(()=>null);
       return (d?.items||[]).slice(0,5).map(item=>({
         title:   item.title?.trim(),
@@ -499,19 +463,17 @@ async function fetchNews(){
         color:   feed.color,
       }));
     }));
-    // Merge, sort newest first, take top 5
     const merged = results.flat()
-      .filter(item => item.title && item.pubDate)
-      .sort((a,b) => parseRssDate(b.pubDate) - parseRssDate(a.pubDate))
+      .filter(item=>item.title&&item.pubDate)
+      .sort((a,b)=>parseRssDate(b.pubDate)-parseRssDate(a.pubDate))
       .slice(0,5);
-    newsCache = { items: merged, fetchedAt: Date.now() };
+    newsCache = { items:merged, fetchedAt:Date.now() };
     return merged;
   } catch(err){
     console.warn('News fetch failed', err);
     return newsCache.items;
   }
 }
-
 function renderNewsCard(items){
   const content = items.length
     ? items.map(item=>`
@@ -523,7 +485,6 @@ function renderNewsCard(items){
           </div>
         </a>`).join('')
     : '<div class="news-loading">Loading headlines…</div>';
-
   return `
     <div class="news-card">
       <div class="news-header">
@@ -534,7 +495,7 @@ function renderNewsCard(items){
     </div>`;
 }
 
-
+// ── Rendering ─────────────────────────────────────────────────────────────────
 function showSkeletons(){
   document.getElementById('cards-container').innerHTML=TEAM_ORDER.map(()=>`
     <div class="skeleton-card">
@@ -569,7 +530,7 @@ function scoreHtml(score,winner,upcoming,isPhi){
 
 function renderCard(key,data){
   const {name,sport,icon,color} = TEAMS[key];
-  const fs         = data.featuredStatus||'offseason';
+  const fs          = data.featuredStatus||'offseason';
   const statusLabel = {live:'● Live',starting:'● Starting',final:'Final',upcoming:'Upcoming',offseason:'Off-Season'}[fs]||'Off-Season';
   const statusCls   = {live:'status-live',starting:'status-starting',final:'status-final',upcoming:'status-upcoming',offseason:'status-offseason'}[fs]||'status-offseason';
   const streakCls   = data.streak?.startsWith('W')?'streak-w':data.streak?.startsWith('L')?'streak-l':'streak-d';
@@ -671,16 +632,11 @@ let countdownSeconds=300, countdownInterval=null, refreshTimeout=null, prevScore
 function getRefreshInterval(scores){
   const vals = Object.values(scores);
   const now  = Date.now();
-  // Live or starting → 30 seconds
   if(vals.some(s=>s.featuredStatus==='live'||s.featuredStatus==='starting')) return 30;
-  // Check next game time (not featured, which may be a past game)
-  const nextMs = vals.map(s=>s.nextGameDateMs||0).filter(ms=>ms>0);
-  const soonest = nextMs.length ? Math.min(...nextMs) : 0;
-  // Within 15 minutes → 30 seconds
-  if(soonest > now - 30*60*1000 && soonest <= now + 15*60*1000) return 30;
-  // Within 1 hour → 15 minutes
-  if(soonest > now && soonest <= now + 60*60*1000) return 900;
-  // Everything else → 30 minutes
+  const in15=now+15*60*1000, ago30=now-30*60*1000;
+  if(vals.some(s=>s.nextGameDateMs>ago30&&s.nextGameDateMs<=in15)) return 30;
+  const in60=now+60*60*1000;
+  if(vals.some(s=>s.nextGameDateMs>now&&s.nextGameDateMs<=in60)) return 900;
   return 1800;
 }
 
@@ -708,21 +664,15 @@ async function fetchScores(){
   btn.disabled=true; btn.classList.add('spinning');
   hideError(); setStatus('loading','Fetching live scores…'); showSkeletons();
   try{
-    // Skip scoreboards when nothing is likely live (saves 5 API calls)
-    const now=Date.now();
-    const anyLikelyLive=Object.values(prevScores).some(s=>
-      s.featuredStatus==='live'||s.featuredStatus==='starting'||
-      (s.featuredStatus==='upcoming'&&s.featuredDateMs>now-30*60*1000&&s.featuredDateMs<now+2*60*60*1000)
-    );
     const [results, newsItems] = await Promise.all([
-      Promise.allSettled(TEAM_ORDER.map(k=>fetchTeamData(k,!anyLikelyLive))),
+      Promise.allSettled(TEAM_ORDER.map(k=>fetchTeamData(k))),
       fetchNews(),
     ]);
     const scores={};
     TEAM_ORDER.forEach((k,i)=>{
       scores[k]=results[i].status==='fulfilled'
         ?results[i].value
-        :{featuredStatus:'offseason',featured:null,recentGames:[],nextGame:null,offseasonNote:'Data unavailable',featuredDateMs:0};
+        :{featuredStatus:'offseason',featured:null,recentGames:[],nextGame:null,offseasonNote:'Data unavailable',featuredDateMs:0,nextGameDateMs:0};
     });
     const rank=s=>({live:0,starting:0,final:1,upcoming:3,offseason:4}[s]??4);
     const sorted=TEAM_ORDER.map(k=>({key:k,data:scores[k]})).sort((a,b)=>{
@@ -730,9 +680,8 @@ async function fetchScores(){
       if(rd!==0) return rd;
       return b.data.featuredDateMs-a.data.featuredDateMs;
     });
-    document.getElementById('cards-container').innerHTML =
-      sorted.map(({key,data})=>renderCard(key,data)).join('') +
-      renderNewsCard(newsItems);
+    document.getElementById('cards-container').innerHTML=
+      sorted.map(({key,data})=>renderCard(key,data)).join('')+renderNewsCard(newsItems);
     TEAM_ORDER.forEach(k=>{
       const curr=scores[k]?.featured, prev=prevScores[k]?.featured;
       if(curr&&prev&&(curr.phiScore!==prev.phiScore||curr.oppScore!==prev.oppScore)){
