@@ -239,7 +239,6 @@ function parseScore(s){
   if(typeof s==='object') return s.value??parseInt(s.displayValue)??0;
   return parseInt(s)||0;
 }
-
 async function espnFetch(url){
   const r = await fetch(url);
   if(!r.ok) throw new Error(`ESPN ${r.status}`);
@@ -260,27 +259,24 @@ function parseEvent(ev, teamId){
   const now       = Date.now();
   const isHome    = us.homeAway==='home';
   const oppAbbr   = (them.team?.abbreviation||'OPP').toUpperCase();
+  const oppId     = String(them.team?.id||'');
   const phiScore  = (completed||state==='in') ? parseScore(us.score)   : null;
   const oppScore  = (completed||state==='in') ? parseScore(them.score) : null;
   const getRecord = c=>(c.record?.find(r=>r.type==='total')||c.record?.find(r=>r.type==='ytd')||c.record?.[0])?.displayValue||null;
   const phiRecord = getRecord(us);
   const oppRecord = getRecord(them);
   const venue     = comp.venue ? `${comp.venue.fullName}, ${comp.venue.address?.city}` : null;
-
-  // 'starting' = scheduled start time has passed but ESPN hasn't flipped to 'in' yet
   const featuredStatus =
-    state==='in'                         ? 'live'     :
-    completed                            ? 'final'    :
-    state==='pre' && dateMs<=now         ? 'starting' :
-    state==='pre'                        ? 'upcoming' : 'offseason';
-
+    state==='in'                ? 'live'     :
+    completed                   ? 'final'    :
+    state==='pre' && dateMs<=now ? 'starting' :
+    state==='pre'               ? 'upcoming' : 'offseason';
   const note =
-    state==='in'           ? detail :
+    state==='in'               ? detail :
     featuredStatus==='starting' ? 'Starting now…' :
-    state==='pre'          ? fmtFull(dateMs) :
-                             detail||'Final';
-
-  return { featuredStatus, isHome, oppAbbr, oppId: String(them.team?.id||''), phiScore, oppScore, phiRecord, oppRecord, venue, dateMs, note, completed };
+    state==='pre'              ? fmtFull(dateMs) :
+                                 detail||'Final';
+  return { featuredStatus, isHome, oppAbbr, oppId, phiScore, oppScore, phiRecord, oppRecord, venue, dateMs, note, completed };
 }
 
 function nextSeasonNote(path){
@@ -295,18 +291,15 @@ function nextSeasonNote(path){
   return 'Season has ended';
 }
 
-// ── Schedule cache ────────────────────────────────────────────────────────────
-// Stores { data, fetchedAt } per team key. Expires after 1 hour.
+// ── Schedule cache (1 hour TTL) ───────────────────────────────────────────────
 const scheduleCache = {};
-const SCHEDULE_TTL = 60 * 60 * 1000; // 1 hour
+const SCHEDULE_TTL  = 60 * 60 * 1000;
 
 async function fetchScheduleCached(key){
   const cached = scheduleCache[key];
-  if(cached && Date.now() - cached.fetchedAt < SCHEDULE_TTL){
-    return cached.data;
-  }
+  if(cached && Date.now() - cached.fetchedAt < SCHEDULE_TTL) return cached.data;
   const { path, teamId } = TEAMS[key];
-  const base = `https://site.api.espn.com/apis/site/v2/sports/${path}`;
+  const base     = `https://site.api.espn.com/apis/site/v2/sports/${path}`;
   const isSoccer = path.startsWith('soccer');
   let data = null;
   if(isSoccer){
@@ -328,45 +321,33 @@ async function fetchScheduleCached(key){
   return data;
 }
 
-// MLS standings cache — fetched once on load, used for Union opponent records
+// ── MLS standings cache (fetched once on load) ────────────────────────────────
 let mlsRecords = {};
-async function fetchMlsRecords(){
-  try {
+(async()=>{
+  try{
     const d = await espnFetch('https://site.api.espn.com/apis/v2/sports/soccer/usa.1/standings');
-    const entries = d.children?.flatMap(c => c.standings?.entries || []) || [];
-    entries.forEach(e => {
-      const overall = e.stats?.find(s => s.name === 'overall')?.displayValue;
+    const entries = d.children?.flatMap(c=>c.standings?.entries||[])||[];
+    entries.forEach(e=>{
+      const overall = e.stats?.find(s=>s.name==='overall')?.displayValue;
       if(e.team?.id && overall) mlsRecords[String(e.team.id)] = overall;
     });
-  } catch(err) { console.warn('MLS standings fetch failed', err); }
-}
-fetchMlsRecords();
+  } catch(err){ console.warn('MLS standings fetch failed', err); }
+})();
 
-async function fetchTeamData(key){
+// ── Fetch team data ───────────────────────────────────────────────────────────
+async function fetchTeamData(key, skipScoreboard=false){
   const { path, teamId } = TEAMS[key];
-  const base = `https://site.api.espn.com/apis/site/v2/sports/${path}`;
+  const base     = `https://site.api.espn.com/apis/site/v2/sports/${path}`;
   const isSoccer = path.startsWith('soccer');
 
-  let schRes = null;
-  if(isSoccer){
-    const [sbBoard, teamInfo] = await Promise.all([
-      espnFetch(`${base}/scoreboard?dates=20260101-20261231&limit=300`).catch(()=>null),
-      espnFetch(`${base}/teams/${teamId}/schedule`).catch(()=>null),
-    ]);
-    if(sbBoard?.events){
-      schRes = {
-        season: teamInfo?.season||sbBoard.leagues?.[0]?.season||{type:2},
-        team:   teamInfo?.team||{id:teamId},
-        events: sbBoard.events.filter(e=>e.competitions?.[0]?.competitors?.some(c=>String(c.team?.id)===String(teamId))),
-      };
-    }
-  } else {
-    schRes = await espnFetch(`${base}/teams/${teamId}/schedule`).catch(()=>null);
-  }
+  const schRes = await fetchScheduleCached(key);
+  const sbRes  = skipScoreboard ? null : await espnFetch(`${base}/scoreboard`).catch(()=>null);
 
-  // For soccer, use MLS standings cache for records (scoreboard events lack record data)
-  const soccerRecord = isSoccer ? (mlsRecords[String(teamId)] || schRes?.team?.recordSummary || null) : null;
-  const getSoccerOppRecord = (oppId) => isSoccer ? (mlsRecords[String(oppId)] || null) : null;
+  const now         = Date.now();
+  const seasonType  = schRes?.season?.type;
+  const isOffseason = (typeof seasonType==='object' ? seasonType?.type : seasonType)===4;
+  const rawEvents   = schRes?.events||schRes?.team?.events||[];
+  const schedEvents = [...rawEvents].sort((a,b)=>new Date(a.date)-new Date(b.date));
 
   const recentGames = [];
   let lastCompleted = null;
@@ -379,12 +360,11 @@ async function fetchTeamData(key){
       lastCompleted = p;
       recentGames.push(p);
     } else if((p.featuredStatus==='upcoming'||p.featuredStatus==='starting') && !nextGame){
-      // Include games that started up to 30 min ago but ESPN hasn't flipped yet
       if(p.dateMs > now - 30*60*1000) nextGame = p;
     }
   }
 
-  // Scoreboard: only use for truly live games
+  // Only use scoreboard for truly live games
   let liveGame = null;
   if(sbRes?.events){
     for(const ev of sbRes.events){
@@ -392,28 +372,28 @@ async function fetchTeamData(key){
       if(p){ liveGame=p; if(p.featuredStatus==='live') break; }
     }
   }
+
   const activeLive = liveGame?.featuredStatus==='live' ? liveGame : null;
   const featured   = isOffseason ? null : (activeLive||lastCompleted||nextGame||null);
   const fs         = isOffseason ? 'offseason' : (featured?.featuredStatus||'offseason');
   const showRecords = fs==='live'||fs==='final'||fs==='starting';
+
+  // For soccer use MLS standings for records (scoreboard events lack record data)
+  const soccerPhiRecord = isSoccer ? (mlsRecords[String(teamId)]||schRes?.team?.recordSummary||null) : null;
+  const soccerOppRecord = isSoccer ? (mlsRecords[featured?.oppId||'']||null) : null;
 
   // Streak
   let streak = null;
   const allCompleted = [...schedEvents].reverse().filter(ev=>parseEvent(ev,teamId)?.completed);
   if(allCompleted.length>0){
     const outcomes = allCompleted.map(ev=>{
-      const p=parseEvent(ev,teamId);
+      const p = parseEvent(ev,teamId);
       return p.phiScore>p.oppScore?'W':p.phiScore<p.oppScore?'L':'D';
     });
     let count=1;
-    for(let i=1;i<outcomes.length;i++){
-      if(outcomes[i]===outcomes[0]) count++;
-      else break;
-    }
-    streak=`${outcomes[0]}${count}`;
+    for(let i=1;i<outcomes.length;i++){ if(outcomes[i]===outcomes[0]) count++; else break; }
+    streak = `${outcomes[0]}${count}`;
   }
-
-  const standing = schRes?.team?.standingSummary||null;
 
   return {
     featuredStatus: fs,
@@ -424,23 +404,24 @@ async function fetchTeamData(key){
       oppScore:  featured.oppScore,
       note:      featured.note,
       venue:     featured.venue||null,
-      phiRecord: showRecords ? (soccerRecord || featured.phiRecord||null) : null,
-      oppRecord: showRecords ? (getSoccerOppRecord(featured.oppId) || featured.oppRecord||null) : null,
+      phiRecord: showRecords ? (soccerPhiRecord||featured.phiRecord||null) : null,
+      oppRecord: showRecords ? (soccerOppRecord||featured.oppRecord||null) : null,
     } : null,
     recentGames: isOffseason ? [] : recentGames
       .filter(g=>g.dateMs!==(featured?.dateMs||-1))
       .slice(-3).reverse()
       .map(g=>({opp:g.oppAbbr,home:g.isHome,phiScore:g.phiScore,oppScore:g.oppScore,date:fmtShort(g.dateMs)})),
-    nextGame: nextGame&&fs!=='starting'&&fs!=='live' ? `${nextGame.isHome?'vs':'@'} ${nextGame.oppAbbr} · ${fmtFull(nextGame.dateMs)}` : null,
+    nextGame: nextGame&&fs!=='starting'&&fs!=='live'
+      ? `${nextGame.isHome?'vs':'@'} ${nextGame.oppAbbr} · ${fmtFull(nextGame.dateMs)}` : null,
     nextGameToday: nextGame ? new Date(nextGame.dateMs).toDateString()===new Date().toDateString() : false,
     featuredDateMs: featured?.dateMs||0,
     streak:   isOffseason ? null : streak,
-    standing: isOffseason ? null : standing,
+    standing: isOffseason ? null : (schRes?.team?.standingSummary||null),
+    offseasonNote: fs==='offseason' ? (isOffseason ? nextSeasonNote(path) : 'No upcoming schedule found') : null,
   };
 }
 
 // ── Rendering ─────────────────────────────────────────────────────────────────
-
 function showSkeletons(){
   document.getElementById('cards-container').innerHTML=TEAM_ORDER.map(()=>`
     <div class="skeleton-card">
@@ -459,7 +440,6 @@ function showSkeletons(){
       </div>
     </div>`).join('');
 }
-
 function setStatus(state,text){
   document.getElementById('status-dot').className='pulse-dot'+(state!=='ok'?' '+state:'');
   document.getElementById('update-time').textContent=text;
@@ -475,16 +455,16 @@ function scoreHtml(score,winner,upcoming,isPhi){
 }
 
 function renderCard(key,data){
-  const {name,sport,icon,color}=TEAMS[key];
-  const fs=data.featuredStatus||'offseason';
-  const statusLabel={live:'● Live',starting:'● Starting',final:'Final',upcoming:'Upcoming',offseason:'Off-Season'}[fs]||'Off-Season';
-  const statusCls={live:'status-live',starting:'status-starting',final:'status-final',upcoming:'status-upcoming',offseason:'status-offseason'}[fs]||'status-offseason';
-  const streakCls=data.streak?.startsWith('W')?'streak-w':data.streak?.startsWith('L')?'streak-l':'streak-d';
-  const isLive=fs==='live'||fs==='starting';
+  const {name,sport,icon,color} = TEAMS[key];
+  const fs         = data.featuredStatus||'offseason';
+  const statusLabel = {live:'● Live',starting:'● Starting',final:'Final',upcoming:'Upcoming',offseason:'Off-Season'}[fs]||'Off-Season';
+  const statusCls   = {live:'status-live',starting:'status-starting',final:'status-final',upcoming:'status-upcoming',offseason:'status-offseason'}[fs]||'status-offseason';
+  const streakCls   = data.streak?.startsWith('W')?'streak-w':data.streak?.startsWith('L')?'streak-l':'streak-d';
+  const isLive      = fs==='live'||fs==='starting';
 
   let featuredHtml;
   if(data.featured&&fs!=='offseason'){
-    const f=data.featured,upcoming=fs==='upcoming';
+    const f=data.featured, upcoming=fs==='upcoming';
     const phiWins=!upcoming&&f.phiScore>f.oppScore;
     const oppWins=!upcoming&&f.oppScore>f.phiScore;
     featuredHtml=`
@@ -514,8 +494,8 @@ function renderCard(key,data){
       </div>`;
   }
 
-  const recentHtml=data.recentGames?.length
-    ?data.recentGames.map(g=>{
+  const recentHtml = data.recentGames?.length
+    ? data.recentGames.map(g=>{
         const r=g.phiScore>g.oppScore?{c:'win',l:'W'}:g.phiScore<g.oppScore?{c:'loss',l:'L'}:{c:'draw',l:'D'};
         return `<div class="result-row">
           <div class="result-matchup">${g.home?'vs':'@'} <span>${g.opp}</span></div>
@@ -524,14 +504,14 @@ function renderCard(key,data){
           <div class="result-date">${g.date}</div>
         </div>`;
       }).join('')
-    :'<div class="no-recent">No recent games</div>';
+    : '<div class="no-recent">No recent games</div>';
 
-  const nextHtml=data.nextGame
-    ?`<div class="next-game-row${data.nextGameToday?' today':''}">
+  const nextHtml = data.nextGame
+    ? `<div class="next-game-row${data.nextGameToday?' today':''}">
         <div class="next-game-label">Next &#9654;</div>
         <div class="next-game-info">${data.nextGame}${data.nextGameToday?'<span class="today-badge">TODAY</span>':''}</div>
       </div>`
-    :'';
+    : '';
 
   return `
     <div class="team-card${isLive?' is-live':''}" style="--team-color:${color}">
@@ -578,16 +558,11 @@ let countdownSeconds=300, countdownInterval=null, refreshTimeout=null, prevScore
 function getRefreshInterval(scores){
   const vals=Object.values(scores);
   const now=Date.now();
-  // Live or starting → 30 seconds
   if(vals.some(s=>s.featuredStatus==='live'||s.featuredStatus==='starting')) return 30;
-  // Game within 15 minutes → 30 seconds
-  const in15=now+15*60*1000;
-  const ago30=now-30*60*1000;
+  const in15=now+15*60*1000, ago30=now-30*60*1000;
   if(vals.some(s=>s.featuredStatus==='upcoming'&&s.featuredDateMs>ago30&&s.featuredDateMs<=in15)) return 30;
-  // Game within 1 hour → 15 minutes
   const in60=now+60*60*1000;
   if(vals.some(s=>s.featuredStatus==='upcoming'&&s.featuredDateMs>now&&s.featuredDateMs<=in60)) return 900;
-  // Everything else → 30 minutes
   return 1800;
 }
 
@@ -615,7 +590,13 @@ async function fetchScores(){
   btn.disabled=true; btn.classList.add('spinning');
   hideError(); setStatus('loading','Fetching live scores…'); showSkeletons();
   try{
-    const results=await Promise.allSettled(TEAM_ORDER.map(k=>fetchTeamData(k)));
+    // Skip scoreboards when nothing is likely live (saves 5 API calls)
+    const now=Date.now();
+    const anyLikelyLive=Object.values(prevScores).some(s=>
+      s.featuredStatus==='live'||s.featuredStatus==='starting'||
+      (s.featuredStatus==='upcoming'&&s.featuredDateMs>now-30*60*1000&&s.featuredDateMs<now+2*60*60*1000)
+    );
+    const results=await Promise.allSettled(TEAM_ORDER.map(k=>fetchTeamData(k,!anyLikelyLive)));
     const scores={};
     TEAM_ORDER.forEach((k,i)=>{
       scores[k]=results[i].status==='fulfilled'
