@@ -295,6 +295,39 @@ function nextSeasonNote(path){
   return 'Season has ended';
 }
 
+// ── Schedule cache ────────────────────────────────────────────────────────────
+// Stores { data, fetchedAt } per team key. Expires after 1 hour.
+const scheduleCache = {};
+const SCHEDULE_TTL = 60 * 60 * 1000; // 1 hour
+
+async function fetchScheduleCached(key){
+  const cached = scheduleCache[key];
+  if(cached && Date.now() - cached.fetchedAt < SCHEDULE_TTL){
+    return cached.data;
+  }
+  const { path, teamId } = TEAMS[key];
+  const base = `https://site.api.espn.com/apis/site/v2/sports/${path}`;
+  const isSoccer = path.startsWith('soccer');
+  let data = null;
+  if(isSoccer){
+    const [sbBoard, teamInfo] = await Promise.all([
+      espnFetch(`${base}/scoreboard?dates=20260101-20261231&limit=300`).catch(()=>null),
+      espnFetch(`${base}/teams/${teamId}/schedule`).catch(()=>null),
+    ]);
+    if(sbBoard?.events){
+      data = {
+        season: teamInfo?.season||sbBoard.leagues?.[0]?.season||{type:2},
+        team:   teamInfo?.team||{id:teamId},
+        events: sbBoard.events.filter(e=>e.competitions?.[0]?.competitors?.some(c=>String(c.team?.id)===String(teamId))),
+      };
+    }
+  } else {
+    data = await espnFetch(`${base}/teams/${teamId}/schedule`).catch(()=>null);
+  }
+  if(data) scheduleCache[key] = { data, fetchedAt: Date.now() };
+  return data;
+}
+
 // MLS standings cache — fetched once on load, used for Union opponent records
 let mlsRecords = {};
 async function fetchMlsRecords(){
