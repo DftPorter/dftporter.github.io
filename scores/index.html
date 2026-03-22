@@ -454,15 +454,18 @@ let newsCache = { items:[], fetchedAt:0 };
 const NEWS_TTL = 15 * 60 * 1000; // 15 minutes
 
 function parseRssDate(str){
-  // RSS dates come as "2026-03-22 15:27:33" without timezone — treat as local time
   if(!str) return 0;
-  // Replace space with T and add timezone offset to parse as local
-  return new Date(str.replace(' ','T')).getTime() || new Date(str).getTime() || 0;
+  // RSS dates from SB Nation come as "2026-03-22 15:27:33" in Eastern Time (no tz info)
+  // Append EST/EDT offset so the browser parses them correctly
+  // EDT = UTC-4 (Mar-Nov), EST = UTC-5 (Nov-Mar)
+  const month = parseInt(str.substring(5,7));
+  const offset = (month >= 3 && month <= 11) ? '-04:00' : '-05:00';
+  return new Date(str.replace(' ','T') + offset).getTime() || 0;
 }
 
 function timeAgo(dateStr){
   const diff = Date.now() - parseRssDate(dateStr);
-  if(diff < 0) return 'just now';
+  if(diff < 0 || diff < 60000) return 'just now';
   const mins = Math.floor(diff/60000);
   if(mins < 60) return `${mins}m ago`;
   const hrs = Math.round(mins/60);
