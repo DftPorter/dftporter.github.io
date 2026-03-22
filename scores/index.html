@@ -399,6 +399,7 @@ async function fetchTeamData(key){
       .map(g=>({ opp:g.oppAbbr, home:g.isHome, phiScore:g.phiScore, oppScore:g.oppScore, date:fmtShort(g.dateMs) })),
     nextGame: nextGame ? `${nextGame.isHome?'vs':'@'} ${nextGame.oppAbbr} · ${fmtFull(nextGame.dateMs)}` : null,
     nextGameToday: nextGame ? new Date(nextGame.dateMs).toDateString()===new Date().toDateString() : false,
+    featuredDateMs: featured?.dateMs||0,
     offseasonNote: fs==='offseason' ? (isOffseason ? nextSeasonNote(path) : 'No upcoming schedule found') : null,
     featuredDateMs: featured?.dateMs||0,
     streak:   isOffseason ? null : streak,
@@ -533,9 +534,10 @@ function getRefreshInterval(scores){
   const now = Date.now();
   // Live game → 30 seconds
   if(vals.some(s=>s.featuredStatus==='live')) return 30;
-  // Game starting within 15 minutes → 30 seconds to catch kickoff
+  // Game starting within 15 minutes OR started up to 30 min ago but not yet live → 30 seconds
   const in15 = now + 15*60*1000;
-  if(vals.some(s=>s.featuredStatus==='upcoming' && s.featuredDateMs>now && s.featuredDateMs<=in15)) return 30;
+  const ago30 = now - 30*60*1000;
+  if(vals.some(s=>s.featuredStatus==='upcoming' && s.featuredDateMs>ago30 && s.featuredDateMs<=in15)) return 30;
   // Game later today → 5 minutes
   const todayEnd = new Date().setHours(23,59,59,999);
   if(vals.some(s=>s.featuredStatus==='upcoming' && s.featuredDateMs>now && s.featuredDateMs<=todayEnd)) return 300;
