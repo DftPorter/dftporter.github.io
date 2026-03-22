@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tim's Philly Sports HQ</title>
-
-<!-- PWA / home screen support -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Philly HQ">
@@ -13,13 +11,11 @@
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;Tim's Philly Sports HQ&quot;,&quot;short_name&quot;:&quot;Philly HQ&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;#060810&quot;,&quot;theme_color&quot;:&quot;#060810&quot;}">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔔</text></svg>">
-
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;900&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script>
-  // Apply saved color scheme before page renders to avoid flash
-  const saved = localStorage.getItem('colorScheme') || 'device';
-  if (saved === 'dark')  document.documentElement.setAttribute('data-theme', 'dark');
-  if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+  const _saved = localStorage.getItem('colorScheme')||'device';
+  if(_saved==='dark')  document.documentElement.setAttribute('data-theme','dark');
+  if(_saved==='light') document.documentElement.setAttribute('data-theme','light');
 </script>
 <style>
   :root{--bg:#060810;--surface:#0d1117;--border:rgba(255,255,255,0.06);--text:#e8eaf0;--muted:#6b7280;}
@@ -52,13 +48,16 @@
   @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
   .team-card:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,0,0,.5);}
   .team-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--team-color);}
+  @keyframes liveGlow{0%,100%{opacity:1;box-shadow:0 0 8px 1px var(--team-color);}50%{opacity:.7;box-shadow:0 0 18px 4px var(--team-color);}}
+  .team-card.is-live{background:color-mix(in srgb,var(--team-color) 6%,var(--surface));}
+  .team-card.is-live::before{height:4px;animation:liveGlow 2.5s ease-in-out infinite;}
   .card-header{padding:20px 20px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);}
   .team-icon{width:44px;height:44px;border-radius:50%;background:var(--team-color);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
   .team-meta{flex:1;}.team-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.04em;line-height:1;color:#fff;}
   .team-sport{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-top:2px;}
   .card-status{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:100px;font-weight:500;white-space:nowrap;}
-  .status-live{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3);}
-  .status-starting{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3);animation:pulse 2s ease-in-out infinite;}
+  .status-live,.status-starting{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3);}
+  .status-starting{animation:pulse 2s ease-in-out infinite;}
   .status-final{background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border);}
   .status-upcoming{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.25);}
   .status-offseason{background:rgba(107,114,128,.12);color:#6b7280;border:1px solid rgba(107,114,128,.2);}
@@ -74,6 +73,7 @@
   .team-score{font-family:'Bebas Neue',sans-serif;font-size:48px;line-height:1;color:#fff;margin-top:2px;}
   .team-score.winner{color:var(--team-color);}
   .team-score.no-score{font-size:28px;color:#4b5563;}
+  .team-score.opp-winning{color:#f1f5f9;}
   .team-record{font-family:'DM Mono',monospace;font-size:10px;color:#6b7280;letter-spacing:.08em;margin-top:4px;}
   .vs-divider{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;}
   .vs-text{font-family:'DM Mono',monospace;font-size:11px;color:#374151;letter-spacing:.1em;}
@@ -95,31 +95,16 @@
   .next-game-info{font-size:12px;color:#d1d5db;letter-spacing:.02em;flex:1;}
   .today-badge{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.08em;color:#f59e0b;background:rgba(251,191,36,.2);border:1px solid rgba(251,191,36,.4);border-radius:100px;padding:1px 7px;margin-left:6px;vertical-align:middle;}
   .no-recent{padding:10px 0;font-size:12px;color:#4b5563;font-family:'DM Mono',monospace;text-align:center;}
-  @keyframes liveGlow{0%,100%{opacity:1;box-shadow:0 0 8px 1px var(--team-color);}50%{opacity:.7;box-shadow:0 0 18px 4px var(--team-color);}}
-  .team-card.is-live{background:color-mix(in srgb, var(--team-color) 6%, var(--surface));}
-  .team-card.is-live::before{height:4px;animation:liveGlow 2.5s ease-in-out infinite;}
+  @keyframes scoreFlash{0%{box-shadow:0 0 0 0 rgba(255,255,255,0);}20%{box-shadow:0 0 24px 6px rgba(255,215,0,.5);}100%{box-shadow:0 0 0 0 rgba(255,215,0,0);}}
   .score-changed{animation:scoreFlash 1.5s ease-out;}
   #error-banner{display:none;position:relative;z-index:10;margin:16px auto 0;max-width:1400px;padding:0 20px;}
   #error-banner-inner{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);border-radius:10px;padding:14px 18px;font-family:'DM Mono',monospace;font-size:12px;color:#fca5a5;letter-spacing:.04em;}
   footer{position:relative;z-index:10;text-align:center;padding:20px;font-family:'DM Mono',monospace;font-size:11px;color:#374151;letter-spacing:.08em;border-top:1px solid var(--border);}
   @media(max-width:480px){main{padding:16px 12px 32px;gap:14px;}header{padding:20px 16px;}}
 
-  /* ── Light mode (device preference OR manual override) ── */
+  /* ── Light mode ── */
   @media(prefers-color-scheme:light){
     :root:not([data-theme="dark"]){--bg:#e8edf2;--surface:#ffffff;--border:rgba(0,0,0,0.10);--text:#111827;--muted:#4b5563;}
-  }
-  :root[data-theme="light"]{--bg:#e8edf2;--surface:#ffffff;--border:rgba(0,0,0,0.10);--text:#111827;--muted:#4b5563;}
-  :root[data-theme="dark"]{--bg:#060810;--surface:#0d1117;--border:rgba(255,255,255,0.06);--text:#e8eaf0;--muted:#6b7280;}
-
-  @media(prefers-color-scheme:light){
-    :root:not([data-theme="dark"]){
-      color-scheme:light;
-    }
-  }
-  :root[data-theme="light"]{ color-scheme:light; }
-
-  /* Light styles applied when: device=light (and not forced dark), OR forced light */
-  @media(prefers-color-scheme:light){
     :root:not([data-theme="dark"]) body{color:#111827;}
     :root:not([data-theme="dark"]) body::before{opacity:.012;}
     :root:not([data-theme="dark"]) .header-left h1{background:linear-gradient(135deg,#111827 40%,#374151) !important;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent !important;background-clip:text !important;}
@@ -134,6 +119,7 @@
     :root:not([data-theme="dark"]) .team-score{color:#111827 !important;}
     :root:not([data-theme="dark"]) .team-score.winner{color:var(--team-color) !important;}
     :root:not([data-theme="dark"]) .team-score.no-score{color:#9ca3af !important;}
+    :root:not([data-theme="dark"]) .team-score.opp-winning{color:#111827 !important;}
     :root:not([data-theme="dark"]) .team-record{color:#6b7280 !important;}
     :root:not([data-theme="dark"]) .vs-text{color:#9ca3af !important;}
     :root:not([data-theme="dark"]) .vs-line{background:rgba(0,0,0,0.1) !important;}
@@ -145,13 +131,23 @@
     :root:not([data-theme="dark"]) .result-score{color:#111827 !important;}
     :root:not([data-theme="dark"]) .result-date{color:#9ca3af !important;}
     :root:not([data-theme="dark"]) .next-game-row{background:rgba(251,191,36,.1) !important;border:1px solid rgba(251,191,36,.3) !important;}
+    :root:not([data-theme="dark"]) .next-game-row.today{background:rgba(251,191,36,.25) !important;border:1px solid rgba(251,191,36,.6) !important;}
     :root:not([data-theme="dark"]) .next-game-label{color:#d97706 !important;}
     :root:not([data-theme="dark"]) .next-game-info{color:#374151 !important;}
     :root:not([data-theme="dark"]) .no-recent{color:#9ca3af !important;}
     :root:not([data-theme="dark"]) .status-final{background:rgba(0,0,0,0.05) !important;color:#6b7280 !important;border:1px solid rgba(0,0,0,0.1) !important;}
     :root:not([data-theme="dark"]) .status-offseason{background:rgba(0,0,0,0.05) !important;color:#9ca3af !important;border:1px solid rgba(0,0,0,0.08) !important;}
+    :root:not([data-theme="dark"]) .status-live,:root:not([data-theme="dark"]) .status-starting{background:rgba(22,163,74,.12) !important;color:#16a34a !important;border-color:rgba(22,163,74,.3) !important;}
+    :root:not([data-theme="dark"]) .pulse-dot{background:#16a34a !important;}
+    :root:not([data-theme="dark"]) .result-wl.win{color:#16a34a !important;}
+    :root:not([data-theme="dark"]) .result-wl.loss{color:#dc2626 !important;}
+    :root:not([data-theme="dark"]) .result-wl.draw{color:#d97706 !important;}
+    :root:not([data-theme="dark"]) .streak-w{background:rgba(22,163,74,.12) !important;color:#16a34a !important;border-color:rgba(22,163,74,.3) !important;}
+    :root:not([data-theme="dark"]) .streak-l{background:rgba(220,38,38,.1) !important;color:#dc2626 !important;border-color:rgba(220,38,38,.25) !important;}
+    :root:not([data-theme="dark"]) .streak-d{background:rgba(217,119,6,.1) !important;color:#d97706 !important;border-color:rgba(217,119,6,.25) !important;}
     :root:not([data-theme="dark"]) footer{color:#6b7280 !important;}
   }
+  [data-theme="light"]{--bg:#e8edf2;--surface:#ffffff;--border:rgba(0,0,0,0.10);--text:#111827;--muted:#4b5563;}
   [data-theme="light"] body{color:#111827;}
   [data-theme="light"] body::before{opacity:.012;}
   [data-theme="light"] .header-left h1{background:linear-gradient(135deg,#111827 40%,#374151) !important;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent !important;background-clip:text !important;}
@@ -166,6 +162,7 @@
   [data-theme="light"] .team-score{color:#111827 !important;}
   [data-theme="light"] .team-score.winner{color:var(--team-color) !important;}
   [data-theme="light"] .team-score.no-score{color:#9ca3af !important;}
+  [data-theme="light"] .team-score.opp-winning{color:#111827 !important;}
   [data-theme="light"] .team-record{color:#6b7280 !important;}
   [data-theme="light"] .vs-text{color:#9ca3af !important;}
   [data-theme="light"] .vs-line{background:rgba(0,0,0,0.1) !important;}
@@ -183,25 +180,15 @@
   [data-theme="light"] .no-recent{color:#9ca3af !important;}
   [data-theme="light"] .status-final{background:rgba(0,0,0,0.05) !important;color:#6b7280 !important;border:1px solid rgba(0,0,0,0.1) !important;}
   [data-theme="light"] .status-offseason{background:rgba(0,0,0,0.05) !important;color:#9ca3af !important;border:1px solid rgba(0,0,0,0.08) !important;}
-  /* Light mode green/red/yellow tone-downs */
+  [data-theme="light"] .status-live,[data-theme="light"] .status-starting{background:rgba(22,163,74,.12) !important;color:#16a34a !important;border-color:rgba(22,163,74,.3) !important;}
+  [data-theme="light"] .pulse-dot{background:#16a34a !important;}
   [data-theme="light"] .result-wl.win{color:#16a34a !important;}
   [data-theme="light"] .result-wl.loss{color:#dc2626 !important;}
   [data-theme="light"] .result-wl.draw{color:#d97706 !important;}
   [data-theme="light"] .streak-w{background:rgba(22,163,74,.12) !important;color:#16a34a !important;border-color:rgba(22,163,74,.3) !important;}
   [data-theme="light"] .streak-l{background:rgba(220,38,38,.1) !important;color:#dc2626 !important;border-color:rgba(220,38,38,.25) !important;}
   [data-theme="light"] .streak-d{background:rgba(217,119,6,.1) !important;color:#d97706 !important;border-color:rgba(217,119,6,.25) !important;}
-  [data-theme="light"] .status-live{background:rgba(22,163,74,.12) !important;color:#16a34a !important;border-color:rgba(22,163,74,.3) !important;}
-  [data-theme="light"] .pulse-dot{background:#16a34a !important;}
-  @media(prefers-color-scheme:light){
-    :root:not([data-theme="dark"]) .result-wl.win{color:#16a34a !important;}
-    :root:not([data-theme="dark"]) .result-wl.loss{color:#dc2626 !important;}
-    :root:not([data-theme="dark"]) .result-wl.draw{color:#d97706 !important;}
-    :root:not([data-theme="dark"]) .streak-w{background:rgba(22,163,74,.12) !important;color:#16a34a !important;border-color:rgba(22,163,74,.3) !important;}
-    :root:not([data-theme="dark"]) .streak-l{background:rgba(220,38,38,.1) !important;color:#dc2626 !important;border-color:rgba(220,38,38,.25) !important;}
-    :root:not([data-theme="dark"]) .streak-d{background:rgba(217,119,6,.1) !important;color:#d97706 !important;border-color:rgba(217,119,6,.25) !important;}
-    :root:not([data-theme="dark"]) .status-live{background:rgba(22,163,74,.12) !important;color:#16a34a !important;border-color:rgba(22,163,74,.3) !important;}
-    :root:not([data-theme="dark"]) .pulse-dot{background:#16a34a !important;}
-  }
+  [data-theme="light"] footer{color:#6b7280 !important;}
 </style>
 </head>
 <body>
@@ -249,7 +236,7 @@ function fmtFull(ms){
 }
 function parseScore(s){
   if(s==null) return 0;
-  if(typeof s==='object') return s.value ?? parseInt(s.displayValue) ?? 0;
+  if(typeof s==='object') return s.value??parseInt(s.displayValue)??0;
   return parseInt(s)||0;
 }
 
@@ -262,31 +249,37 @@ async function espnFetch(url){
 function parseEvent(ev, teamId){
   const comp = ev.competitions?.[0];
   if(!comp) return null;
-  const us   = comp.competitors?.find(c => String(c.team?.id)===String(teamId));
-  const them = comp.competitors?.find(c => String(c.team?.id)!==String(teamId));
+  const us   = comp.competitors?.find(c=>String(c.team?.id)===String(teamId));
+  const them = comp.competitors?.find(c=>String(c.team?.id)!==String(teamId));
   if(!us||!them) return null;
-  const status    = comp.status ?? ev.status;
+  const status    = comp.status??ev.status;
   const state     = status?.type?.state;
   const completed = !!status?.type?.completed;
   const detail    = status?.type?.shortDetail||'';
   const dateMs    = new Date(ev.date).getTime();
+  const now       = Date.now();
   const isHome    = us.homeAway==='home';
   const oppAbbr   = (them.team?.abbreviation||'OPP').toUpperCase();
   const phiScore  = (completed||state==='in') ? parseScore(us.score)   : null;
   const oppScore  = (completed||state==='in') ? parseScore(them.score) : null;
-  const getRecord = c => (c.record?.find(r=>r.type==='total')||c.record?.find(r=>r.type==='ytd')||c.record?.[0])?.displayValue||null;
+  const getRecord = c=>(c.record?.find(r=>r.type==='total')||c.record?.find(r=>r.type==='ytd')||c.record?.[0])?.displayValue||null;
   const phiRecord = getRecord(us);
   const oppRecord = getRecord(them);
   const venue     = comp.venue ? `${comp.venue.fullName}, ${comp.venue.address?.city}` : null;
+
+  // 'starting' = scheduled start time has passed but ESPN hasn't flipped to 'in' yet
   const featuredStatus =
-    state==='in'                          ? 'live'     :
-    completed                             ? 'final'    :
-    state==='pre' && dateMs <= now        ? 'starting' :
-    state==='pre'                         ? 'upcoming' : 'offseason';
+    state==='in'                         ? 'live'     :
+    completed                            ? 'final'    :
+    state==='pre' && dateMs<=now         ? 'starting' :
+    state==='pre'                        ? 'upcoming' : 'offseason';
+
   const note =
-    state==='in'  ? detail :
-    state==='pre' ? fmtFull(dateMs) :
-                    detail||'Final';
+    state==='in'           ? detail :
+    featuredStatus==='starting' ? 'Starting now…' :
+    state==='pre'          ? fmtFull(dateMs) :
+                             detail||'Final';
+
   return { featuredStatus, isHome, oppAbbr, phiScore, oppScore, phiRecord, oppRecord, venue, dateMs, note, completed };
 }
 
@@ -294,9 +287,9 @@ function nextSeasonNote(path){
   const yr = new Date().getFullYear();
   if(path.startsWith('football/nfl')){
     const sep1 = new Date(yr,8,1);
-    const firstThurs = new Date(sep1);
-    firstThurs.setDate(1+(4-sep1.getDay()+7)%7);
-    return `Next season starts ~${firstThurs.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}`;
+    const ft = new Date(sep1);
+    ft.setDate(1+(4-sep1.getDay()+7)%7);
+    return `Next season starts ~${ft.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}`;
   }
   if(path.startsWith('baseball/mlb')) return 'Spring Training underway · Regular season starts late March';
   return 'Season has ended';
@@ -315,11 +308,9 @@ async function fetchTeamData(key){
     ]);
     if(sbBoard?.events){
       schRes = {
-        season: teamInfo?.season || sbBoard.leagues?.[0]?.season || { type:2 },
-        team:   teamInfo?.team   || { id:teamId },
-        events: sbBoard.events.filter(e =>
-          e.competitions?.[0]?.competitors?.some(c => String(c.team?.id)===String(teamId))
-        ),
+        season: teamInfo?.season||sbBoard.leagues?.[0]?.season||{type:2},
+        team:   teamInfo?.team||{id:teamId},
+        events: sbBoard.events.filter(e=>e.competitions?.[0]?.competitors?.some(c=>String(c.team?.id)===String(teamId))),
       };
     }
   } else {
@@ -329,11 +320,10 @@ async function fetchTeamData(key){
   const sbRes = await espnFetch(`${base}/scoreboard`).catch(()=>null);
   const now   = Date.now();
 
-  // seasonType 4 = Off Season; soccer nests type differently
-  const seasonType = schRes?.season?.type;
+  const seasonType  = schRes?.season?.type;
   const isOffseason = (typeof seasonType==='object' ? seasonType?.type : seasonType)===4;
 
-  const rawEvents   = schRes?.events || schRes?.team?.events || [];
+  const rawEvents   = schRes?.events||schRes?.team?.events||[];
   const schedEvents = [...rawEvents].sort((a,b)=>new Date(a.date)-new Date(b.date));
 
   const recentGames = [];
@@ -346,12 +336,13 @@ async function fetchTeamData(key){
     if(p.completed){
       lastCompleted = p;
       recentGames.push(p);
-    } else if(p.featuredStatus==='upcoming' && p.dateMs>now && !nextGame){
-      nextGame = p;
+    } else if((p.featuredStatus==='upcoming'||p.featuredStatus==='starting') && !nextGame){
+      // Include games that started up to 30 min ago but ESPN hasn't flipped yet
+      if(p.dateMs > now - 30*60*1000) nextGame = p;
     }
   }
 
-  // Scoreboard: only use for truly live games (no record data otherwise)
+  // Scoreboard: only use for truly live games
   let liveGame = null;
   if(sbRes?.events){
     for(const ev of sbRes.events){
@@ -362,14 +353,14 @@ async function fetchTeamData(key){
   const activeLive = liveGame?.featuredStatus==='live' ? liveGame : null;
   const featured   = isOffseason ? null : (activeLive||lastCompleted||nextGame||null);
   const fs         = isOffseason ? 'offseason' : (featured?.featuredStatus||'offseason');
-  const showRecords = fs==='live'||fs==='final';
+  const showRecords = fs==='live'||fs==='final'||fs==='starting';
 
   // Streak
   let streak = null;
   const allCompleted = [...schedEvents].reverse().filter(ev=>parseEvent(ev,teamId)?.completed);
   if(allCompleted.length>0){
     const outcomes = allCompleted.map(ev=>{
-      const p = parseEvent(ev,teamId);
+      const p=parseEvent(ev,teamId);
       return p.phiScore>p.oppScore?'W':p.phiScore<p.oppScore?'L':'D';
     });
     let count=1;
@@ -377,11 +368,10 @@ async function fetchTeamData(key){
       if(outcomes[i]===outcomes[0]) count++;
       else break;
     }
-    streak = `${outcomes[0]}${count}`;
+    streak=`${outcomes[0]}${count}`;
   }
 
   const standing = schRes?.team?.standingSummary||null;
-  const venue    = featured?.venue||null;
 
   return {
     featuredStatus: fs,
@@ -391,28 +381,26 @@ async function fetchTeamData(key){
       phiScore:  featured.phiScore,
       oppScore:  featured.oppScore,
       note:      featured.note,
-      venue,
+      venue:     featured.venue||null,
       phiRecord: showRecords ? (featured.phiRecord||null) : null,
       oppRecord: showRecords ? (featured.oppRecord||null) : null,
     } : null,
     recentGames: isOffseason ? [] : recentGames
       .filter(g=>g.dateMs!==(featured?.dateMs||-1))
       .slice(-3).reverse()
-      .map(g=>({ opp:g.oppAbbr, home:g.isHome, phiScore:g.phiScore, oppScore:g.oppScore, date:fmtShort(g.dateMs) })),
-    nextGame: nextGame ? `${nextGame.isHome?'vs':'@'} ${nextGame.oppAbbr} · ${fmtFull(nextGame.dateMs)}` : null,
+      .map(g=>({opp:g.oppAbbr,home:g.isHome,phiScore:g.phiScore,oppScore:g.oppScore,date:fmtShort(g.dateMs)})),
+    nextGame: nextGame&&fs!=='starting'&&fs!=='live' ? `${nextGame.isHome?'vs':'@'} ${nextGame.oppAbbr} · ${fmtFull(nextGame.dateMs)}` : null,
     nextGameToday: nextGame ? new Date(nextGame.dateMs).toDateString()===new Date().toDateString() : false,
-    featuredDateMs: featured?.dateMs||0,
-    offseasonNote: fs==='offseason' ? (isOffseason ? nextSeasonNote(path) : 'No upcoming schedule found') : null,
     featuredDateMs: featured?.dateMs||0,
     streak:   isOffseason ? null : streak,
     standing: isOffseason ? null : standing,
   };
 }
 
-// ── Rendering ────────────────────────────────────────────────────────────────
+// ── Rendering ─────────────────────────────────────────────────────────────────
 
 function showSkeletons(){
-  document.getElementById('cards-container').innerHTML = TEAM_ORDER.map(()=>`
+  document.getElementById('cards-container').innerHTML=TEAM_ORDER.map(()=>`
     <div class="skeleton-card">
       <div class="skeleton-header">
         <div class="sk sk-circle"></div>
@@ -434,26 +422,27 @@ function setStatus(state,text){
   document.getElementById('status-dot').className='pulse-dot'+(state!=='ok'?' '+state:'');
   document.getElementById('update-time').textContent=text;
 }
-function showError(msg){ document.getElementById('error-banner').style.display='block'; document.getElementById('error-banner-inner').textContent='⚠ '+msg; }
-function hideError()   { document.getElementById('error-banner').style.display='none'; }
+function showError(msg){document.getElementById('error-banner').style.display='block';document.getElementById('error-banner-inner').textContent='⚠ '+msg;}
+function hideError(){document.getElementById('error-banner').style.display='none';}
 
-function scoreHtml(score, winner, upcoming, isPhi){
+function scoreHtml(score,winner,upcoming,isPhi){
   if(upcoming||score===null) return '<div class="team-score no-score">&ndash;</div>';
-  if(winner && isPhi)  return `<div class="team-score winner">${score}</div>`;
-  if(winner && !isPhi) return `<div class="team-score opp-winning">${score}</div>`;
+  if(winner&&isPhi)  return `<div class="team-score winner">${score}</div>`;
+  if(winner&&!isPhi) return `<div class="team-score opp-winning">${score}</div>`;
   return `<div class="team-score">${score}</div>`;
 }
 
-function renderCard(key, data){
-  const { name, sport, icon, color } = TEAMS[key];
-  const fs = data.featuredStatus||'offseason';
-  const statusLabel = {live:'● Live',starting:'● Starting',final:'Final',upcoming:'Upcoming',offseason:'Off-Season'}[fs]||'Off-Season';
-  const statusCls   = {live:'status-live',starting:'status-starting',final:'status-final',upcoming:'status-upcoming',offseason:'status-offseason'}[fs]||'status-offseason';
-  const streakCls   = data.streak?.startsWith('W')?'streak-w':data.streak?.startsWith('L')?'streak-l':'streak-d';
+function renderCard(key,data){
+  const {name,sport,icon,color}=TEAMS[key];
+  const fs=data.featuredStatus||'offseason';
+  const statusLabel={live:'● Live',starting:'● Starting',final:'Final',upcoming:'Upcoming',offseason:'Off-Season'}[fs]||'Off-Season';
+  const statusCls={live:'status-live',starting:'status-starting',final:'status-final',upcoming:'status-upcoming',offseason:'status-offseason'}[fs]||'status-offseason';
+  const streakCls=data.streak?.startsWith('W')?'streak-w':data.streak?.startsWith('L')?'streak-l':'streak-d';
+  const isLive=fs==='live'||fs==='starting';
 
   let featuredHtml;
-  if(data.featured && fs!=='offseason'){
-    const f=data.featured, upcoming=fs==='upcoming';
+  if(data.featured&&fs!=='offseason'){
+    const f=data.featured,upcoming=fs==='upcoming';
     const phiWins=!upcoming&&f.phiScore>f.oppScore;
     const oppWins=!upcoming&&f.oppScore>f.phiScore;
     featuredHtml=`
@@ -483,8 +472,8 @@ function renderCard(key, data){
       </div>`;
   }
 
-  const recentHtml = data.recentGames?.length
-    ? data.recentGames.map(g=>{
+  const recentHtml=data.recentGames?.length
+    ?data.recentGames.map(g=>{
         const r=g.phiScore>g.oppScore?{c:'win',l:'W'}:g.phiScore<g.oppScore?{c:'loss',l:'L'}:{c:'draw',l:'D'};
         return `<div class="result-row">
           <div class="result-matchup">${g.home?'vs':'@'} <span>${g.opp}</span></div>
@@ -493,17 +482,17 @@ function renderCard(key, data){
           <div class="result-date">${g.date}</div>
         </div>`;
       }).join('')
-    : '<div class="no-recent">No recent games</div>';
+    :'<div class="no-recent">No recent games</div>';
 
-  const nextHtml = data.nextGame
-    ? `<div class="next-game-row${data.nextGameToday?' today':''}">
+  const nextHtml=data.nextGame
+    ?`<div class="next-game-row${data.nextGameToday?' today':''}">
         <div class="next-game-label">Next &#9654;</div>
         <div class="next-game-info">${data.nextGame}${data.nextGameToday?'<span class="today-badge">TODAY</span>':''}</div>
-       </div>`
-    : '';
+      </div>`
+    :'';
 
   return `
-    <div class="team-card${(fs==='live'||fs==='starting')?' is-live':''}" style="--team-color:${color}">
+    <div class="team-card${isLive?' is-live':''}" style="--team-color:${color}">
       <div class="card-header">
         <div class="team-icon">${icon}</div>
         <div class="team-meta">
@@ -524,33 +513,42 @@ function renderCard(key, data){
     </div>`;
 }
 
-// ── Refresh logic ─────────────────────────────────────────────────────────────
+// ── Theme ─────────────────────────────────────────────────────────────────────
+const THEMES=['device','light','dark'];
+const THEME_ICONS={device:'🖥️',light:'☀️',dark:'🌙'};
+function cycleTheme(){
+  const cur=localStorage.getItem('colorScheme')||'device';
+  applyTheme(THEMES[(THEMES.indexOf(cur)+1)%THEMES.length]);
+}
+function applyTheme(theme){
+  localStorage.setItem('colorScheme',theme);
+  const root=document.documentElement;
+  if(theme==='dark')       root.setAttribute('data-theme','dark');
+  else if(theme==='light') root.setAttribute('data-theme','light');
+  else                     root.removeAttribute('data-theme');
+  document.getElementById('theme-icon').textContent=THEME_ICONS[theme];
+}
+applyTheme(localStorage.getItem('colorScheme')||'device');
 
-let countdownSeconds = 300;
-let countdownInterval = null;
-let refreshTimeout = null;
-let prevScores = {};
+// ── Refresh ───────────────────────────────────────────────────────────────────
+let countdownSeconds=300, countdownInterval=null, refreshTimeout=null, prevScores={};
 
 function getRefreshInterval(scores){
-  const vals = Object.values(scores);
-  const now = Date.now();
-  // Live game → 30 seconds
+  const vals=Object.values(scores);
+  const now=Date.now();
   if(vals.some(s=>s.featuredStatus==='live'||s.featuredStatus==='starting')) return 30;
-  // Game starting within 15 minutes OR started up to 30 min ago but not yet live → 30 seconds
-  const in15 = now + 15*60*1000;
-  const ago30 = now - 30*60*1000;
-  if(vals.some(s=>s.featuredStatus==='upcoming' && s.featuredDateMs>ago30 && s.featuredDateMs<=in15)) return 30;
-  // Game later today → 5 minutes
-  const todayEnd = new Date().setHours(23,59,59,999);
-  if(vals.some(s=>s.featuredStatus==='upcoming' && s.featuredDateMs>now && s.featuredDateMs<=todayEnd)) return 300;
-  // Nothing today → 30 minutes
+  const in15=now+15*60*1000;
+  const ago30=now-30*60*1000;
+  if(vals.some(s=>s.featuredStatus==='upcoming'&&s.featuredDateMs>ago30&&s.featuredDateMs<=in15)) return 30;
+  const todayEnd=new Date().setHours(23,59,59,999);
+  if(vals.some(s=>s.featuredStatus==='upcoming'&&s.featuredDateMs>now&&s.featuredDateMs<=todayEnd)) return 300;
   return 1800;
 }
 
 function startCountdown(seconds){
-  countdownSeconds = seconds;
+  countdownSeconds=seconds;
   clearInterval(countdownInterval);
-  countdownInterval = setInterval(()=>{
+  countdownInterval=setInterval(()=>{
     countdownSeconds--;
     if(countdownSeconds<0) countdownSeconds=0;
     const m=Math.floor(countdownSeconds/60);
@@ -561,40 +559,32 @@ function startCountdown(seconds){
 
 function scheduleNextRefresh(scores){
   clearTimeout(refreshTimeout);
-  const secs = getRefreshInterval(scores);
+  const secs=getRefreshInterval(scores);
   startCountdown(secs);
-  refreshTimeout = setTimeout(fetchScores, secs*1000);
+  refreshTimeout=setTimeout(fetchScores,secs*1000);
 }
 
 async function fetchScores(){
-  const btn = document.getElementById('refresh-btn');
+  const btn=document.getElementById('refresh-btn');
   btn.disabled=true; btn.classList.add('spinning');
   hideError(); setStatus('loading','Fetching live scores…'); showSkeletons();
-
-  try {
-    const results = await Promise.allSettled(TEAM_ORDER.map(k=>fetchTeamData(k)));
-    const scores  = {};
+  try{
+    const results=await Promise.allSettled(TEAM_ORDER.map(k=>fetchTeamData(k)));
+    const scores={};
     TEAM_ORDER.forEach((k,i)=>{
-      scores[k] = results[i].status==='fulfilled'
-        ? results[i].value
-        : { featuredStatus:'offseason', featured:null, recentGames:[], nextGame:null, offseasonNote:'Data unavailable', featuredDateMs:0 };
+      scores[k]=results[i].status==='fulfilled'
+        ?results[i].value
+        :{featuredStatus:'offseason',featured:null,recentGames:[],nextGame:null,offseasonNote:'Data unavailable',featuredDateMs:0};
     });
-
-    const rank = s=>({live:0,starting:0,final:1,upcoming:3,offseason:4}[s]??4);
-    const sorted = TEAM_ORDER
-      .map(k=>({key:k,data:scores[k]}))
-      .sort((a,b)=>{
-        const rd=rank(a.data.featuredStatus)-rank(b.data.featuredStatus);
-        if(rd!==0) return rd;
-        return b.data.featuredDateMs-a.data.featuredDateMs;
-      });
-
-    document.getElementById('cards-container').innerHTML = sorted.map(({key,data})=>renderCard(key,data)).join('');
-
-    // Flash cards where score changed
+    const rank=s=>({live:0,starting:0,final:1,upcoming:3,offseason:4}[s]??4);
+    const sorted=TEAM_ORDER.map(k=>({key:k,data:scores[k]})).sort((a,b)=>{
+      const rd=rank(a.data.featuredStatus)-rank(b.data.featuredStatus);
+      if(rd!==0) return rd;
+      return b.data.featuredDateMs-a.data.featuredDateMs;
+    });
+    document.getElementById('cards-container').innerHTML=sorted.map(({key,data})=>renderCard(key,data)).join('');
     TEAM_ORDER.forEach(k=>{
-      const curr=scores[k]?.featured;
-      const prev=prevScores[k]?.featured;
+      const curr=scores[k]?.featured, prev=prevScores[k]?.featured;
       if(curr&&prev&&(curr.phiScore!==prev.phiScore||curr.oppScore!==prev.oppScore)){
         document.querySelectorAll('.team-card').forEach(card=>{
           if(card.querySelector('.team-name')?.textContent===TEAMS[k].name){
@@ -605,42 +595,19 @@ async function fetchScores(){
         });
       }
     });
-    prevScores = scores;
-
-    const t = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    prevScores=scores;
+    const t=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     setStatus('ok','Updated '+t);
     document.getElementById('footer-text').textContent=`Live data via ESPN · Last updated ${t} · porter.allen@gmail.com · Built with Claude.ai`;
     scheduleNextRefresh(scores);
-  } catch(err){
+  }catch(err){
     console.error(err);
     setStatus('error','Update failed');
     showError('Could not fetch scores: '+err.message);
-  } finally {
+  }finally{
     btn.disabled=false; btn.classList.remove('spinning');
   }
 }
-
-// ── Theme toggle ─────────────────────────────────────────────────────────────
-const THEMES = ['device','light','dark'];
-const THEME_ICONS = { device:'🖥️', light:'☀️', dark:'🌙' };
-
-function cycleTheme(){
-  const current = localStorage.getItem('colorScheme') || 'device';
-  const next = THEMES[(THEMES.indexOf(current)+1) % THEMES.length];
-  applyTheme(next);
-}
-
-function applyTheme(theme){
-  localStorage.setItem('colorScheme', theme);
-  const root = document.documentElement;
-  if(theme==='dark')       root.setAttribute('data-theme','dark');
-  else if(theme==='light') root.setAttribute('data-theme','light');
-  else                     root.removeAttribute('data-theme');
-  document.getElementById('theme-icon').textContent = THEME_ICONS[theme];
-}
-
-// Init icon on load
-applyTheme(localStorage.getItem('colorScheme') || 'device');
 
 fetchScores();
 </script>
