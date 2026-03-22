@@ -530,11 +530,16 @@ let prevScores = {};
 
 function getRefreshInterval(scores){
   const vals = Object.values(scores);
+  const now = Date.now();
+  // Live game → 30 seconds
   if(vals.some(s=>s.featuredStatus==='live')) return 30;
-  // Game starting within 15 minutes → refresh every 30 seconds to catch kickoff
-  const in15 = Date.now() + 15*60*1000;
-  const gameSoon = vals.some(s=>s.featuredStatus==='upcoming' && s.featuredDateMs<=in15 && s.featuredDateMs>Date.now());
-  if(gameSoon) return 30;
+  // Game starting within 15 minutes → 30 seconds to catch kickoff
+  const in15 = now + 15*60*1000;
+  if(vals.some(s=>s.featuredStatus==='upcoming' && s.featuredDateMs>now && s.featuredDateMs<=in15)) return 30;
+  // Game later today → 5 minutes
+  const todayEnd = new Date().setHours(23,59,59,999);
+  if(vals.some(s=>s.featuredStatus==='upcoming' && s.featuredDateMs>now && s.featuredDateMs<=todayEnd)) return 300;
+  // Nothing today → 30 minutes
   return 1800;
 }
 
