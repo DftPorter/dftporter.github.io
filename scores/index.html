@@ -453,12 +453,20 @@ const RSS_PROXY = 'https://api.rss2json.com/v1/api.json?rss_url=';
 let newsCache = { items:[], fetchedAt:0 };
 const NEWS_TTL = 15 * 60 * 1000; // 15 minutes
 
+function parseRssDate(str){
+  // RSS dates come as "2026-03-22 15:27:33" without timezone — treat as local time
+  if(!str) return 0;
+  // Replace space with T and add timezone offset to parse as local
+  return new Date(str.replace(' ','T')).getTime() || new Date(str).getTime() || 0;
+}
+
 function timeAgo(dateStr){
-  const diff = Date.now() - new Date(dateStr).getTime();
+  const diff = Date.now() - parseRssDate(dateStr);
+  if(diff < 0) return 'just now';
   const mins = Math.floor(diff/60000);
-  if(mins < 60)  return `${mins}m ago`;
+  if(mins < 60) return `${mins}m ago`;
   const hrs = Math.round(mins/60);
-  if(hrs < 24)   return `${hrs}h ago`;
+  if(hrs < 24)  return `${hrs}h ago`;
   return `${Math.floor(hrs/24)}d ago`;
 }
 
@@ -478,7 +486,7 @@ async function fetchNews(){
     // Merge, sort newest first, take top 5
     const merged = results.flat()
       .filter(item => item.title && item.pubDate)
-      .sort((a,b) => new Date(b.pubDate) - new Date(a.pubDate))
+      .sort((a,b) => parseRssDate(b.pubDate) - parseRssDate(a.pubDate))
       .slice(0,5);
     newsCache = { items: merged, fetchedAt: Date.now() };
     return merged;
