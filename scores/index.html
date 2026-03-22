@@ -733,7 +733,6 @@ async function fetchScores(){
     document.getElementById('cards-container').innerHTML =
       sorted.map(({key,data})=>renderCard(key,data)).join('') +
       renderNewsCard(newsItems);
-    firstLoad = false;
     TEAM_ORDER.forEach(k=>{
       const curr=scores[k]?.featured, prev=prevScores[k]?.featured;
       if(curr&&prev&&(curr.phiScore!==prev.phiScore||curr.oppScore!==prev.oppScore)){
