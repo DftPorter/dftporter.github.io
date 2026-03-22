@@ -317,6 +317,14 @@ async function fetchTeamData(key){
     schRes = await espnFetch(`${base}/teams/${teamId}/schedule`).catch(()=>null);
   }
 
+  // For soccer, pull records from the schedule endpoint events instead of scoreboard
+  if(isSoccer && schRes?.events){
+    const schedMap = {};
+    schRes.events.forEach(ev => { schedMap[ev.id] = ev; });
+    // Replace scoreboard events with schedule events where available (schedule has record data)
+    schRes.events = schRes.events; // already set above
+  }
+
   const sbRes = await espnFetch(`${base}/scoreboard`).catch(()=>null);
   const now   = Date.now();
 
@@ -325,6 +333,10 @@ async function fetchTeamData(key){
 
   const rawEvents   = schRes?.events||schRes?.team?.events||[];
   const schedEvents = [...rawEvents].sort((a,b)=>new Date(a.date)-new Date(b.date));
+
+  // For soccer, use team recordSummary as the record since competitor records
+  // are only available on the schedule endpoint events
+  const soccerRecord = isSoccer ? (schRes?.team?.recordSummary||null) : null;
 
   const recentGames = [];
   let lastCompleted = null;
@@ -382,8 +394,8 @@ async function fetchTeamData(key){
       oppScore:  featured.oppScore,
       note:      featured.note,
       venue:     featured.venue||null,
-      phiRecord: showRecords ? (featured.phiRecord||null) : null,
-      oppRecord: showRecords ? (featured.oppRecord||null) : null,
+      phiRecord: showRecords ? (soccerRecord || featured.phiRecord||null) : null,
+      oppRecord: showRecords && !soccerRecord ? (featured.oppRecord||null) : null,
     } : null,
     recentGames: isOffseason ? [] : recentGames
       .filter(g=>g.dateMs!==(featured?.dateMs||-1))
@@ -538,10 +550,13 @@ function getRefreshInterval(scores){
   const now=Date.now();
   // Live or starting → 30 seconds
   if(vals.some(s=>s.featuredStatus==='live'||s.featuredStatus==='starting')) return 30;
-  // Game starting within 15 minutes → 30 seconds
+  // Game within 15 minutes → 30 seconds
   const in15=now+15*60*1000;
   const ago30=now-30*60*1000;
   if(vals.some(s=>s.featuredStatus==='upcoming'&&s.featuredDateMs>ago30&&s.featuredDateMs<=in15)) return 30;
+  // Game within 1 hour → 15 minutes
+  const in60=now+60*60*1000;
+  if(vals.some(s=>s.featuredStatus==='upcoming'&&s.featuredDateMs>now&&s.featuredDateMs<=in60)) return 900;
   // Everything else → 30 minutes
   return 1800;
 }
