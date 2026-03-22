@@ -536,12 +536,13 @@ let countdownSeconds=300, countdownInterval=null, refreshTimeout=null, prevScore
 function getRefreshInterval(scores){
   const vals=Object.values(scores);
   const now=Date.now();
+  // Live or starting → 30 seconds
   if(vals.some(s=>s.featuredStatus==='live'||s.featuredStatus==='starting')) return 30;
+  // Game starting within 15 minutes → 30 seconds
   const in15=now+15*60*1000;
   const ago30=now-30*60*1000;
   if(vals.some(s=>s.featuredStatus==='upcoming'&&s.featuredDateMs>ago30&&s.featuredDateMs<=in15)) return 30;
-  const todayEnd=new Date().setHours(23,59,59,999);
-  if(vals.some(s=>s.featuredStatus==='upcoming'&&s.featuredDateMs>now&&s.featuredDateMs<=todayEnd)) return 300;
+  // Everything else → 30 minutes
   return 1800;
 }
 
