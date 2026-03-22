@@ -455,12 +455,8 @@ const NEWS_TTL = 15 * 60 * 1000; // 15 minutes
 
 function parseRssDate(str){
   if(!str) return 0;
-  // RSS dates from SB Nation come as "2026-03-22 15:27:33" in Eastern Time (no tz info)
-  // Append EST/EDT offset so the browser parses them correctly
-  // EDT = UTC-4 (Mar-Nov), EST = UTC-5 (Nov-Mar)
-  const month = parseInt(str.substring(5,7));
-  const offset = (month >= 3 && month <= 11) ? '-04:00' : '-05:00';
-  return new Date(str.replace(' ','T') + offset).getTime() || 0;
+  // rss2json returns dates as UTC but without the 'Z' suffix — add it explicitly
+  return new Date(str.replace(' ','T') + 'Z').getTime() || 0;
 }
 
 function timeAgo(dateStr){
