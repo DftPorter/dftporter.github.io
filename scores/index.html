@@ -280,7 +280,7 @@ function parseEvent(ev, teamId){
     state==='pre'          ? fmtFull(dateMs) :
                              detail||'Final';
 
-  return { featuredStatus, isHome, oppAbbr, phiScore, oppScore, phiRecord, oppRecord, venue, dateMs, note, completed };
+  return { featuredStatus, isHome, oppAbbr, oppId: String(them.team?.id||''), phiScore, oppScore, phiRecord, oppRecord, venue, dateMs, note, completed };
 }
 
 function nextSeasonNote(path){
@@ -294,6 +294,20 @@ function nextSeasonNote(path){
   if(path.startsWith('baseball/mlb')) return 'Spring Training underway · Regular season starts late March';
   return 'Season has ended';
 }
+
+// MLS standings cache — fetched once on load, used for Union opponent records
+let mlsRecords = {};
+async function fetchMlsRecords(){
+  try {
+    const d = await espnFetch('https://site.api.espn.com/apis/v2/sports/soccer/usa.1/standings');
+    const entries = d.children?.flatMap(c => c.standings?.entries || []) || [];
+    entries.forEach(e => {
+      const overall = e.stats?.find(s => s.name === 'overall')?.displayValue;
+      if(e.team?.id && overall) mlsRecords[String(e.team.id)] = overall;
+    });
+  } catch(err) { console.warn('MLS standings fetch failed', err); }
+}
+fetchMlsRecords();
 
 async function fetchTeamData(key){
   const { path, teamId } = TEAMS[key];
@@ -317,26 +331,9 @@ async function fetchTeamData(key){
     schRes = await espnFetch(`${base}/teams/${teamId}/schedule`).catch(()=>null);
   }
 
-  // For soccer, pull records from the schedule endpoint events instead of scoreboard
-  if(isSoccer && schRes?.events){
-    const schedMap = {};
-    schRes.events.forEach(ev => { schedMap[ev.id] = ev; });
-    // Replace scoreboard events with schedule events where available (schedule has record data)
-    schRes.events = schRes.events; // already set above
-  }
-
-  const sbRes = await espnFetch(`${base}/scoreboard`).catch(()=>null);
-  const now   = Date.now();
-
-  const seasonType  = schRes?.season?.type;
-  const isOffseason = (typeof seasonType==='object' ? seasonType?.type : seasonType)===4;
-
-  const rawEvents   = schRes?.events||schRes?.team?.events||[];
-  const schedEvents = [...rawEvents].sort((a,b)=>new Date(a.date)-new Date(b.date));
-
-  // For soccer, use team recordSummary as the record since competitor records
-  // are only available on the schedule endpoint events
-  const soccerRecord = isSoccer ? (schRes?.team?.recordSummary||null) : null;
+  // For soccer, use MLS standings cache for records (scoreboard events lack record data)
+  const soccerRecord = isSoccer ? (mlsRecords[String(teamId)] || schRes?.team?.recordSummary || null) : null;
+  const getSoccerOppRecord = (oppId) => isSoccer ? (mlsRecords[String(oppId)] || null) : null;
 
   const recentGames = [];
   let lastCompleted = null;
@@ -395,7 +392,7 @@ async function fetchTeamData(key){
       note:      featured.note,
       venue:     featured.venue||null,
       phiRecord: showRecords ? (soccerRecord || featured.phiRecord||null) : null,
-      oppRecord: showRecords && !soccerRecord ? (featured.oppRecord||null) : null,
+      oppRecord: showRecords ? (getSoccerOppRecord(featured.oppId) || featured.oppRecord||null) : null,
     } : null,
     recentGames: isOffseason ? [] : recentGames
       .filter(g=>g.dateMs!==(featured?.dateMs||-1))
