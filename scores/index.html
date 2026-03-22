@@ -97,7 +97,19 @@
   .no-recent{padding:10px 0;font-size:12px;color:#4b5563;font-family:'DM Mono',monospace;text-align:center;}
   @keyframes scoreFlash{0%{box-shadow:0 0 0 0 rgba(255,255,255,0);}20%{box-shadow:0 0 24px 6px rgba(255,215,0,.5);}100%{box-shadow:0 0 0 0 rgba(255,215,0,0);}}
   .score-changed{animation:scoreFlash 1.5s ease-out;}
-  #error-banner{display:none;position:relative;z-index:10;margin:16px auto 0;max-width:1400px;padding:0 20px;}
+  .news-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;animation:fadeUp .5s ease both;}
+  .news-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#006BB6,#F74902,#E81828,#004C54);}
+  .news-header{padding:20px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+  .news-header-icon{font-size:20px;}
+  .news-header-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.04em;color:#fff;}
+  .news-item{display:flex;flex-direction:column;gap:4px;padding:11px 20px;border-bottom:1px solid rgba(255,255,255,.03);cursor:pointer;transition:background .15s;text-decoration:none;}
+  .news-item:last-child{border-bottom:none;}
+  .news-item:hover{background:rgba(255,255,255,.04);}
+  .news-item-title{font-size:13px;color:#e5e7eb;line-height:1.35;letter-spacing:.01em;}
+  .news-item-meta{display:flex;align-items:center;gap:8px;margin-top:2px;}
+  .news-team-tag{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:100px;font-weight:500;}
+  .news-time{font-family:'DM Mono',monospace;font-size:10px;color:#4b5563;}
+  .news-loading{padding:24px 20px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:#4b5563;}
   #error-banner-inner{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);border-radius:10px;padding:14px 18px;font-family:'DM Mono',monospace;font-size:12px;color:#fca5a5;letter-spacing:.04em;}
   footer{position:relative;z-index:10;text-align:center;padding:20px;font-family:'DM Mono',monospace;font-size:11px;color:#374151;letter-spacing:.08em;border-top:1px solid var(--border);}
   @media(max-width:480px){main{padding:16px 12px 32px;gap:14px;}header{padding:20px 16px;}}
@@ -145,7 +157,11 @@
     :root:not([data-theme="dark"]) .streak-w{background:rgba(22,163,74,.12) !important;color:#16a34a !important;border-color:rgba(22,163,74,.3) !important;}
     :root:not([data-theme="dark"]) .streak-l{background:rgba(220,38,38,.1) !important;color:#dc2626 !important;border-color:rgba(220,38,38,.25) !important;}
     :root:not([data-theme="dark"]) .streak-d{background:rgba(217,119,6,.1) !important;color:#d97706 !important;border-color:rgba(217,119,6,.25) !important;}
-    :root:not([data-theme="dark"]) footer{color:#6b7280 !important;}
+    :root:not([data-theme="dark"]) .news-header-title{color:#111827 !important;}
+    :root:not([data-theme="dark"]) .news-item:hover{background:rgba(0,0,0,.03) !important;}
+    :root:not([data-theme="dark"]) .news-item-title{color:#111827 !important;}
+    :root:not([data-theme="dark"]) .news-time{color:#9ca3af !important;}
+    :root:not([data-theme="dark"]) .news-loading{color:#9ca3af !important;}
   }
   [data-theme="light"]{--bg:#e8edf2;--surface:#ffffff;--border:rgba(0,0,0,0.10);--text:#111827;--muted:#4b5563;}
   [data-theme="light"] body{color:#111827;}
@@ -188,7 +204,11 @@
   [data-theme="light"] .streak-w{background:rgba(22,163,74,.12) !important;color:#16a34a !important;border-color:rgba(22,163,74,.3) !important;}
   [data-theme="light"] .streak-l{background:rgba(220,38,38,.1) !important;color:#dc2626 !important;border-color:rgba(220,38,38,.25) !important;}
   [data-theme="light"] .streak-d{background:rgba(217,119,6,.1) !important;color:#d97706 !important;border-color:rgba(217,119,6,.25) !important;}
-  [data-theme="light"] footer{color:#6b7280 !important;}
+  [data-theme="light"] .news-header-title{color:#111827 !important;}
+  [data-theme="light"] .news-item:hover{background:rgba(0,0,0,.03) !important;}
+  [data-theme="light"] .news-item-title{color:#111827 !important;}
+  [data-theme="light"] .news-time{color:#9ca3af !important;}
+  [data-theme="light"] .news-loading{color:#9ca3af !important;}
 </style>
 </head>
 <body>
@@ -227,6 +247,13 @@ const TEAMS = {
   union:    { name:'Union',    sport:'MLS', icon:'⚽', color:'#8b6914', path:'soccer/usa.1',   teamId:'10739' },
 };
 const TEAM_ORDER = ['eagles','sixers','flyers','phillies','union'];
+
+const NEWS_FEEDS = [
+  { team:'Sixers',   color:'#006BB6', url:'https://www.libertyballers.com/rss/index.xml'      },
+  { team:'Eagles',   color:'#004C54', url:'https://www.bleedinggreennation.com/rss/index.xml'  },
+  { team:'Flyers',   color:'#F74902', url:'https://www.broadstreethockey.com/rss/index.xml'    },
+  { team:'Phillies', color:'#E81828', url:'https://www.thegoodphight.com/rss/index.xml'        },
+];
 
 function fmtShort(ms){ return new Date(ms).toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
 function fmtFull(ms){
@@ -421,7 +448,66 @@ async function fetchTeamData(key, skipScoreboard=false){
   };
 }
 
-// ── Rendering ─────────────────────────────────────────────────────────────────
+// ── News feed ─────────────────────────────────────────────────────────────────
+const RSS_PROXY = 'https://api.rss2json.com/v1/api.json?rss_url=';
+let newsCache = { items:[], fetchedAt:0 };
+const NEWS_TTL = 15 * 60 * 1000; // 15 minutes
+
+function timeAgo(dateStr){
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff/60000);
+  if(mins < 60)  return `${mins}m ago`;
+  const hrs = Math.floor(mins/60);
+  if(hrs < 24)   return `${hrs}h ago`;
+  return `${Math.floor(hrs/24)}d ago`;
+}
+
+async function fetchNews(){
+  if(Date.now() - newsCache.fetchedAt < NEWS_TTL) return newsCache.items;
+  try {
+    const results = await Promise.all(NEWS_FEEDS.map(async feed => {
+      const d = await fetch(`${RSS_PROXY}${encodeURIComponent(feed.url)}`).then(r=>r.json()).catch(()=>null);
+      return (d?.items||[]).slice(0,5).map(item=>({
+        title:   item.title?.trim(),
+        link:    item.link,
+        pubDate: item.pubDate,
+        team:    feed.team,
+        color:   feed.color,
+      }));
+    }));
+    // Merge and sort by date, newest first, take top 5
+    const merged = results.flat().sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate)).slice(0,5);
+    newsCache = { items: merged, fetchedAt: Date.now() };
+    return merged;
+  } catch(err){
+    console.warn('News fetch failed', err);
+    return newsCache.items;
+  }
+}
+
+function renderNewsCard(items){
+  const content = items.length
+    ? items.map(item=>`
+        <a class="news-item" href="${item.link}" target="_blank" rel="noopener">
+          <div class="news-item-title">${item.title}</div>
+          <div class="news-item-meta">
+            <span class="news-team-tag" style="background:${item.color}22;color:${item.color};border:1px solid ${item.color}44">${item.team}</span>
+            <span class="news-time">${timeAgo(item.pubDate)}</span>
+          </div>
+        </a>`).join('')
+    : '<div class="news-loading">Loading headlines…</div>';
+
+  return `
+    <div class="news-card">
+      <div class="news-header">
+        <span class="news-header-icon">📰</span>
+        <span class="news-header-title">Philly Sports News</span>
+      </div>
+      ${content}
+    </div>`;
+}
+
+
 function showSkeletons(){
   document.getElementById('cards-container').innerHTML=TEAM_ORDER.map(()=>`
     <div class="skeleton-card">
@@ -596,7 +682,10 @@ async function fetchScores(){
       s.featuredStatus==='live'||s.featuredStatus==='starting'||
       (s.featuredStatus==='upcoming'&&s.featuredDateMs>now-30*60*1000&&s.featuredDateMs<now+2*60*60*1000)
     );
-    const results=await Promise.allSettled(TEAM_ORDER.map(k=>fetchTeamData(k,!anyLikelyLive)));
+    const [results, newsItems] = await Promise.all([
+      Promise.allSettled(TEAM_ORDER.map(k=>fetchTeamData(k,!anyLikelyLive))),
+      fetchNews(),
+    ]);
     const scores={};
     TEAM_ORDER.forEach((k,i)=>{
       scores[k]=results[i].status==='fulfilled'
@@ -609,7 +698,9 @@ async function fetchScores(){
       if(rd!==0) return rd;
       return b.data.featuredDateMs-a.data.featuredDateMs;
     });
-    document.getElementById('cards-container').innerHTML=sorted.map(({key,data})=>renderCard(key,data)).join('');
+    document.getElementById('cards-container').innerHTML =
+      sorted.map(({key,data})=>renderCard(key,data)).join('') +
+      renderNewsCard(newsItems);
     TEAM_ORDER.forEach(k=>{
       const curr=scores[k]?.featured, prev=prevScores[k]?.featured;
       if(curr&&prev&&(curr.phiScore!==prev.phiScore||curr.oppScore!==prev.oppScore)){
