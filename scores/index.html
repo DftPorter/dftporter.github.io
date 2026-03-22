@@ -435,7 +435,7 @@ async function fetchTeamData(key){
 // ── News feed ─────────────────────────────────────────────────────────────────
 const RSS_PROXY = 'https://api.rss2json.com/v1/api.json?rss_url=';
 let newsCache = { items:[], fetchedAt:0 };
-const NEWS_TTL = 15 * 60 * 1000;
+const NEWS_TTL = 5 * 60 * 1000; // refresh news every 5 minutes
 
 function parseRssDate(str){
   if(!str) return 0;
