@@ -58,6 +58,7 @@
   .team-sport{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-top:2px;}
   .card-status{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:100px;font-weight:500;white-space:nowrap;}
   .status-live{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3);}
+  .status-starting{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3);animation:pulse 2s ease-in-out infinite;}
   .status-final{background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border);}
   .status-upcoming{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.25);}
   .status-offseason{background:rgba(107,114,128,.12);color:#6b7280;border:1px solid rgba(107,114,128,.2);}
@@ -278,9 +279,10 @@ function parseEvent(ev, teamId){
   const oppRecord = getRecord(them);
   const venue     = comp.venue ? `${comp.venue.fullName}, ${comp.venue.address?.city}` : null;
   const featuredStatus =
-    state==='in'  ? 'live'     :
-    completed     ? 'final'    :
-    state==='pre' ? 'upcoming' : 'offseason';
+    state==='in'                          ? 'live'     :
+    completed                             ? 'final'    :
+    state==='pre' && dateMs <= now        ? 'starting' :
+    state==='pre'                         ? 'upcoming' : 'offseason';
   const note =
     state==='in'  ? detail :
     state==='pre' ? fmtFull(dateMs) :
@@ -384,7 +386,7 @@ async function fetchTeamData(key){
   return {
     featuredStatus: fs,
     featured: featured ? {
-      label:     fs==='live' ? 'LIVE NOW' : fs==='upcoming' ? 'NEXT GAME' : null,
+      label:     fs==='live' ? 'LIVE NOW' : fs==='starting' ? 'STARTING NOW' : fs==='upcoming' ? 'NEXT GAME' : null,
       oppAbbr:   featured.oppAbbr,
       phiScore:  featured.phiScore,
       oppScore:  featured.oppScore,
@@ -445,8 +447,8 @@ function scoreHtml(score, winner, upcoming, isPhi){
 function renderCard(key, data){
   const { name, sport, icon, color } = TEAMS[key];
   const fs = data.featuredStatus||'offseason';
-  const statusLabel = {live:'● Live',final:'Final',upcoming:'Upcoming',offseason:'Off-Season'}[fs]||'Off-Season';
-  const statusCls   = {live:'status-live',final:'status-final',upcoming:'status-upcoming',offseason:'status-offseason'}[fs]||'status-offseason';
+  const statusLabel = {live:'● Live',starting:'● Starting',final:'Final',upcoming:'Upcoming',offseason:'Off-Season'}[fs]||'Off-Season';
+  const statusCls   = {live:'status-live',starting:'status-starting',final:'status-final',upcoming:'status-upcoming',offseason:'status-offseason'}[fs]||'status-offseason';
   const streakCls   = data.streak?.startsWith('W')?'streak-w':data.streak?.startsWith('L')?'streak-l':'streak-d';
 
   let featuredHtml;
@@ -501,7 +503,7 @@ function renderCard(key, data){
     : '';
 
   return `
-    <div class="team-card${fs==='live'?' is-live':''}" style="--team-color:${color}">
+    <div class="team-card${(fs==='live'||fs==='starting')?' is-live':''}" style="--team-color:${color}">
       <div class="card-header">
         <div class="team-icon">${icon}</div>
         <div class="team-meta">
@@ -533,7 +535,7 @@ function getRefreshInterval(scores){
   const vals = Object.values(scores);
   const now = Date.now();
   // Live game → 30 seconds
-  if(vals.some(s=>s.featuredStatus==='live')) return 30;
+  if(vals.some(s=>s.featuredStatus==='live'||s.featuredStatus==='starting')) return 30;
   // Game starting within 15 minutes OR started up to 30 min ago but not yet live → 30 seconds
   const in15 = now + 15*60*1000;
   const ago30 = now - 30*60*1000;
@@ -578,7 +580,7 @@ async function fetchScores(){
         : { featuredStatus:'offseason', featured:null, recentGames:[], nextGame:null, offseasonNote:'Data unavailable', featuredDateMs:0 };
     });
 
-    const rank = s=>({live:0,final:1,upcoming:3,offseason:4}[s]??4);
+    const rank = s=>({live:0,starting:0,final:1,upcoming:3,offseason:4}[s]??4);
     const sorted = TEAM_ORDER
       .map(k=>({key:k,data:scores[k]}))
       .sort((a,b)=>{
