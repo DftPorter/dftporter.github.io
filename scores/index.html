@@ -454,7 +454,7 @@ async function fetchNews(){
   if(Date.now()-newsCache.fetchedAt < NEWS_TTL) return newsCache.items;
   try{
     const results = await Promise.all(NEWS_FEEDS.map(async feed=>{
-      const d = await fetch(`${RSS_PROXY}${encodeURIComponent(feed.url)}`).then(r=>r.json()).catch(()=>null);
+      const d = await fetch(`${RSS_PROXY}${encodeURIComponent(feed.url)}&_=${Math.floor(Date.now()/300000)}`).then(r=>r.json()).catch(()=>null);
       return (d?.items||[]).slice(0,5).map(item=>({
         title:   item.title?.trim(),
         link:    item.link,
