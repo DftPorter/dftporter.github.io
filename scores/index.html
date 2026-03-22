@@ -324,7 +324,23 @@ const SCHEDULE_TTL  = 60 * 60 * 1000;
 
 async function fetchScheduleCached(key){
   const cached = scheduleCache[key];
-  if(cached && Date.now() - cached.fetchedAt < SCHEDULE_TTL) return cached.data;
+  // Invalidate cache if a game was recently scheduled to start (within past 2 hours)
+  // This ensures we don't serve stale "upcoming" data once a game goes live
+  if(cached){
+    const now = Date.now();
+    const age = now - cached.fetchedAt;
+    const data = cached.data;
+    const events = data?.events || [];
+    const hasRecentStart = events.some(ev => {
+      const comp = ev.competitions?.[0];
+      const status = comp?.status ?? ev.status;
+      const notCompleted = !status?.type?.completed;
+      const ms = new Date(ev.date).getTime();
+      return notCompleted && ms > now - 2*60*60*1000 && ms < now;
+    });
+    // Use cache if fresh enough AND no game recently started
+    if(age < SCHEDULE_TTL && !hasRecentStart) return data;
+  }
   const { path, teamId } = TEAMS[key];
   const base     = `https://site.api.espn.com/apis/site/v2/sports/${path}`;
   const isSoccer = path.startsWith('soccer');
