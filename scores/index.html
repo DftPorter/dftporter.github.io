@@ -442,6 +442,7 @@ async function fetchTeamData(key, skipScoreboard=false){
       ? `${nextGame.isHome?'vs':'@'} ${nextGame.oppAbbr} · ${fmtFull(nextGame.dateMs)}` : null,
     nextGameToday: nextGame ? new Date(nextGame.dateMs).toDateString()===new Date().toDateString() : false,
     featuredDateMs: featured?.dateMs||0,
+    nextGameDateMs: nextGame?.dateMs||0,
     streak:   isOffseason ? null : streak,
     standing: isOffseason ? null : (schRes?.team?.standingSummary||null),
     offseasonNote: fs==='offseason' ? (isOffseason ? nextSeasonNote(path) : 'No upcoming schedule found') : null,
@@ -652,13 +653,18 @@ applyTheme(localStorage.getItem('colorScheme')||'device');
 let countdownSeconds=300, countdownInterval=null, refreshTimeout=null, prevScores={};
 
 function getRefreshInterval(scores){
-  const vals=Object.values(scores);
-  const now=Date.now();
+  const vals = Object.values(scores);
+  const now  = Date.now();
+  // Live or starting → 30 seconds
   if(vals.some(s=>s.featuredStatus==='live'||s.featuredStatus==='starting')) return 30;
-  const in15=now+15*60*1000, ago30=now-30*60*1000;
-  if(vals.some(s=>s.featuredStatus==='upcoming'&&s.featuredDateMs>ago30&&s.featuredDateMs<=in15)) return 30;
-  const in60=now+60*60*1000;
-  if(vals.some(s=>s.featuredStatus==='upcoming'&&s.featuredDateMs>now&&s.featuredDateMs<=in60)) return 900;
+  // Check next game time (not featured, which may be a past game)
+  const nextMs = vals.map(s=>s.nextGameDateMs||0).filter(ms=>ms>0);
+  const soonest = nextMs.length ? Math.min(...nextMs) : 0;
+  // Within 15 minutes → 30 seconds
+  if(soonest > now - 30*60*1000 && soonest <= now + 15*60*1000) return 30;
+  // Within 1 hour → 15 minutes
+  if(soonest > now && soonest <= now + 60*60*1000) return 900;
+  // Everything else → 30 minutes
   return 1800;
 }
 
