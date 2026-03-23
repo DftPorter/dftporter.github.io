@@ -350,22 +350,28 @@ function renderStudyCard(anim) {
 // ── 3D flip ────────────────────────────────────────────────
 function flipCard3D(inner, currentlyFlipped, onMidpoint) {
   inner.dataset.flipping = '1';
-  const startAngle = currentlyFlipped ? 180 : 0;
-  const midAngle   = currentlyFlipped ? 90  : 90;
-  const endAngle   = currentlyFlipped ? 0   : 180;
+  // Remove class so CSS transform doesn't fight the inline animation
+  inner.classList.remove('flipped');
+  const fromAngle = currentlyFlipped ? 180 : 0;
+  const endAngle  = currentlyFlipped ? 0   : 180;
 
+  // Phase 1: spin to 90° (edge-on) and shrink
   inner.style.transition = 'transform 0.22s cubic-bezier(0.4,0.0,1.0,0.6)';
-  inner.style.transform  = `rotateY(${midAngle}deg) scale(0.88)`;
+  inner.style.transform  = `rotateY(90deg) scale(0.88)`;
 
   setTimeout(() => {
+    // At the invisible midpoint: swap which face is showing, jump to -90°
     onMidpoint();
-    inner.classList.toggle('flipped', !currentlyFlipped);
+    if (!currentlyFlipped) inner.classList.add('flipped');
     inner.style.transition = 'none';
-    inner.style.transform  = `rotateY(${currentlyFlipped ? -90 : -90}deg) scale(0.88)`;
+    inner.style.transform  = `rotateY(-90deg) scale(0.88)`;
+
+    // Phase 2: spin from -90° back to flat and grow
     requestAnimationFrame(() => requestAnimationFrame(() => {
       inner.style.transition = 'transform 0.25s cubic-bezier(0.0,0.4,0.6,1.0)';
-      inner.style.transform  = `rotateY(${endAngle}deg) scale(1)`;
+      inner.style.transform  = `rotateY(${endAngle === 180 ? 0 : 0}deg) scale(1)`;
       setTimeout(() => {
+        // Clean up — let CSS class own the resting state
         inner.style.transition = '';
         inner.style.transform  = '';
         delete inner.dataset.flipping;
