@@ -2,155 +2,191 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Flashcards</title>
-
-<!-- Load your content and branding files first -->
 <script src="flashcard-content.js"></script>
 <script src="flashcard-branding.js"></script>
-
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --primary:         #1D9E75;
-    --primary-text:    #ffffff;
-    --card-front:      #ffffff;
-    --card-front-text: #1a1a1a;
-    --card-back:       #1D9E75;
-    --card-back-text:  #ffffff;
-    --page-bg:         #f0f4f2;
-    --progress-fill:   #1D9E75;
-    --mastered:        #0F6E56;
-  }
+:root {
+  --primary: #1D9E75; --primary-text: #fff;
+  --card-front: #fff; --card-front-text: #1a1a1a;
+  --card-back: #1D9E75; --card-back-text: #fff;
+  --page-bg: #f0f4f2; --progress-fill: #1D9E75; --mastered: #0F6E56;
+}
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: var(--page-bg);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    -webkit-tap-highlight-color: transparent;
-  }
+html {
+  height: 100%; height: 100dvh;
+  overflow: hidden;
+}
 
-  #header {
-    width: 100%; max-width: 480px;
-    padding: 18px 20px 10px;
-    display: flex; align-items: center; gap: 10px;
-  }
-  #logo { font-size: 24px; line-height: 1; }
-  #company-name { font-size: 15px; font-weight: 600; color: var(--primary); flex: 1; }
-  #card-counter { font-size: 13px; color: #666; white-space: nowrap; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--page-bg);
+  height: 100%; height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
 
-  #progress-wrap { width: 100%; max-width: 480px; padding: 0 20px 16px; }
-  #progress-bar  { width: 100%; height: 6px; background: #dde; border-radius: 99px; overflow: hidden; }
-  #progress-fill { height: 100%; background: var(--progress-fill); border-radius: 99px; transition: width .4s ease; width: 0%; }
-  #progress-label { font-size: 12px; color: #888; margin-top: 5px; text-align: right; }
+/* ── Header ── */
+#header {
+  width: 100%; max-width: 480px;
+  padding: 14px 20px 8px;
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+#logo { font-size: 22px; line-height: 1; }
+#company-name { font-size: 14px; font-weight: 600; color: var(--primary); flex: 1; }
+#card-counter { font-size: 13px; color: #666; white-space: nowrap; }
 
-  #stage {
-    width: 100%; max-width: 480px; padding: 0 20px;
-    perspective: 1200px; flex: 1;
-    display: flex; flex-direction: column; align-items: center;
-  }
+/* ── Progress bar ── */
+#progress-wrap {
+  width: 100%; max-width: 480px;
+  padding: 0 20px 10px;
+  flex-shrink: 0;
+}
+#progress-bar { width: 100%; height: 5px; background: #dde; border-radius: 99px; overflow: hidden; }
+#progress-fill { height: 100%; background: var(--progress-fill); border-radius: 99px; transition: width .4s ease; width: 0%; }
+#progress-label { font-size: 11px; color: #888; margin-top: 4px; text-align: right; }
 
-  .card-wrap { width: 100%; position: relative; cursor: pointer; user-select: none; }
+/* ── Stage: fills all remaining vertical space ── */
+#stage {
+  width: 100%; max-width: 480px;
+  padding: 0 16px;
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
 
-  .card-inner {
-    width: 100%; min-height: 320px; position: relative;
-    transform-style: preserve-3d;
-    transition: transform .55s cubic-bezier(.4,0,.2,1);
-    border-radius: 20px;
-  }
-  .card-inner.flipped { transform: rotateY(180deg); }
+/* ── Card wrapper fills stage ── */
+.card-wrap {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+}
 
-  .card-face {
-    position: absolute; inset: 0;
-    border-radius: 20px;
-    backface-visibility: hidden; -webkit-backface-visibility: hidden;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: 36px 28px; text-align: center;
-    box-shadow: 0 4px 24px rgba(0,0,0,.10);
-  }
-  .card-front { background: var(--card-front); }
-  .card-back  { background: var(--card-back); transform: rotateY(180deg); }
+/* ── Card inner fills card-wrap ── */
+.card-inner {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform .55s cubic-bezier(.4,0,.2,1);
+  border-radius: 20px;
+}
+.card-inner.flipped { transform: rotateY(180deg); }
 
-  .card-cover-front { background: var(--primary); gap: 8px; }
-  .cover-emoji    { font-size: 48px; margin-bottom: 8px; }
-  .cover-title    { font-size: 22px; font-weight: 700; color: var(--primary-text); }
-  .cover-subtitle { font-size: 14px; color: rgba(255,255,255,.82); margin-top: 4px; }
-  .cover-hint     { font-size: 13px; color: rgba(255,255,255,.65); margin-top: 20px; }
+/* ── Card faces fill card-inner ── */
+.card-face {
+  position: absolute; inset: 0;
+  border-radius: 20px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 36px 28px; text-align: center;
+  box-shadow: 0 4px 24px rgba(0,0,0,.10);
+}
+.card-front { background: var(--card-front); }
+.card-back  { background: var(--card-back); transform: rotateY(180deg); }
 
-  .card-instructions { background: var(--card-front); align-items: flex-start; text-align: left; transform: rotateY(180deg); }
-  .instructions-title { font-size: 17px; font-weight: 700; color: var(--card-front-text); margin-bottom: 16px; width: 100%; }
-  .instructions-list  { list-style: none; width: 100%; display: flex; flex-direction: column; gap: 12px; }
-  .instructions-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: #444; line-height: 1.5; }
-  .step-num {
-    min-width: 24px; height: 24px; border-radius: 50%;
-    background: var(--primary); color: white;
-    font-size: 12px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; margin-top: 1px;
-  }
-  .cta-btn {
-    margin-top: 22px; width: 100%; padding: 14px;
-    background: var(--primary); color: var(--primary-text);
-    border: none; border-radius: 12px;
-    font-size: 15px; font-weight: 600; cursor: pointer;
-    transition: opacity .15s;
-  }
-  .cta-btn:active { opacity: .8; }
+/* Cover card */
+.card-cover-front { background: var(--primary); }
+.cover-emoji    { font-size: 52px; margin-bottom: 12px; }
+.cover-title    { font-size: 26px; font-weight: 700; color: var(--primary-text); }
+.cover-subtitle { font-size: 15px; color: rgba(255,255,255,.82); margin-top: 6px; line-height: 1.4; }
+.cover-hint     { font-size: 13px; color: rgba(255,255,255,.55); margin-top: 28px; }
 
-  .card-term-label { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.6); margin-bottom: 10px; }
-  .card-term-text  { font-size: 36px; font-weight: 700; color: var(--card-back-text); line-height: 1.2; }
-  .card-flip-hint  { position: absolute; bottom: 16px; font-size: 12px; color: rgba(255,255,255,.5); }
-  .card-def-label  { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #aaa; margin-bottom: 10px; }
-  .card-def-text   { font-size: 20px; color: var(--card-front-text); line-height: 1.6; }
+/* Instructions (back of cover) */
+.card-instructions {
+  background: var(--card-front);
+  align-items: flex-start;
+  text-align: left;
+  transform: rotateY(180deg);
+}
+.instructions-title { font-size: 18px; font-weight: 700; color: var(--card-front-text); margin-bottom: 20px; width: 100%; }
+.instructions-list  { list-style: none; width: 100%; display: flex; flex-direction: column; gap: 14px; }
+.instructions-list li { display: flex; align-items: flex-start; gap: 12px; font-size: 15px; color: #444; line-height: 1.5; }
+.step-num {
+  min-width: 26px; height: 26px; border-radius: 50%;
+  background: var(--primary); color: white;
+  font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.cta-btn {
+  margin-top: 28px; width: 100%; padding: 15px;
+  background: var(--primary); color: var(--primary-text);
+  border: none; border-radius: 12px;
+  font-size: 16px; font-weight: 600; cursor: pointer;
+}
 
-  #controls {
-    width: 100%; max-width: 480px;
-    padding: 12px 16px 20px;
-    display: none; gap: 10px; justify-content: center;
-  }
-  .ctrl-btn {
-    flex: 1; padding: 13px 10px; border-radius: 12px;
-    font-size: 14px; font-weight: 600; cursor: pointer; border: none;
-    transition: opacity .15s, transform .1s;
-  }
-  .ctrl-btn:active { opacity: .75; transform: scale(.97); }
-  #btn-eliminate { background: #fff; color: var(--mastered); border: 2px solid var(--mastered); }
-  #btn-next      { background: var(--primary); color: var(--primary-text); }
+/* Study card text */
+.card-term-label { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 12px; }
+.card-term-text  { font-size: 38px; font-weight: 700; line-height: 1.2; }
+.card-flip-hint  { position: absolute; bottom: 18px; font-size: 12px; opacity: .45; }
+.card-def-label  { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 12px; }
+.card-def-text   { font-size: 21px; line-height: 1.6; }
 
-  #dots {
-    display: flex; gap: 6px; justify-content: center;
-    padding-bottom: 8px; flex-wrap: wrap;
-    max-width: 480px; padding-left: 20px; padding-right: 20px;
-  }
-  .dot { width: 7px; height: 7px; border-radius: 50%; background: #ccc; transition: background .3s; }
-  .dot.active { background: var(--primary); }
-  .dot.done   { background: var(--mastered); }
+/* ── Nav dots ── */
+#dots {
+  flex-shrink: 0;
+  display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+  padding: 8px 20px 4px;
+  max-width: 480px; width: 100%;
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; background: #ccc; transition: background .3s; flex-shrink: 0; }
+.dot.active { background: var(--primary); }
+.dot.done   { background: var(--mastered); }
 
-  #completion {
-    display: none; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 12px; padding: 60px 30px; text-align: center;
-    max-width: 480px; width: 100%;
-  }
-  .completion-emoji { font-size: 56px; }
-  .completion-title { font-size: 24px; font-weight: 700; color: #1a1a1a; }
-  .completion-sub   { font-size: 15px; color: #666; line-height: 1.5; }
-  #btn-restart {
-    margin-top: 20px; padding: 15px 40px;
-    background: var(--primary); color: var(--primary-text);
-    border: none; border-radius: 12px;
-    font-size: 16px; font-weight: 600; cursor: pointer;
-  }
+/* ── Controls ── */
+#controls {
+  flex-shrink: 0;
+  width: 100%; max-width: 480px;
+  padding: 8px 16px 20px;
+  display: none; gap: 10px;
+}
+.ctrl-btn {
+  flex: 1; padding: 14px 10px; border-radius: 12px;
+  font-size: 15px; font-weight: 600; cursor: pointer; border: none;
+  transition: opacity .15s, transform .1s;
+}
+.ctrl-btn:active { opacity: .75; transform: scale(.97); }
+#btn-eliminate { background: #fff; color: var(--mastered); border: 2px solid var(--mastered); }
+#btn-next      { background: var(--primary); color: var(--primary-text); }
 
-  @keyframes slideIn      { from { opacity:0; transform:translateX(40px); } to { opacity:1; transform:translateX(0); } }
-  @keyframes slideOutLeft { to   { opacity:0; transform:translateX(-60px); } }
-  .slide-in       { animation: slideIn .3s ease forwards; }
-  .slide-out-left { animation: slideOutLeft .3s ease forwards; }
+/* ── Completion ── */
+#completion {
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 14px; padding: 60px 30px; text-align: center;
+  max-width: 480px; width: 100%; flex: 1;
+}
+.completion-emoji { font-size: 60px; }
+.completion-title { font-size: 26px; font-weight: 700; color: #1a1a1a; }
+.completion-sub   { font-size: 16px; color: #666; line-height: 1.5; }
+#btn-restart {
+  margin-top: 20px; padding: 15px 40px;
+  background: var(--primary); color: var(--primary-text);
+  border: none; border-radius: 12px;
+  font-size: 16px; font-weight: 600; cursor: pointer;
+}
+
+/* ── Animations ── */
+@keyframes slideIn { from { opacity:0; transform:translateX(40px); } to { opacity:1; transform:translateX(0); } }
+.slide-in { animation: slideIn .3s ease forwards; }
 </style>
 </head>
 <body>
@@ -178,10 +214,12 @@
 <div id="completion"></div>
 
 <script>
-// ── Apply CSS variables from branding ──────────────────────
+// ── Prevent iOS Safari scroll bounce ──────────────────────
+document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+
+// ── Apply branding ─────────────────────────────────────────
 (function() {
-  const c = FLASHCARD_BRANDING.colors;
-  const r = document.documentElement.style;
+  const b = FLASHCARD_BRANDING, c = b.colors, r = document.documentElement.style;
   r.setProperty('--primary',         c.primary);
   r.setProperty('--primary-text',    c.primaryText);
   r.setProperty('--card-front',      c.cardFront);
@@ -191,15 +229,10 @@
   r.setProperty('--page-bg',         c.pageBg);
   r.setProperty('--progress-fill',   c.progressFill);
   r.setProperty('--mastered',        c.masteredColor);
-
-  document.title = FLASHCARD_BRANDING.companyName + ' — Flashcards';
-
+  document.title = b.companyName + ' — Flashcards';
   const logo = document.getElementById('logo');
-  logo.innerHTML = FLASHCARD_BRANDING.logoUrl
-    ? `<img src="${FLASHCARD_BRANDING.logoUrl}" style="height:28px;width:auto;">`
-    : (FLASHCARD_BRANDING.logoEmoji || '');
-
-  document.getElementById('company-name').textContent = FLASHCARD_BRANDING.companyName;
+  logo.innerHTML = b.logoUrl ? `<img src="${b.logoUrl}" style="height:26px;width:auto;">` : (b.logoEmoji || '');
+  document.getElementById('company-name').textContent = b.companyName;
 })();
 
 // ── State ──────────────────────────────────────────────────
@@ -207,17 +240,17 @@ let phase = 'cover', coverFlipped = false;
 let deck = [], eliminated = new Set();
 let currentIdx = 0, isFlipped = false;
 
-const wrap     = document.getElementById('card-wrap');
-const dotsEl   = document.getElementById('dots');
-const controls = document.getElementById('controls');
-const counter  = document.getElementById('card-counter');
-const progFill = document.getElementById('progress-fill');
-const progLbl  = document.getElementById('progress-label');
-const progWrap = document.getElementById('progress-wrap');
-const compEl   = document.getElementById('completion');
-const stageEl  = document.getElementById('stage');
-const btnElim  = document.getElementById('btn-eliminate');
-const btnNext  = document.getElementById('btn-next');
+const wrap    = document.getElementById('card-wrap');
+const dotsEl  = document.getElementById('dots');
+const controls= document.getElementById('controls');
+const counter = document.getElementById('card-counter');
+const progFill= document.getElementById('progress-fill');
+const progLbl = document.getElementById('progress-label');
+const progWrap= document.getElementById('progress-wrap');
+const compEl  = document.getElementById('completion');
+const stageEl = document.getElementById('stage');
+const btnElim = document.getElementById('btn-eliminate');
+const btnNext = document.getElementById('btn-next');
 
 // ── Init ───────────────────────────────────────────────────
 function init() {
@@ -233,27 +266,25 @@ function init() {
   renderCoverCard();
 }
 
-// ── Cover ──────────────────────────────────────────────────
+// ── Cover card ─────────────────────────────────────────────
 function renderCoverCard() {
-  const cv  = FLASHCARD_BRANDING.cover;
-  const ins = FLASHCARD_BRANDING.instructions;
+  const cv = FLASHCARD_BRANDING.cover, ins = FLASHCARD_BRANDING.instructions;
   wrap.innerHTML = `
     <div class="card-inner" id="card-inner">
       <div class="card-face card-cover-front">
-        <div class="cover-emoji">${cv.emoji || '📚'}</div>
+        <div class="cover-emoji">${cv.emoji||'📚'}</div>
         <div class="cover-title">${cv.title}</div>
-        <div class="cover-subtitle">${cv.subtitle || ''}</div>
+        <div class="cover-subtitle">${cv.subtitle||''}</div>
         <div class="cover-hint">Tap to see instructions</div>
       </div>
       <div class="card-face card-instructions">
         <div class="instructions-title">${ins.title}</div>
         <ul class="instructions-list">
-          ${ins.steps.map((s,i) => `<li><span class="step-num">${i+1}</span><span>${s}</span></li>`).join('')}
+          ${ins.steps.map((s,i)=>`<li><span class="step-num">${i+1}</span><span>${s}</span></li>`).join('')}
         </ul>
-        <button class="cta-btn" id="cta-start">${ins.ctaLabel || 'Start studying'}</button>
+        <button class="cta-btn" id="cta-start">${ins.ctaLabel||'Start studying'}</button>
       </div>
     </div>`;
-
   wrap.onclick = () => {
     if (coverFlipped) return;
     coverFlipped = true;
@@ -265,7 +296,7 @@ function renderCoverCard() {
   }, 50);
 }
 
-// ── Start studying ─────────────────────────────────────────
+// ── Start study ────────────────────────────────────────────
 function startStudy() {
   phase = 'study';
   controls.style.display = 'flex';
@@ -280,28 +311,26 @@ function startStudy() {
 function renderStudyCard(anim) {
   const card = FLASHCARD_CONTENT[deck[currentIdx]];
   wrap.innerHTML = `
-    <div class="card-inner${isFlipped ? ' flipped' : ''}" id="card-inner">
+    <div class="card-inner${isFlipped?' flipped':''}" id="card-inner">
       <div class="card-face card-front" style="background:var(--card-back)">
-        <div class="card-def-label">Definition</div>
-        <div class="card-def-text" style="color:var(--card-back-text);font-size:20px">${card.definition}</div>
-        <div class="card-flip-hint">Tap to reveal term</div>
+        <div class="card-def-label" style="color:rgba(255,255,255,.6)">Definition</div>
+        <div class="card-def-text" style="color:var(--card-back-text)">${card.definition}</div>
+        <div class="card-flip-hint" style="color:var(--card-back-text)">Tap to reveal term</div>
       </div>
       <div class="card-face card-back" style="background:var(--card-front)">
         <div class="card-term-label" style="color:#aaa">Term</div>
         <div class="card-term-text" style="color:var(--card-front-text)">${card.term}</div>
       </div>
     </div>`;
-
   if (anim) {
     wrap.classList.add(anim);
     wrap.addEventListener('animationend', () => wrap.classList.remove(anim), { once: true });
   }
-
   wrap.onclick = () => {
     isFlipped = !isFlipped;
     document.getElementById('card-inner').classList.toggle('flipped', isFlipped);
   };
-  counter.textContent = `${currentIdx + 1} / ${deck.length}`;
+  counter.textContent = `${currentIdx+1} / ${deck.length}`;
 }
 
 // ── Dots & progress ────────────────────────────────────────
@@ -315,19 +344,17 @@ function renderDots() {
     });
   }
 }
-
 function updateProgress() {
-  const total = FLASHCARD_CONTENT.length;
-  const done  = eliminated.size;
-  progFill.style.width = total > 0 ? Math.round(done / total * 100) + '%' : '0%';
-  progLbl.textContent  = done > 0 ? `${done} of ${total} mastered` : '';
+  const total = FLASHCARD_CONTENT.length, done = eliminated.size;
+  progFill.style.width = total > 0 ? Math.round(done/total*100)+'%' : '0%';
+  progLbl.textContent = done > 0 ? `${done} of ${total} mastered` : '';
 }
 
-// ── Controls ───────────────────────────────────────────────
+// ── Button controls ────────────────────────────────────────
 btnNext.addEventListener('click', () => {
   if (phase !== 'study') return;
   isFlipped = false;
-  currentIdx = (currentIdx + 1) % deck.length;
+  currentIdx = (currentIdx+1) % deck.length;
   renderStudyCard('slide-in');
   renderDots();
   updateProgress();
@@ -345,14 +372,19 @@ btnElim.addEventListener('click', () => {
   updateProgress();
 });
 
-// Swipe support
-let touchStartX = 0;
-document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+// ── Swipe ──────────────────────────────────────────────────
+let txStart = 0, tyStart = 0;
+document.addEventListener('touchstart', e => {
+  txStart = e.touches[0].clientX;
+  tyStart = e.touches[0].clientY;
+}, { passive: true });
 document.addEventListener('touchend', e => {
   if (phase !== 'study') return;
-  if (Math.abs(e.changedTouches[0].clientX - touchStartX) > 50) {
+  const dx = e.changedTouches[0].clientX - txStart;
+  const dy = Math.abs(e.changedTouches[0].clientY - tyStart);
+  if (Math.abs(dx) > 50 && Math.abs(dx) > dy * 1.5) {
     isFlipped = false;
-    currentIdx = (currentIdx + 1) % deck.length;
+    currentIdx = (currentIdx+1) % deck.length;
     renderStudyCard('slide-in');
     renderDots();
     updateProgress();
@@ -369,10 +401,10 @@ function showCompletion() {
   progFill.style.width = '100%';
   progLbl.textContent = `All ${FLASHCARD_CONTENT.length} terms mastered!`;
   compEl.innerHTML = `
-    <div class="completion-emoji">${cmp.emoji || '🎉'}</div>
+    <div class="completion-emoji">${cmp.emoji||'🎉'}</div>
     <div class="completion-title">${cmp.title}</div>
-    <div class="completion-sub">${cmp.subtitle || ''}</div>
-    <button id="btn-restart">${cmp.restartLabel || 'Start over'}</button>`;
+    <div class="completion-sub">${cmp.subtitle||''}</div>
+    <button id="btn-restart">${cmp.restartLabel||'Start over'}</button>`;
   compEl.style.display = 'flex';
   document.getElementById('btn-restart').onclick = init;
 }
