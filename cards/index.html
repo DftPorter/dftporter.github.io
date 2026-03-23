@@ -58,7 +58,8 @@ body {
 /* card-wrap: outer drag shell — never has preserve-3d */
 .card-wrap {
   width: 100%;
-  max-height: min(calc((100vw - 32px) * 16 / 9), 100%);
+  /* Cap at 9:16 ratio so the card never grows taller than a phone screen */
+  max-height: min(calc((100vw - 32px) * 16 / 9), 560px);
   flex: 1 1 0; min-height: 0;
   position: relative;
   cursor: pointer; user-select: none;
@@ -307,34 +308,40 @@ function renderStudyCard(anim) {
   counter.textContent = `${currentIdx+1} / ${deck.length}`;
 }
 
-// ── Flip on tap (only if not a drag) ──────────────────────
-// Touch handling manages flip — we use touchend instead of click
-// to avoid the synthetic click firing after a drag.
-let tapStartX = 0, tapStartY = 0, tapWasDrag = false;
+// ── Flip on tap/click ──────────────────────────────────────
+// touchend handles mobile; click handles desktop.
+// recentTouch flag prevents both firing on touch devices.
+let tapStartX = 0, tapStartY = 0, tapWasDrag = false, recentTouch = false;
+
+function doFlip() {
+  if (phase !== 'study') return;
+  const inner = getInner();
+  if (!inner) return;
+  isFlipped = !isFlipped;
+  inner.classList.toggle('is-flipped', isFlipped);
+}
 
 wrap.addEventListener('touchstart', e => {
   tapStartX = e.touches[0].clientX;
   tapStartY = e.touches[0].clientY;
   tapWasDrag = false;
+  recentTouch = true;
 }, { passive: true });
 
 wrap.addEventListener('touchend', e => {
-  if (phase !== 'study') return;
-  if (tapWasDrag) return; // swipe already handled it
+  if (tapWasDrag) return;
   const dx = Math.abs(e.changedTouches[0].clientX - tapStartX);
   const dy = Math.abs(e.changedTouches[0].clientY - tapStartY);
-  if (dx > 10 || dy > 10) return; // moved too much to be a tap
-  // It's a tap — flip
-  const inner = getInner();
-  if (!inner) return;
-  isFlipped = !isFlipped;
-  inner.classList.toggle('is-flipped', isFlipped);
+  if (dx > 10 || dy > 10) return;
+  doFlip();
+  // Suppress the subsequent synthetic click
+  setTimeout(() => { recentTouch = false; }, 500);
 }, { passive: true });
 
-// Block synthetic click after touch so it doesn't double-flip
-wrap.addEventListener('click', e => {
-  if (tapWasDrag) { e.stopPropagation(); return; }
-}, true);
+wrap.addEventListener('click', () => {
+  if (recentTouch) return; // already handled by touchend
+  doFlip();
+});
 
 // ── Fly off ────────────────────────────────────────────────
 function flyOff(dir, cb) {
