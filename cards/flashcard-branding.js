@@ -8,10 +8,10 @@ const FLASHCARD_BRANDING = {
   // ----------------------------------------------------------
   //  Company identity
   // ----------------------------------------------------------
-  companyName: "Pfizer",
+  companyName: "Vaccines Academy",
 
   // Pfizer's logo served directly from pfizer.com
-  logoUrl: "logo-blue.svg",
+  logoUrl: "https://www.pfizer.com/profiles/pfecpfizercomus_profile/themes/pfecpfizercomus/public/assets/images/logo-blue.svg",
 
   logoEmoji: null,
 
@@ -54,6 +54,12 @@ const FLASHCARD_BRANDING = {
   //  Cover card
   // ----------------------------------------------------------
   cover: {
+    // Set imageUrl to your cover image filename to use a full-bleed image.
+    // The image should be 1080 x 1860 px (9:16) for best quality on retina phones.
+    // Title/subtitle text should be baked into the image itself.
+    // Set to null to fall back to the emoji + title + subtitle below.
+    imageUrl: "cover.jpg",
+
     title:    "Pfizer Learning",
     subtitle: "Review key terms and concepts",
     emoji:    "💊"
