@@ -55,25 +55,22 @@ body {
   align-items: center; justify-content: center;
 }
 
+/* card-wrap: outer drag shell — never has preserve-3d */
 .card-wrap {
   width: 100%;
   max-height: min(calc((100vw - 32px) * 16 / 9), 100%);
   flex: 1 1 0; min-height: 0;
-  display: flex; flex-direction: column;
   position: relative;
   cursor: pointer; user-select: none;
+}
+
+/* card-scene: provides perspective, never translated */
+.card-scene {
+  width: 100%; height: 100%;
   perspective: 1000px;
 }
 
-/* Drag container wraps card-inner — receives translate/tilt transforms.
-   preserve-3d passes the 3D context through to card-inner. */
-.card-drag {
-  flex: 1 1 0; min-height: 0;
-  width: 100%;
-  position: relative;
-  transform-style: preserve-3d;
-}
-
+/* card-inner: the flipping element — rotateY only, no translate */
 .card-inner {
   width: 100%; height: 100%;
   position: relative;
@@ -93,119 +90,53 @@ body {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
-
 .card-face-front { transform: rotateY(0deg); }
 .card-face-back  { transform: rotateY(180deg); }
 
-/* Cover card */
+/* Cover */
 .card-cover-front { background: var(--primary); padding: 0; overflow: hidden; }
-.cover-image {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  object-fit: cover; object-position: center;
-  border-radius: 20px;
-}
-.cover-no-image {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 36px 28px; text-align: center;
-}
+.cover-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 20px; }
+.cover-no-image { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 36px 28px; text-align: center; }
 .cover-emoji    { font-size: 52px; margin-bottom: 12px; }
 .cover-title    { font-size: 26px; font-weight: 700; color: var(--primary-text); }
 .cover-subtitle { font-size: 15px; color: rgba(255,255,255,.82); margin-top: 6px; line-height: 1.4; }
 .cover-hint     { font-size: 13px; color: rgba(255,255,255,.55); margin-top: 28px; }
-.cover-hint-overlay {
-  position: absolute; bottom: 20px; left: 0; right: 0;
-  text-align: center; font-size: 13px;
-  color: rgba(255,255,255,.75);
-  text-shadow: 0 1px 6px rgba(0,0,0,.5);
-}
+.cover-hint-overlay { position: absolute; bottom: 20px; left: 0; right: 0; text-align: center; font-size: 13px; color: rgba(255,255,255,.75); text-shadow: 0 1px 6px rgba(0,0,0,.5); }
 
 /* Instructions */
-.card-instructions-face {
-  background: var(--card-front);
-  align-items: flex-start; text-align: left;
-}
+.card-instructions-face { background: var(--card-front); align-items: flex-start; text-align: left; }
 .instructions-title { font-size: 18px; font-weight: 700; color: var(--card-front-text); margin-bottom: 20px; width: 100%; }
-.instructions-list  { list-style: none; width: 100%; display: flex; flex-direction: column; gap: 14px; }
+.instructions-list { list-style: none; width: 100%; display: flex; flex-direction: column; gap: 14px; }
 .instructions-list li { display: flex; align-items: flex-start; gap: 12px; font-size: 15px; color: #444; line-height: 1.5; }
-.step-num {
-  min-width: 26px; height: 26px; border-radius: 50%;
-  background: var(--primary); color: white;
-  font-size: 13px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; margin-top: 1px;
-}
-.cta-btn {
-  margin-top: 28px; width: 100%; padding: 15px;
-  background: var(--primary); color: var(--primary-text);
-  border: none; border-radius: 12px;
-  font-size: 16px; font-weight: 600; cursor: pointer;
-}
+.step-num { min-width: 26px; height: 26px; border-radius: 50%; background: var(--primary); color: white; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.cta-btn { margin-top: 28px; width: 100%; padding: 15px; background: var(--primary); color: var(--primary-text); border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
 
-/* Study card text */
+/* Study card */
 .card-term-label { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 12px; }
 .card-term-text  { font-size: 38px; font-weight: 700; line-height: 1.2; }
 .card-flip-hint  { position: absolute; bottom: 18px; font-size: 12px; opacity: .45; }
 .card-def-label  { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 12px; }
 .card-def-text   { font-size: 21px; line-height: 1.6; }
 
-/* Dots */
-#dots {
-  flex-shrink: 0;
-  display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
-  padding: 8px 20px 4px;
-  max-width: 480px; width: 100%;
-}
+#dots { flex-shrink: 0; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; padding: 8px 20px 4px; max-width: 480px; width: 100%; }
 .dot { width: 7px; height: 7px; border-radius: 50%; background: #ccc; transition: background .3s; flex-shrink: 0; }
 .dot.active { background: var(--primary); }
 .dot.done   { background: var(--mastered); }
 
-/* Controls */
-#controls {
-  flex-shrink: 0;
-  width: 100%; max-width: 480px;
-  padding: 8px 16px 20px;
-  display: none; gap: 10px;
-}
-.ctrl-btn {
-  flex: 1; padding: 14px 10px; border-radius: 12px;
-  font-size: 15px; font-weight: 600; cursor: pointer; border: none;
-  transition: opacity .15s, transform .1s;
-}
+#controls { flex-shrink: 0; width: 100%; max-width: 480px; padding: 8px 16px 20px; display: none; gap: 10px; }
+.ctrl-btn { flex: 1; padding: 14px 10px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; border: none; transition: opacity .15s, transform .1s; }
 .ctrl-btn:active { opacity: .75; transform: scale(.97); }
 #btn-eliminate { background: #fff; color: var(--mastered); border: 2px solid var(--mastered); }
 #btn-next      { background: var(--primary); color: var(--primary-text); }
 
-/* Completion */
-#completion {
-  display: none; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 14px; padding: 60px 30px; text-align: center;
-  max-width: 480px; width: 100%; flex: 1 1 0;
-}
+#completion { display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 60px 30px; text-align: center; max-width: 480px; width: 100%; flex: 1 1 0; }
 .completion-emoji { font-size: 60px; }
 .completion-title { font-size: 26px; font-weight: 700; color: #1a1a1a; }
 .completion-sub   { font-size: 16px; color: #666; line-height: 1.5; }
-#btn-restart {
-  margin-top: 20px; padding: 15px 40px;
-  background: var(--primary); color: var(--primary-text);
-  border: none; border-radius: 12px;
-  font-size: 16px; font-weight: 600; cursor: pointer;
-}
+#btn-restart { margin-top: 20px; padding: 15px 40px; background: var(--primary); color: var(--primary-text); border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
 
-#legal {
-  flex-shrink: 0;
-  width: 100%; max-width: 480px;
-  padding: 0 20px 14px;
-  text-align: center;
-  font-size: 10px;
-  color: #aaa;
-  letter-spacing: 0.03em;
-}
+#legal { flex-shrink: 0; width: 100%; max-width: 480px; padding: 0 20px 14px; text-align: center; font-size: 10px; color: #aaa; letter-spacing: 0.03em; }
 
-/* Slide-in after swipe */
 @keyframes slideIn { from { opacity:0; transform:translateX(40px); } to { opacity:1; transform:translateX(0); } }
 .slide-in { animation: slideIn .3s ease forwards; }
 </style>
@@ -230,7 +161,7 @@ body {
   <button class="ctrl-btn" id="btn-next">Next →</button>
 </div>
 <div id="completion"></div>
-<div id="legal">Company Confidential — For Internal Use Only</div>
+<div id="legal"></div>
 
 <script>
 document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
@@ -250,9 +181,10 @@ document.addEventListener('touchmove', e => e.preventDefault(), { passive: false
   document.title = b.companyName + ' — Flashcards';
   const logo = document.getElementById('logo');
   logo.innerHTML = b.logoUrl ? `<img src="${b.logoUrl}" alt="${b.companyName}">` : (b.logoEmoji || '');
+  document.getElementById('company-name').textContent = b.companyName;
   const legal = document.getElementById('legal');
-  if (b.legalText) { legal.textContent = b.legalText; legal.style.display = 'block'; }
-  else legal.style.display = 'none';
+  if (b.legalText) { legal.textContent = b.legalText; }
+  else { legal.style.display = 'none'; }
 })();
 
 // ── State ──────────────────────────────────────────────────
@@ -272,8 +204,8 @@ const stageEl  = document.getElementById('stage');
 const btnElim  = document.getElementById('btn-eliminate');
 const btnNext  = document.getElementById('btn-next');
 
-function getInner()  { return document.getElementById('card-inner'); }
-function getDrag()   { return document.getElementById('card-drag'); }
+function getInner() { return document.getElementById('card-inner'); }
+function getWrap()  { return document.getElementById('card-wrap'); }
 
 // ── Init ───────────────────────────────────────────────────
 function init() {
@@ -289,10 +221,15 @@ function init() {
   renderCoverCard();
 }
 
-// ── Flip ───────────────────────────────────────────────────
-function flipCard3D(inner, toFlipped, onComplete) {
-  inner.classList.toggle('is-flipped', toFlipped);
-  if (onComplete) setTimeout(onComplete, 500);
+// ── Card scaffold: scene + inner ───────────────────────────
+function cardScaffold(frontHTML, backHTML, flipped) {
+  return `
+    <div class="card-scene">
+      <div class="card-inner${flipped ? ' is-flipped' : ''}" id="card-inner">
+        <div class="card-face card-face-front">${frontHTML}</div>
+        <div class="card-face card-face-back">${backHTML}</div>
+      </div>
+    </div>`;
 }
 
 // ── Cover card ─────────────────────────────────────────────
@@ -307,25 +244,20 @@ function renderCoverCard() {
          <div class="cover-subtitle">${cv.subtitle||''}</div>
          <div class="cover-hint">Tap to see instructions</div>
        </div>`;
+  const frontHTML = `<div class="card-cover-front" style="position:absolute;inset:0;border-radius:20px;">${coverContent}</div>`;
+  const backHTML  = `<div class="card-instructions-face" style="position:absolute;inset:0;border-radius:20px;display:flex;flex-direction:column;align-items:flex-start;text-align:left;padding:36px 28px;background:var(--card-front);">
+    <div class="instructions-title">${ins.title}</div>
+    <ul class="instructions-list">
+      ${ins.steps.map((s,i)=>`<li><span class="step-num">${i+1}</span><span>${s}</span></li>`).join('')}
+    </ul>
+    <button class="cta-btn" id="cta-start">${ins.ctaLabel||'Start studying'}</button>
+  </div>`;
 
-  wrap.innerHTML = `
-    <div class="card-drag" id="card-drag">
-      <div class="card-inner" id="card-inner">
-        <div class="card-face card-face-front card-cover-front">${coverContent}</div>
-        <div class="card-face card-face-back card-instructions-face">
-          <div class="instructions-title">${ins.title}</div>
-          <ul class="instructions-list">
-            ${ins.steps.map((s,i)=>`<li><span class="step-num">${i+1}</span><span>${s}</span></li>`).join('')}
-          </ul>
-          <button class="cta-btn" id="cta-start">${ins.ctaLabel||'Start studying'}</button>
-        </div>
-      </div>
-    </div>`;
-
+  wrap.innerHTML = cardScaffold(frontHTML, backHTML, false);
   wrap.onclick = () => {
     if (coverFlipped) return;
     coverFlipped = true;
-    flipCard3D(getInner(), true, null);
+    getInner().classList.add('is-flipped');
   };
   setTimeout(() => {
     const cta = document.getElementById('cta-start');
@@ -347,45 +279,77 @@ function startStudy() {
 // ── Study card ─────────────────────────────────────────────
 function renderStudyCard(anim) {
   const card = FLASHCARD_CONTENT[deck[currentIdx]];
+  const frontHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:36px 28px;text-align:center;">
+      <div class="card-def-label" style="color:rgba(255,255,255,.6)">Definition</div>
+      <div class="card-def-text" style="color:var(--card-back-text)">${card.definition}</div>
+      <div class="card-flip-hint" style="color:var(--card-back-text)">Tap to reveal term</div>
+    </div>`;
+  const backHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:36px 28px;text-align:center;">
+      <div class="card-term-label" style="color:#aaa">Term</div>
+      <div class="card-term-text" style="color:var(--card-front-text)">${card.term}</div>
+    </div>`;
+
+  // Override face backgrounds via card-inner's parent classes
   wrap.innerHTML = `
-    <div class="card-drag" id="card-drag">
+    <div class="card-scene">
       <div class="card-inner${isFlipped?' is-flipped':''}" id="card-inner">
-        <div class="card-face card-face-front" style="background:var(--card-back)">
-          <div class="card-def-label" style="color:rgba(255,255,255,.6)">Definition</div>
-          <div class="card-def-text" style="color:var(--card-back-text)">${card.definition}</div>
-          <div class="card-flip-hint" style="color:var(--card-back-text)">Tap to reveal term</div>
-        </div>
-        <div class="card-face card-face-back" style="background:var(--card-front)">
-          <div class="card-term-label" style="color:#aaa">Term</div>
-          <div class="card-term-text" style="color:var(--card-front-text)">${card.term}</div>
-        </div>
+        <div class="card-face card-face-front" style="background:var(--card-back)">${frontHTML}</div>
+        <div class="card-face card-face-back" style="background:var(--card-front)">${backHTML}</div>
       </div>
     </div>`;
+
   if (anim) {
     wrap.classList.add(anim);
     wrap.addEventListener('animationend', () => wrap.classList.remove(anim), { once: true });
   }
-  wrap.onclick = () => {
-    const inner = getInner();
-    if (!inner || inner.dataset.flipping) return;
-    const next = !isFlipped;
-    flipCard3D(inner, next, () => { isFlipped = next; });
-  };
   counter.textContent = `${currentIdx+1} / ${deck.length}`;
 }
 
+// ── Flip on tap (only if not a drag) ──────────────────────
+// Touch handling manages flip — we use touchend instead of click
+// to avoid the synthetic click firing after a drag.
+let tapStartX = 0, tapStartY = 0, tapWasDrag = false;
+
+wrap.addEventListener('touchstart', e => {
+  tapStartX = e.touches[0].clientX;
+  tapStartY = e.touches[0].clientY;
+  tapWasDrag = false;
+}, { passive: true });
+
+wrap.addEventListener('touchend', e => {
+  if (phase !== 'study') return;
+  if (tapWasDrag) return; // swipe already handled it
+  const dx = Math.abs(e.changedTouches[0].clientX - tapStartX);
+  const dy = Math.abs(e.changedTouches[0].clientY - tapStartY);
+  if (dx > 10 || dy > 10) return; // moved too much to be a tap
+  // It's a tap — flip
+  const inner = getInner();
+  if (!inner) return;
+  isFlipped = !isFlipped;
+  inner.classList.toggle('is-flipped', isFlipped);
+}, { passive: true });
+
+// Block synthetic click after touch so it doesn't double-flip
+wrap.addEventListener('click', e => {
+  if (tapWasDrag) { e.stopPropagation(); return; }
+}, true);
+
 // ── Fly off ────────────────────────────────────────────────
 function flyOff(dir, cb) {
-  const inner = getInner();
-  if (inner) {
-    inner.style.transition = 'transform 0.24s ease-in, opacity 0.24s ease-in';
-    inner.style.transform  = `translateX(${dir * window.innerWidth * 1.4}px) rotate(${dir * 16}deg)`;
-    inner.style.opacity    = '0';
+  const w = getWrap();
+  if (w) {
+    w.style.transition = 'transform 0.24s ease-in, opacity 0.24s ease-in';
+    w.style.transform  = `translateX(${dir * window.innerWidth * 1.4}px) rotate(${dir * 16}deg)`;
+    w.style.opacity    = '0';
   }
-  setTimeout(cb, 230);
+  setTimeout(() => {
+    if (w) { w.style.transition = ''; w.style.transform = ''; w.style.opacity = ''; }
+    cb();
+  }, 230);
 }
 
-// ── Buttons ────────────────────────────────────────────────
 btnNext.addEventListener('click', () => {
   if (phase !== 'study') return;
   flyOff(-1, () => {
@@ -410,55 +374,59 @@ btnElim.addEventListener('click', () => {
 });
 
 // ── Drag to swipe ──────────────────────────────────────────
-let txStart = 0, tyStart = 0, dragging = false, dragCard = null;
+// Drag is applied to card-wrap (outside the flip 3D context entirely)
+let txStart = 0, tyStart = 0, dragging = false;
 
 document.addEventListener('touchstart', e => {
   if (phase !== 'study') return;
   txStart = e.touches[0].clientX;
   tyStart = e.touches[0].clientY;
   dragging = false;
-  dragCard = getInner();
-  if (dragCard) dragCard.style.transition = 'none';
 }, { passive: true });
 
 document.addEventListener('touchmove', e => {
   e.preventDefault();
-  if (phase !== 'study' || !dragCard) return;
+  if (phase !== 'study') return;
   const dx = e.touches[0].clientX - txStart;
   const dy = e.touches[0].clientY - tyStart;
   if (!dragging && Math.abs(dx) > 8) {
-    if (Math.abs(dx) > Math.abs(dy)) dragging = true;
+    if (Math.abs(dx) > Math.abs(dy)) { dragging = true; tapWasDrag = true; }
     else return;
   }
   if (!dragging) return;
   const tilt = dx * 0.04;
   const lift = Math.abs(dx) * 0.03;
-  dragCard.style.transform = `translateX(${dx}px) rotate(${tilt}deg) translateY(-${lift}px)`;
-  dragCard.style.opacity   = String(Math.max(0.6, 1 - Math.abs(dx) / 400));
+  // Translate the wrap — entirely outside preserve-3d context
+  wrap.style.transition = 'none';
+  wrap.style.transform  = `translateX(${dx}px) rotate(${tilt}deg) translateY(-${lift}px)`;
+  wrap.style.opacity    = String(Math.max(0.6, 1 - Math.abs(dx) / 400));
 }, { passive: false });
 
 document.addEventListener('touchend', e => {
-  if (phase !== 'study' || !dragCard) return;
+  if (phase !== 'study') return;
   const dx = e.changedTouches[0].clientX - txStart;
   const threshold = window.innerWidth * 0.3;
+
   if (dragging && Math.abs(dx) > threshold) {
     const dir = dx > 0 ? 1 : -1;
-    dragCard.style.transition = 'transform 0.28s ease-in, opacity 0.28s ease-in';
-    dragCard.style.transform  = `translateX(${dir * window.innerWidth * 1.3}px) rotate(${dir * 18}deg)`;
-    dragCard.style.opacity    = '0';
+    wrap.style.transition = 'transform 0.28s ease-in, opacity 0.28s ease-in';
+    wrap.style.transform  = `translateX(${dir * window.innerWidth * 1.3}px) rotate(${dir * 18}deg)`;
+    wrap.style.opacity    = '0';
     setTimeout(() => {
+      wrap.style.transition = '';
+      wrap.style.transform  = '';
+      wrap.style.opacity    = '';
       isFlipped = false;
       currentIdx = (currentIdx+1) % deck.length;
       renderStudyCard('slide-in');
       renderDots(); updateProgress();
     }, 260);
   } else if (dragging) {
-    dragCard.style.transition = 'transform 0.35s cubic-bezier(.34,1.56,.64,1), opacity 0.2s ease';
-    dragCard.style.transform  = '';
-    dragCard.style.opacity    = '1';
+    wrap.style.transition = 'transform 0.35s cubic-bezier(.34,1.56,.64,1), opacity 0.2s ease';
+    wrap.style.transform  = '';
+    wrap.style.opacity    = '1';
   }
   dragging = false;
-  dragCard = null;
 }, { passive: true });
 
 // ── Dots & progress ────────────────────────────────────────
