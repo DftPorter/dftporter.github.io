@@ -21,13 +21,10 @@ html, body {
   overflow: hidden;
   overscroll-behavior: none;
 }
-
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: var(--page-bg);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: flex; flex-direction: column; align-items: center;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -44,8 +41,7 @@ body {
 
 #progress-wrap {
   width: 100%; max-width: 480px;
-  padding: 0 20px 10px;
-  flex-shrink: 0;
+  padding: 0 20px 10px; flex-shrink: 0;
 }
 #progress-bar { width: 100%; height: 5px; background: #dde; border-radius: 99px; overflow: hidden; }
 #progress-fill { height: 100%; background: var(--progress-fill); border-radius: 99px; transition: width .4s ease; width: 0%; }
@@ -54,54 +50,74 @@ body {
 #stage {
   width: 100%; max-width: 480px;
   padding: 0 16px;
-  flex: 1 1 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  flex: 1 1 0; min-height: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
 }
 
 .card-wrap {
   width: 100%;
   max-height: min(calc((100vw - 32px) * 16 / 9), 100%);
-  flex: 1 1 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
+  flex: 1 1 0; min-height: 0;
+  display: flex; flex-direction: column;
   position: relative;
-  cursor: pointer;
-  user-select: none;
+  cursor: pointer; user-select: none;
+  /* Perspective lives here so the faces rotate in 3D space */
   perspective: 900px;
   perspective-origin: 50% 40%;
 }
 
+/* card-inner is just a size container — never rotated */
 .card-inner {
-  flex: 1 1 0;
-  min-height: 0;
+  flex: 1 1 0; min-height: 0;
   width: 100%;
-  display: flex;
   position: relative;
-  transform-style: preserve-3d;
-  border-radius: 20px;
 }
-.card-inner.flipped .card-front { backface-visibility: visible; -webkit-backface-visibility: visible; transform: rotateY(180deg) scale(0.001); }
-.card-inner.flipped .card-back  { backface-visibility: visible; -webkit-backface-visibility: visible; transform: rotateY(0deg); }
 
+/* Both faces are absolutely positioned and fill card-inner */
 .card-face {
   position: absolute; inset: 0;
   border-radius: 20px;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   padding: 36px 28px; text-align: center;
   box-shadow: 0 4px 24px rgba(0,0,0,.10);
+  /* Each face handles its own backface */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: transform 0.22s cubic-bezier(0.4,0.0,1.0,0.6),
+              opacity   0.22s ease;
 }
-.card-front { background: var(--card-front); }
-.card-back  { background: var(--card-back); transform: rotateY(180deg); }
 
-/* Cover */
+/*
+  RESTING STATE
+  Front face: flat, visible
+  Back face:  pre-rotated 180deg, hidden (backface-visibility hides it)
+*/
+.card-face-front { transform: rotateY(0deg);   }
+.card-face-back  { transform: rotateY(180deg);  }
+
+/*
+  FLIPPED STATE
+  Front face: rotated to -180deg (now hidden behind)
+  Back face:  rotated to 0deg (now facing forward)
+*/
+.card-inner.is-flipped .card-face-front { transform: rotateY(-180deg); }
+.card-inner.is-flipped .card-face-back  { transform: rotateY(0deg);    }
+
+/* Faster second half of flip */
+.card-inner.flip-second-half .card-face-front,
+.card-inner.flip-second-half .card-face-back {
+  transition: transform 0.25s cubic-bezier(0.0,0.4,0.6,1.0),
+              opacity   0.2s ease;
+}
+
+/* Scale-down at midpoint — applied via JS */
+.card-face.at-mid {
+  transition: none !important;
+}
+
+/* Cover card */
 .card-cover-front { background: var(--primary); padding: 0; overflow: hidden; }
 .cover-image {
   position: absolute; inset: 0;
@@ -113,24 +129,23 @@ body {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  padding: 36px 28px; text-align: center; gap: 0;
+  padding: 36px 28px; text-align: center;
 }
 .cover-emoji    { font-size: 52px; margin-bottom: 12px; }
 .cover-title    { font-size: 26px; font-weight: 700; color: var(--primary-text); }
 .cover-subtitle { font-size: 15px; color: rgba(255,255,255,.82); margin-top: 6px; line-height: 1.4; }
+.cover-hint     { font-size: 13px; color: rgba(255,255,255,.55); margin-top: 28px; }
 .cover-hint-overlay {
   position: absolute; bottom: 20px; left: 0; right: 0;
   text-align: center; font-size: 13px;
   color: rgba(255,255,255,.75);
   text-shadow: 0 1px 6px rgba(0,0,0,.5);
 }
-.cover-hint { font-size: 13px; color: rgba(255,255,255,.55); margin-top: 28px; }
 
-/* Instructions (back of cover) */
-.card-instructions {
+/* Instructions */
+.card-instructions-face {
   background: var(--card-front);
   align-items: flex-start; text-align: left;
-  transform: rotateY(180deg);
 }
 .instructions-title { font-size: 18px; font-weight: 700; color: var(--card-front-text); margin-bottom: 20px; width: 100%; }
 .instructions-list  { list-style: none; width: 100%; display: flex; flex-direction: column; gap: 14px; }
@@ -149,13 +164,14 @@ body {
   font-size: 16px; font-weight: 600; cursor: pointer;
 }
 
-/* Study card */
+/* Study card text */
 .card-term-label { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 12px; }
 .card-term-text  { font-size: 38px; font-weight: 700; line-height: 1.2; }
 .card-flip-hint  { position: absolute; bottom: 18px; font-size: 12px; opacity: .45; }
 .card-def-label  { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 12px; }
 .card-def-text   { font-size: 21px; line-height: 1.6; }
 
+/* Dots */
 #dots {
   flex-shrink: 0;
   display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
@@ -166,6 +182,7 @@ body {
 .dot.active { background: var(--primary); }
 .dot.done   { background: var(--mastered); }
 
+/* Controls */
 #controls {
   flex-shrink: 0;
   width: 100%; max-width: 480px;
@@ -181,6 +198,7 @@ body {
 #btn-eliminate { background: #fff; color: var(--mastered); border: 2px solid var(--mastered); }
 #btn-next      { background: var(--primary); color: var(--primary-text); }
 
+/* Completion */
 #completion {
   display: none; flex-direction: column;
   align-items: center; justify-content: center;
@@ -197,6 +215,7 @@ body {
   font-size: 16px; font-weight: 600; cursor: pointer;
 }
 
+/* Slide-in after swipe */
 @keyframes slideIn { from { opacity:0; transform:translateX(40px); } to { opacity:1; transform:translateX(0); } }
 .slide-in { animation: slideIn .3s ease forwards; }
 </style>
@@ -260,7 +279,7 @@ const stageEl  = document.getElementById('stage');
 const btnElim  = document.getElementById('btn-eliminate');
 const btnNext  = document.getElementById('btn-next');
 
-function getCardEl() { return document.getElementById('card-inner'); }
+function getInner() { return document.getElementById('card-inner'); }
 
 // ── Init ───────────────────────────────────────────────────
 function init() {
@@ -276,10 +295,67 @@ function init() {
   renderCoverCard();
 }
 
-// ── Cover ──────────────────────────────────────────────────
+// ── 3D flip ────────────────────────────────────────────────
+// Animates each face independently — card-inner never rotates.
+// Front face goes 0 → 90 then jumps to -90 → 0 (hidden by backface-visibility)
+// Back face goes 180 → 90 (invisible) then jumps to -90 → 0 (comes into view)
+function flipCard3D(inner, toFlipped, onComplete) {
+  if (inner.dataset.flipping) return;
+  inner.dataset.flipping = '1';
+
+  const faceF = inner.querySelector('.card-face-front');
+  const faceB = inner.querySelector('.card-face-back');
+  if (!faceF || !faceB) { delete inner.dataset.flipping; return; }
+
+  // Remove second-half class if present
+  inner.classList.remove('flip-second-half');
+
+  // Phase 1: both faces spin to their respective 90° edges (card-face transition handles it)
+  // Front goes to 90°, back goes from 180° to 90°
+  faceF.style.transform = 'rotateY(90deg) scaleY(0.92)';
+  faceB.style.transform = 'rotateY(90deg) scaleY(0.92)';
+
+  setTimeout(() => {
+    // Midpoint: jump both faces to -90° instantly (no transition)
+    faceF.classList.add('at-mid');
+    faceB.classList.add('at-mid');
+    faceF.style.transform = 'rotateY(-90deg) scaleY(0.92)';
+    faceB.style.transform = 'rotateY(-90deg) scaleY(0.92)';
+
+    // Toggle flipped state so CSS backface-visibility shows the right face
+    inner.classList.toggle('is-flipped', toFlipped);
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      // Phase 2: both faces spin from -90° to their resting positions
+      faceF.classList.remove('at-mid');
+      faceB.classList.remove('at-mid');
+      inner.classList.add('flip-second-half');
+
+      // Resting positions depend on flipped state
+      if (toFlipped) {
+        faceF.style.transform = 'rotateY(-180deg)';
+        faceB.style.transform = 'rotateY(0deg)';
+      } else {
+        faceF.style.transform = 'rotateY(0deg)';
+        faceB.style.transform = 'rotateY(180deg)';
+      }
+
+      setTimeout(() => {
+        // Clean up inline styles — let CSS classes own the resting state
+        faceF.style.transform = '';
+        faceB.style.transform = '';
+        inner.classList.remove('flip-second-half');
+        delete inner.dataset.flipping;
+        if (onComplete) onComplete();
+      }, 270);
+    }));
+  }, 220);
+}
+
+// ── Cover card ─────────────────────────────────────────────
 function renderCoverCard() {
   const cv = FLASHCARD_BRANDING.cover, ins = FLASHCARD_BRANDING.instructions;
-  const coverInner = cv.imageUrl
+  const coverContent = cv.imageUrl
     ? `<img class="cover-image" src="${cv.imageUrl}" alt="${cv.title}">
        <div class="cover-hint-overlay">Tap to see instructions</div>`
     : `<div class="cover-no-image">
@@ -288,10 +364,11 @@ function renderCoverCard() {
          <div class="cover-subtitle">${cv.subtitle||''}</div>
          <div class="cover-hint">Tap to see instructions</div>
        </div>`;
+
   wrap.innerHTML = `
     <div class="card-inner" id="card-inner">
-      <div class="card-face card-cover-front">${coverInner}</div>
-      <div class="card-face card-instructions">
+      <div class="card-face card-face-front card-cover-front">${coverContent}</div>
+      <div class="card-face card-face-back card-instructions-face">
         <div class="instructions-title">${ins.title}</div>
         <ul class="instructions-list">
           ${ins.steps.map((s,i)=>`<li><span class="step-num">${i+1}</span><span>${s}</span></li>`).join('')}
@@ -299,10 +376,11 @@ function renderCoverCard() {
         <button class="cta-btn" id="cta-start">${ins.ctaLabel||'Start studying'}</button>
       </div>
     </div>`;
+
   wrap.onclick = () => {
     if (coverFlipped) return;
     coverFlipped = true;
-    flipCard3D(getCardEl(), false, () => {});
+    flipCard3D(getInner(), true, null);
   };
   setTimeout(() => {
     const cta = document.getElementById('cta-start');
@@ -325,13 +403,13 @@ function startStudy() {
 function renderStudyCard(anim) {
   const card = FLASHCARD_CONTENT[deck[currentIdx]];
   wrap.innerHTML = `
-    <div class="card-inner${isFlipped?' flipped':''}" id="card-inner">
-      <div class="card-face card-front" style="background:var(--card-back)">
+    <div class="card-inner${isFlipped?' is-flipped':''}" id="card-inner">
+      <div class="card-face card-face-front" style="background:var(--card-back)">
         <div class="card-def-label" style="color:rgba(255,255,255,.6)">Definition</div>
         <div class="card-def-text" style="color:var(--card-back-text)">${card.definition}</div>
         <div class="card-flip-hint" style="color:var(--card-back-text)">Tap to reveal term</div>
       </div>
-      <div class="card-face card-back" style="background:var(--card-front)">
+      <div class="card-face card-face-back" style="background:var(--card-front)">
         <div class="card-term-label" style="color:#aaa">Term</div>
         <div class="card-term-text" style="color:var(--card-front-text)">${card.term}</div>
       </div>
@@ -341,45 +419,17 @@ function renderStudyCard(anim) {
     wrap.addEventListener('animationend', () => wrap.classList.remove(anim), { once: true });
   }
   wrap.onclick = () => {
-    const inner = getCardEl();
+    const inner = getInner();
     if (!inner || inner.dataset.flipping) return;
-    flipCard3D(inner, isFlipped, () => { isFlipped = !isFlipped; });
+    const next = !isFlipped;
+    flipCard3D(inner, next, () => { isFlipped = next; });
   };
   counter.textContent = `${currentIdx+1} / ${deck.length}`;
 }
 
-// ── 3D flip ────────────────────────────────────────────────
-function flipCard3D(inner, currentlyFlipped, onMidpoint) {
-  if (inner.dataset.flipping) return;
-  inner.dataset.flipping = '1';
-
-  // Phase 1: rotate to edge (90°) and scale down
-  inner.style.transition = 'transform 0.22s cubic-bezier(0.4,0.0,1.0,0.6)';
-  inner.style.transform  = 'rotateY(90deg) scale(0.88)';
-
-  setTimeout(() => {
-    // Midpoint: invisible — swap which face shows, jump to -90°
-    onMidpoint();
-    inner.classList.toggle('flipped', !currentlyFlipped);
-    inner.style.transition = 'none';
-    inner.style.transform  = 'rotateY(-90deg) scale(0.88)';
-
-    // Phase 2: rotate back to flat and scale up
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      inner.style.transition = 'transform 0.25s cubic-bezier(0.0,0.4,0.6,1.0)';
-      inner.style.transform  = 'rotateY(0deg) scale(1)';
-      setTimeout(() => {
-        inner.style.transition = '';
-        inner.style.transform  = '';
-        delete inner.dataset.flipping;
-      }, 260);
-    }));
-  }, 210);
-}
-
-// ── Fly off animation ──────────────────────────────────────
+// ── Fly off ────────────────────────────────────────────────
 function flyOff(dir, cb) {
-  const inner = getCardEl();
+  const inner = getInner();
   if (inner) {
     inner.style.transition = 'transform 0.24s ease-in, opacity 0.24s ease-in';
     inner.style.transform  = `translateX(${dir * window.innerWidth * 1.4}px) rotate(${dir * 16}deg)`;
@@ -395,8 +445,7 @@ btnNext.addEventListener('click', () => {
     isFlipped = false;
     currentIdx = (currentIdx+1) % deck.length;
     renderStudyCard('slide-in');
-    renderDots();
-    updateProgress();
+    renderDots(); updateProgress();
   });
 });
 
@@ -409,8 +458,7 @@ btnElim.addEventListener('click', () => {
     if (currentIdx >= deck.length) currentIdx = deck.length - 1;
     isFlipped = false;
     renderStudyCard('slide-in');
-    renderDots();
-    updateProgress();
+    renderDots(); updateProgress();
   });
 });
 
@@ -422,7 +470,7 @@ document.addEventListener('touchstart', e => {
   txStart = e.touches[0].clientX;
   tyStart = e.touches[0].clientY;
   dragging = false;
-  dragCard = getCardEl();
+  dragCard = getInner();
   if (dragCard) dragCard.style.transition = 'none';
 }, { passive: true });
 
@@ -439,14 +487,13 @@ document.addEventListener('touchmove', e => {
   const tilt = dx * 0.04;
   const lift = Math.abs(dx) * 0.03;
   dragCard.style.transform = `translateX(${dx}px) rotate(${tilt}deg) translateY(-${lift}px)`;
-  dragCard.style.opacity   = Math.max(0.6, 1 - Math.abs(dx) / 400);
+  dragCard.style.opacity   = String(Math.max(0.6, 1 - Math.abs(dx) / 400));
 }, { passive: false });
 
 document.addEventListener('touchend', e => {
   if (phase !== 'study' || !dragCard) return;
   const dx = e.changedTouches[0].clientX - txStart;
   const threshold = window.innerWidth * 0.3;
-
   if (dragging && Math.abs(dx) > threshold) {
     const dir = dx > 0 ? 1 : -1;
     dragCard.style.transition = 'transform 0.28s ease-in, opacity 0.28s ease-in';
@@ -456,8 +503,7 @@ document.addEventListener('touchend', e => {
       isFlipped = false;
       currentIdx = (currentIdx+1) % deck.length;
       renderStudyCard('slide-in');
-      renderDots();
-      updateProgress();
+      renderDots(); updateProgress();
     }, 260);
   } else if (dragging) {
     dragCard.style.transition = 'transform 0.35s cubic-bezier(.34,1.56,.64,1), opacity 0.2s ease';
