@@ -215,6 +215,16 @@ body {
   font-size: 16px; font-weight: 600; cursor: pointer;
 }
 
+#legal {
+  flex-shrink: 0;
+  width: 100%; max-width: 480px;
+  padding: 0 20px 14px;
+  text-align: center;
+  font-size: 10px;
+  color: #aaa;
+  letter-spacing: 0.03em;
+}
+
 /* Slide-in after swipe */
 @keyframes slideIn { from { opacity:0; transform:translateX(40px); } to { opacity:1; transform:translateX(0); } }
 .slide-in { animation: slideIn .3s ease forwards; }
@@ -240,6 +250,7 @@ body {
   <button class="ctrl-btn" id="btn-next">Next →</button>
 </div>
 <div id="completion"></div>
+<div id="legal">Company Confidential — For Internal Use Only</div>
 
 <script>
 document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
@@ -259,7 +270,9 @@ document.addEventListener('touchmove', e => e.preventDefault(), { passive: false
   document.title = b.companyName + ' — Flashcards';
   const logo = document.getElementById('logo');
   logo.innerHTML = b.logoUrl ? `<img src="${b.logoUrl}" alt="${b.companyName}">` : (b.logoEmoji || '');
-  document.getElementById('company-name').textContent = b.companyName;
+  const legal = document.getElementById('legal');
+  if (b.legalText) { legal.textContent = b.legalText; legal.style.display = 'block'; }
+  else legal.style.display = 'none';
 })();
 
 // ── State ──────────────────────────────────────────────────
@@ -296,9 +309,8 @@ function init() {
 }
 
 // ── 3D flip ────────────────────────────────────────────────
-// Animates each face independently — card-inner never rotates.
-// Front face goes 0 → 90 then jumps to -90 → 0 (hidden by backface-visibility)
-// Back face goes 180 → 90 (invisible) then jumps to -90 → 0 (comes into view)
+// card-inner never rotates. Each face rotates independently.
+// currentlyFlipped tells us which resting state we're starting from.
 function flipCard3D(inner, toFlipped, onComplete) {
   if (inner.dataset.flipping) return;
   inner.dataset.flipping = '1';
@@ -307,49 +319,56 @@ function flipCard3D(inner, toFlipped, onComplete) {
   const faceB = inner.querySelector('.card-face-back');
   if (!faceF || !faceB) { delete inner.dataset.flipping; return; }
 
-  // Remove second-half class if present
   inner.classList.remove('flip-second-half');
 
-  // Phase 1: both faces spin to their respective 90° edges (card-face transition handles it)
-  // Front goes to 90°, back goes from 180° to 90°
-  faceF.style.transform = 'rotateY(90deg) scaleY(0.92)';
-  faceB.style.transform = 'rotateY(90deg) scaleY(0.92)';
+  // Lock in current computed positions as inline styles so the
+  // CSS class resting state doesn't interfere with the animation
+  const fromF = toFlipped ? '-180deg' : '0deg';
+  const fromB = toFlipped ? '0deg'    : '180deg';
 
-  setTimeout(() => {
-    // Midpoint: jump both faces to -90° instantly (no transition)
-    faceF.classList.add('at-mid');
-    faceB.classList.add('at-mid');
-    faceF.style.transform = 'rotateY(-90deg) scaleY(0.92)';
-    faceB.style.transform = 'rotateY(-90deg) scaleY(0.92)';
+  // Remove is-flipped during animation so CSS class doesn't fight us
+  inner.classList.remove('is-flipped');
+  faceF.style.transition = 'none';
+  faceB.style.transition = 'none';
+  faceF.style.transform = `rotateY(${fromF})`;
+  faceB.style.transform = `rotateY(${fromB})`;
 
-    // Toggle flipped state so CSS backface-visibility shows the right face
-    inner.classList.toggle('is-flipped', toFlipped);
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    // Phase 1: spin both to 90° edge-on, scale down slightly
+    faceF.style.transition = 'transform 0.22s cubic-bezier(0.4,0.0,1.0,0.6)';
+    faceB.style.transition = 'transform 0.22s cubic-bezier(0.4,0.0,1.0,0.6)';
+    faceF.style.transform = 'rotateY(90deg) scaleY(0.92)';
+    faceB.style.transform = 'rotateY(90deg) scaleY(0.92)';
 
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      // Phase 2: both faces spin from -90° to their resting positions
-      faceF.classList.remove('at-mid');
-      faceB.classList.remove('at-mid');
-      inner.classList.add('flip-second-half');
+    setTimeout(() => {
+      // Midpoint: invisible — jump to -90° instantly
+      faceF.style.transition = 'none';
+      faceB.style.transition = 'none';
+      faceF.style.transform = 'rotateY(-90deg) scaleY(0.92)';
+      faceB.style.transform = 'rotateY(-90deg) scaleY(0.92)';
 
-      // Resting positions depend on flipped state
-      if (toFlipped) {
-        faceF.style.transform = 'rotateY(-180deg)';
-        faceB.style.transform = 'rotateY(0deg)';
-      } else {
-        faceF.style.transform = 'rotateY(0deg)';
-        faceB.style.transform = 'rotateY(180deg)';
-      }
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        // Phase 2: spin from -90° to final resting positions
+        faceF.style.transition = 'transform 0.25s cubic-bezier(0.0,0.4,0.6,1.0)';
+        faceB.style.transition = 'transform 0.25s cubic-bezier(0.0,0.4,0.6,1.0)';
+        const toF = toFlipped ? '-180deg' : '0deg';
+        const toB = toFlipped ? '0deg'    : '180deg';
+        faceF.style.transform = `rotateY(${toF})`;
+        faceB.style.transform = `rotateY(${toB})`;
 
-      setTimeout(() => {
-        // Clean up inline styles — let CSS classes own the resting state
-        faceF.style.transform = '';
-        faceB.style.transform = '';
-        inner.classList.remove('flip-second-half');
-        delete inner.dataset.flipping;
-        if (onComplete) onComplete();
-      }, 270);
-    }));
-  }, 220);
+        setTimeout(() => {
+          // Hand resting state back to CSS class, clear inline styles
+          inner.classList.toggle('is-flipped', toFlipped);
+          faceF.style.transition = '';
+          faceF.style.transform  = '';
+          faceB.style.transition = '';
+          faceB.style.transform  = '';
+          delete inner.dataset.flipping;
+          if (onComplete) onComplete();
+        }, 260);
+      }));
+    }, 220);
+  }));
 }
 
 // ── Cover card ─────────────────────────────────────────────

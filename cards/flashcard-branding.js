@@ -8,7 +8,7 @@ const FLASHCARD_BRANDING = {
   // ----------------------------------------------------------
   //  Company identity
   // ----------------------------------------------------------
-  companyName: "Vaccines Academy",
+  companyName: "Pfizer",
 
   // Pfizer's logo served directly from pfizer.com
   logoUrl: "https://www.pfizer.com/profiles/pfecpfizercomus_profile/themes/pfecpfizercomus/public/assets/images/logo-blue.svg",
@@ -58,7 +58,7 @@ const FLASHCARD_BRANDING = {
     // The image should be 1080 x 1860 px (9:16) for best quality on retina phones.
     // Title/subtitle text should be baked into the image itself.
     // Set to null to fall back to the emoji + title + subtitle below.
-    imageUrl: "cover.jpg",
+    imageUrl: null,
 
     title:    "Pfizer Learning",
     subtitle: "Review key terms and concepts",
@@ -88,5 +88,11 @@ const FLASHCARD_BRANDING = {
     subtitle:     "Great work — you've reviewed all the terms.",
     restartLabel: "Start over"
   }
+
+  // ----------------------------------------------------------
+  //  Legal footer  (shown beneath the buttons on every screen)
+  //  Set to null to hide entirely.
+  // ----------------------------------------------------------
+  legalText: "Company Confidential — For Internal Use Only"
 
 };
