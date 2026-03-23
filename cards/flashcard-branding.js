@@ -1,7 +1,6 @@
 // ============================================================
 //  BRANDING & THEME
 //  Edit this file to change the look and feel.
-//  Use hex color codes or any valid CSS color values.
 // ============================================================
 
 const FLASHCARD_BRANDING = {
@@ -9,20 +8,19 @@ const FLASHCARD_BRANDING = {
   // ----------------------------------------------------------
   //  Company identity
   // ----------------------------------------------------------
-  companyName: "Vaccines Academy",
+  companyName: "Pfizer",
 
-  // Logo: paste a URL to an image, or set to null to hide
-  logoUrl: "PFI.svg",
+  // Pfizer's logo served directly from pfizer.com
+  logoUrl: "logo-blue.svg",
 
-  // Emoji used as a logo stand-in when logoUrl is null
-  logoEmoji: "🧬",
+  logoEmoji: null,
 
   // ----------------------------------------------------------
-  //  Color scheme
+  //  Color scheme  (Pfizer brand blues)
   // ----------------------------------------------------------
   colors: {
-    // Primary accent — used for card backs, buttons, progress bar
-    primary:        "#0095ff",
+    // Pfizer primary blue — used for card backs, buttons, progress bar
+    primary:        "#0000C9",
 
     // Text on primary-colored backgrounds
     primaryText:    "#ffffff",
@@ -31,43 +29,43 @@ const FLASHCARD_BRANDING = {
     cardFront:      "#ffffff",
 
     // Card front text
-    cardFrontText:  "#1a1a1a",
+    cardFrontText:  "#0a0a0a",
 
     // Card back background
-    cardBack:       "#0000c9",
+    cardBack:       "#0000C9",
 
     // Card back text
     cardBackText:   "#ffffff",
 
-    // Page background
-    pageBg:         "#0095ff",
+    // Page background — very light blue-gray, on-brand neutral
+    pageBg:         "#f0f2fb",
 
     // Progress bar fill
-    progressFill:   "#0000c9",
+    progressFill:   "#2E29FF",
 
-    // "Mastered" badge color
-    masteredColor:  "#0095ff",
+    // "Mastered" badge — slightly deeper blue for contrast
+    masteredColor:  "#00008F",
 
     // Eliminated card indicator
-    eliminatedBg:   "#e8f5f0"
+    eliminatedBg:   "#e8eaf9"
   },
 
   // ----------------------------------------------------------
-  //  Cover card  (the very first card the user sees)
+  //  Cover card
   // ----------------------------------------------------------
   cover: {
-    title:    "Biology Fundamentals",
-    subtitle: "Core concepts every student should know",
-    emoji:    "🌿"
+    title:    "Pfizer Learning",
+    subtitle: "Review key terms and concepts",
+    emoji:    "💊"
   },
 
   // ----------------------------------------------------------
-  //  Instructions card  (shown after flipping the cover)
+  //  Instructions card
   // ----------------------------------------------------------
   instructions: {
     title: "How to use these cards",
     steps: [
-      "Tap a card to flip it and reveal the definition",
+      "Tap a card to flip it and reveal the term",
       "Swipe left or tap the arrow to move to the next card",
       "Tap 'I know this!' to remove a card from your deck",
       "Your progress is shown in the bar at the top"
@@ -76,12 +74,12 @@ const FLASHCARD_BRANDING = {
   },
 
   // ----------------------------------------------------------
-  //  Completion screen  (shown when all cards are mastered)
+  //  Completion screen
   // ----------------------------------------------------------
   completion: {
-    emoji:    "🎉",
-    title:    "You mastered the deck!",
-    subtitle: "Great work — you've reviewed all the terms.",
+    emoji:        "🎉",
+    title:        "You mastered the deck!",
+    subtitle:     "Great work — you've reviewed all the terms.",
     restartLabel: "Start over"
   }
 
