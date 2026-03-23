@@ -36,7 +36,7 @@ body {
 }
 #logo { font-size: 22px; line-height: 1; }
 #logo img { height: 26px; width: auto; }
-#company-name { font-size: 14px; font-weight: 600; color: var(--primary); flex: 1; }
+#company-name, #card-title { font-size: 14px; font-weight: 600; color: var(--primary); flex: 1; }
 #card-counter { font-size: 13px; color: #666; white-space: nowrap; }
 
 #progress-wrap {
@@ -145,7 +145,7 @@ body {
 
 <div id="header">
   <div id="logo"></div>
-  <div id="company-name"></div>
+  <div id="card-title"></div>
   <div id="card-counter"></div>
 </div>
 <div id="progress-wrap" style="opacity:0">
@@ -178,10 +178,10 @@ document.addEventListener('touchmove', e => e.preventDefault(), { passive: false
   r.setProperty('--page-bg',         c.pageBg);
   r.setProperty('--progress-fill',   c.progressFill);
   r.setProperty('--mastered',        c.masteredColor);
-  document.title = b.companyName + ' — Flashcards';
+  document.title = b.title + ' — Flashcards';
   const logo = document.getElementById('logo');
-  logo.innerHTML = b.logoUrl ? `<img src="${b.logoUrl}" alt="${b.companyName}">` : (b.logoEmoji || '');
-  document.getElementById('company-name').textContent = b.companyName;
+  logo.innerHTML = b.logoUrl ? `<img src="${b.logoUrl}" alt="${b.title}">` : (b.logoEmoji || '');
+  document.getElementById('card-title').textContent = b.title;
   const legal = document.getElementById('legal');
   if (b.legalText) { legal.textContent = b.legalText; }
   else { legal.style.display = 'none'; }
