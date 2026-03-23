@@ -63,19 +63,18 @@ body {
   position: relative;
   cursor: pointer; user-select: none;
   perspective: 1000px;
-  perspective-origin: 50% 40%;
 }
 
-/* card-inner is just a size container — never rotated.
-   perspective here ensures children share the same 3D space. */
 .card-inner {
   flex: 1 1 0; min-height: 0;
   width: 100%;
   position: relative;
   transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+  border-radius: 20px;
 }
+.card-inner.is-flipped { transform: rotateY(180deg); }
 
-/* Both faces are absolutely positioned and fill card-inner */
 .card-face {
   position: absolute; inset: 0;
   border-radius: 20px;
@@ -85,21 +84,10 @@ body {
   box-shadow: 0 4px 24px rgba(0,0,0,.10);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  transition: transform 0.22s cubic-bezier(0.4,0.0,1.0,0.6);
 }
 
-/* Front: faces viewer. Back: pre-rotated away. */
 .card-face-front { transform: rotateY(0deg); }
 .card-face-back  { transform: rotateY(180deg); }
-
-/* Flipped: front rotates away, back comes forward. */
-.card-inner.is-flipped .card-face-front { transform: rotateY(-180deg); }
-.card-inner.is-flipped .card-face-back  { transform: rotateY(0deg); }
-
-.card-inner.flip-second-half .card-face-front,
-.card-inner.flip-second-half .card-face-back {
-  transition: transform 0.25s cubic-bezier(0.0,0.4,0.6,1.0);
-}
 
 /* Cover card */
 .card-cover-front { background: var(--primary); padding: 0; overflow: hidden; }
@@ -292,70 +280,10 @@ function init() {
   renderCoverCard();
 }
 
-// ── 3D flip ────────────────────────────────────────────────
-// card-inner never rotates. Each face rotates independently.
-// No backface-visibility used — the 90°→-90° jump at midpoint
-// means neither face is ever seen from behind.
+// ── Flip ───────────────────────────────────────────────────
 function flipCard3D(inner, toFlipped, onComplete) {
-  if (inner.dataset.flipping) return;
-  inner.dataset.flipping = '1';
-
-  const faceF = inner.querySelector('.card-face-front');
-  const faceB = inner.querySelector('.card-face-back');
-  if (!faceF || !faceB) { delete inner.dataset.flipping; return; }
-
-  inner.classList.remove('flip-second-half');
-
-  // Snapshot current resting angles as inline styles so CSS class
-  // doesn't interfere during animation
-  const startF = toFlipped ? 'rotateY(-180deg)' : 'rotateY(0deg)';
-  const startB = toFlipped ? 'rotateY(0deg)'    : 'rotateY(180deg)';
-  const endF   = toFlipped ? 'rotateY(-180deg)' : 'rotateY(0deg)';
-  const endB   = toFlipped ? 'rotateY(0deg)'    : 'rotateY(180deg)';
-
-  // Remove is-flipped so CSS class doesn't fight inline transforms
-  inner.classList.remove('is-flipped');
-
-  // Lock starting positions without transition
-  faceF.style.transition = 'none';
-  faceB.style.transition = 'none';
-  faceF.style.transform = startF;
-  faceB.style.transform = startB;
-
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    // Phase 1: both faces spin toward 90° (edge-on, card appears to shrink)
-    faceF.style.transition = 'transform 0.22s cubic-bezier(0.4,0.0,1.0,0.6)';
-    faceB.style.transition = 'transform 0.22s cubic-bezier(0.4,0.0,1.0,0.6)';
-    faceF.style.transform = 'rotateY(90deg) scaleY(0.92)';
-    faceB.style.transform = 'rotateY(90deg) scaleY(0.92)';
-
-    setTimeout(() => {
-      // Midpoint: card is edge-on — jump both to -90° with no transition
-      faceF.style.transition = 'none';
-      faceB.style.transition = 'none';
-      faceF.style.transform = 'rotateY(-90deg) scaleY(0.92)';
-      faceB.style.transform = 'rotateY(-90deg) scaleY(0.92)';
-
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        // Phase 2: spin from -90° to final resting angles
-        faceF.style.transition = 'transform 0.25s cubic-bezier(0.0,0.4,0.6,1.0)';
-        faceB.style.transition = 'transform 0.25s cubic-bezier(0.0,0.4,0.6,1.0)';
-        faceF.style.transform = endF;
-        faceB.style.transform = endB;
-
-        setTimeout(() => {
-          // Hand resting state back to CSS, clear inline styles
-          inner.classList.toggle('is-flipped', toFlipped);
-          faceF.style.transition = '';
-          faceF.style.transform  = '';
-          faceB.style.transition = '';
-          faceB.style.transform  = '';
-          delete inner.dataset.flipping;
-          if (onComplete) onComplete();
-        }, 260);
-      }));
-    }, 220);
-  }));
+  inner.classList.toggle('is-flipped', toFlipped);
+  if (onComplete) setTimeout(onComplete, 500);
 }
 
 // ── Cover card ─────────────────────────────────────────────
