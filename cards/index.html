@@ -103,11 +103,28 @@ body {
 .card-back  { background: var(--card-back); transform: rotateY(180deg); }
 
 /* Cover card */
-.card-cover-front { background: var(--primary); }
+.card-cover-front { background: var(--primary); padding: 0; overflow: hidden; }
+.cover-image {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center;
+  border-radius: 20px;
+}
+.cover-no-image {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 0; padding: 36px 28px; text-align: center;
+  position: absolute; inset: 0;
+}
 .cover-emoji    { font-size: 52px; margin-bottom: 12px; }
 .cover-title    { font-size: 26px; font-weight: 700; color: var(--primary-text); }
 .cover-subtitle { font-size: 15px; color: rgba(255,255,255,.82); margin-top: 6px; line-height: 1.4; }
-.cover-hint     { font-size: 13px; color: rgba(255,255,255,.55); margin-top: 28px; }
+.cover-hint-overlay {
+  position: absolute; bottom: 20px; left: 0; right: 0;
+  text-align: center; font-size: 13px;
+  color: rgba(255,255,255,.7);
+  text-shadow: 0 1px 4px rgba(0,0,0,.4);
+}
 
 /* Instructions (back of cover) */
 .card-instructions {
@@ -269,13 +286,19 @@ function init() {
 // ── Cover card ─────────────────────────────────────────────
 function renderCoverCard() {
   const cv = FLASHCARD_BRANDING.cover, ins = FLASHCARD_BRANDING.instructions;
+  const coverInner = cv.imageUrl
+    ? `<img class="cover-image" src="${cv.imageUrl}" alt="${cv.title}">
+       <div class="cover-hint-overlay">Tap to see instructions</div>`
+    : `<div class="cover-no-image">
+         <div class="cover-emoji">${cv.emoji||'📚'}</div>
+         <div class="cover-title">${cv.title}</div>
+         <div class="cover-subtitle">${cv.subtitle||''}</div>
+         <div class="cover-hint" style="font-size:13px;color:rgba(255,255,255,.55);margin-top:28px">Tap to see instructions</div>
+       </div>`;
   wrap.innerHTML = `
     <div class="card-inner" id="card-inner">
       <div class="card-face card-cover-front">
-        <div class="cover-emoji">${cv.emoji||'📚'}</div>
-        <div class="cover-title">${cv.title}</div>
-        <div class="cover-subtitle">${cv.subtitle||''}</div>
-        <div class="cover-hint">Tap to see instructions</div>
+        ${coverInner}
       </div>
       <div class="card-face card-instructions">
         <div class="instructions-title">${ins.title}</div>
