@@ -9,10 +9,10 @@ const FLASHCARD_BRANDING = {
   // ----------------------------------------------------------
   //  Company identity
   // ----------------------------------------------------------
-  companyName: "BioLearn Academy",
+  companyName: "Vaccines Academy",
 
   // Logo: paste a URL to an image, or set to null to hide
-  logoUrl: null,
+  logoUrl: "PFI.svg",
 
   // Emoji used as a logo stand-in when logoUrl is null
   logoEmoji: "🧬",
