@@ -11,42 +11,25 @@ const FLASHCARD_BRANDING = {
   companyName: "Pfizer",
 
   // Local logo file — place it in the same folder as index.html
+  // Set to null to use the logoEmoji fallback instead.
   logoUrl: "logo.svg",
 
+  // Emoji used as a logo stand-in when logoUrl is null
   logoEmoji: null,
 
   // ----------------------------------------------------------
   //  Color scheme  (Pfizer brand blues)
   // ----------------------------------------------------------
   colors: {
-    // Pfizer primary blue — used for card backs, buttons, progress bar
     primary:        "#0000C9",
-
-    // Text on primary-colored backgrounds
     primaryText:    "#ffffff",
-
-    // Card front background
     cardFront:      "#ffffff",
-
-    // Card front text
     cardFrontText:  "#0a0a0a",
-
-    // Card back background
     cardBack:       "#0000C9",
-
-    // Card back text
     cardBackText:   "#ffffff",
-
-    // Page background — very light blue-gray, on-brand neutral
     pageBg:         "#f0f2fb",
-
-    // Progress bar fill
     progressFill:   "#2E29FF",
-
-    // "Mastered" badge — slightly deeper blue for contrast
     masteredColor:  "#00008F",
-
-    // Eliminated card indicator
     eliminatedBg:   "#e8eaf9"
   },
 
@@ -54,10 +37,9 @@ const FLASHCARD_BRANDING = {
   //  Cover card
   // ----------------------------------------------------------
   cover: {
-    // Set imageUrl to your cover image filename to use a full-bleed image.
-    // The image should be 1080 x 1860 px (9:16) for best quality on retina phones.
-    // Title/subtitle text should be baked into the image itself.
-    // Set to null to fall back to the emoji + title + subtitle below.
+    // Set imageUrl to use a full-bleed cover image (1080x1860px recommended).
+    // Title/subtitle text should be baked into the image.
+    // Set to null to use the emoji + title + subtitle below.
     imageUrl: null,
 
     title:    "Pfizer Learning",
@@ -93,6 +75,6 @@ const FLASHCARD_BRANDING = {
   //  Legal footer  (shown beneath the buttons on every screen)
   //  Set to null to hide entirely.
   // ----------------------------------------------------------
-  legalText: "Pfizer Confidential — For Internal Use Only"
+  legalText: "Company Confidential — For Internal Use Only"
 
 };
