@@ -75,6 +75,6 @@ const FLASHCARD_BRANDING = {
   //  Legal footer  (shown beneath the buttons on every screen)
   //  Set to null to hide entirely.
   // ----------------------------------------------------------
-  legalText: "Company Confidential — For Internal Use Only"
+  legalText: "Pfizer Confidential — For Internal Use Only"
 
 };
