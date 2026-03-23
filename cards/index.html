@@ -85,7 +85,8 @@ body {
   transform-style: preserve-3d;
   border-radius: 20px;
 }
-.card-inner.flipped { transform: rotateY(180deg); }
+.card-inner.flipped .card-front { backface-visibility: visible; -webkit-backface-visibility: visible; transform: rotateY(180deg) scale(0.001); }
+.card-inner.flipped .card-back  { backface-visibility: visible; -webkit-backface-visibility: visible; transform: rotateY(0deg); }
 
 .card-face {
   position: absolute; inset: 0;
@@ -349,29 +350,25 @@ function renderStudyCard(anim) {
 
 // ── 3D flip ────────────────────────────────────────────────
 function flipCard3D(inner, currentlyFlipped, onMidpoint) {
+  if (inner.dataset.flipping) return;
   inner.dataset.flipping = '1';
-  // Remove class so CSS transform doesn't fight the inline animation
-  inner.classList.remove('flipped');
-  const fromAngle = currentlyFlipped ? 180 : 0;
-  const endAngle  = currentlyFlipped ? 0   : 180;
 
-  // Phase 1: spin to 90° (edge-on) and shrink
+  // Phase 1: rotate to edge (90°) and scale down
   inner.style.transition = 'transform 0.22s cubic-bezier(0.4,0.0,1.0,0.6)';
-  inner.style.transform  = `rotateY(90deg) scale(0.88)`;
+  inner.style.transform  = 'rotateY(90deg) scale(0.88)';
 
   setTimeout(() => {
-    // At the invisible midpoint: swap which face is showing, jump to -90°
+    // Midpoint: invisible — swap which face shows, jump to -90°
     onMidpoint();
-    if (!currentlyFlipped) inner.classList.add('flipped');
+    inner.classList.toggle('flipped', !currentlyFlipped);
     inner.style.transition = 'none';
-    inner.style.transform  = `rotateY(-90deg) scale(0.88)`;
+    inner.style.transform  = 'rotateY(-90deg) scale(0.88)';
 
-    // Phase 2: spin from -90° back to flat and grow
+    // Phase 2: rotate back to flat and scale up
     requestAnimationFrame(() => requestAnimationFrame(() => {
       inner.style.transition = 'transform 0.25s cubic-bezier(0.0,0.4,0.6,1.0)';
-      inner.style.transform  = `rotateY(${endAngle === 180 ? 0 : 0}deg) scale(1)`;
+      inner.style.transform  = 'rotateY(0deg) scale(1)';
       setTimeout(() => {
-        // Clean up — let CSS class own the resting state
         inner.style.transition = '';
         inner.style.transform  = '';
         delete inner.dataset.flipping;
