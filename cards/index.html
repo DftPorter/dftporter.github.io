@@ -66,11 +66,12 @@ body {
 }
 
 /* Drag container wraps card-inner — receives translate/tilt transforms.
-   card-inner only ever receives rotateY for the flip. */
+   preserve-3d passes the 3D context through to card-inner. */
 .card-drag {
   flex: 1 1 0; min-height: 0;
   width: 100%;
   position: relative;
+  transform-style: preserve-3d;
 }
 
 .card-inner {
