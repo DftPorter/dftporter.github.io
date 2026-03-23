@@ -62,16 +62,17 @@ body {
   display: flex; flex-direction: column;
   position: relative;
   cursor: pointer; user-select: none;
-  /* Perspective lives here so the faces rotate in 3D space */
-  perspective: 900px;
+  perspective: 1000px;
   perspective-origin: 50% 40%;
 }
 
-/* card-inner is just a size container — never rotated */
+/* card-inner is just a size container — never rotated.
+   perspective here ensures children share the same 3D space. */
 .card-inner {
   flex: 1 1 0; min-height: 0;
   width: 100%;
   position: relative;
+  transform-style: preserve-3d;
 }
 
 /* Both faces are absolutely positioned and fill card-inner */
@@ -82,27 +83,19 @@ body {
   align-items: center; justify-content: center;
   padding: 36px 28px; text-align: center;
   box-shadow: 0 4px 24px rgba(0,0,0,.10);
-  /* No backface-visibility here — rotation angle controls visibility */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   transition: transform 0.22s cubic-bezier(0.4,0.0,1.0,0.6);
 }
 
-/*
-  RESTING STATE
-  Front: facing viewer at 0deg
-  Back:  rotated 180deg away from viewer — scaleX(-1) keeps text readable
-*/
+/* Front: faces viewer. Back: pre-rotated away. */
 .card-face-front { transform: rotateY(0deg); }
 .card-face-back  { transform: rotateY(180deg); }
 
-/*
-  FLIPPED STATE
-  Front: rotated away at -180deg
-  Back:  rotated to face viewer at 0deg
-*/
+/* Flipped: front rotates away, back comes forward. */
 .card-inner.is-flipped .card-face-front { transform: rotateY(-180deg); }
 .card-inner.is-flipped .card-face-back  { transform: rotateY(0deg); }
 
-/* Second half of flip uses slower ease-out */
 .card-inner.flip-second-half .card-face-front,
 .card-inner.flip-second-half .card-face-back {
   transition: transform 0.25s cubic-bezier(0.0,0.4,0.6,1.0);
