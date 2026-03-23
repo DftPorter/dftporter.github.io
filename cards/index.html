@@ -82,39 +82,30 @@ body {
   align-items: center; justify-content: center;
   padding: 36px 28px; text-align: center;
   box-shadow: 0 4px 24px rgba(0,0,0,.10);
-  /* Each face handles its own backface */
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transition: transform 0.22s cubic-bezier(0.4,0.0,1.0,0.6),
-              opacity   0.22s ease;
+  /* No backface-visibility here — rotation angle controls visibility */
+  transition: transform 0.22s cubic-bezier(0.4,0.0,1.0,0.6);
 }
 
 /*
   RESTING STATE
-  Front face: flat, visible
-  Back face:  pre-rotated 180deg, hidden (backface-visibility hides it)
+  Front: facing viewer at 0deg
+  Back:  rotated 180deg away from viewer — scaleX(-1) keeps text readable
 */
-.card-face-front { transform: rotateY(0deg);   }
-.card-face-back  { transform: rotateY(180deg);  }
+.card-face-front { transform: rotateY(0deg); }
+.card-face-back  { transform: rotateY(180deg); }
 
 /*
   FLIPPED STATE
-  Front face: rotated to -180deg (now hidden behind)
-  Back face:  rotated to 0deg (now facing forward)
+  Front: rotated away at -180deg
+  Back:  rotated to face viewer at 0deg
 */
 .card-inner.is-flipped .card-face-front { transform: rotateY(-180deg); }
-.card-inner.is-flipped .card-face-back  { transform: rotateY(0deg);    }
+.card-inner.is-flipped .card-face-back  { transform: rotateY(0deg); }
 
-/* Faster second half of flip */
+/* Second half of flip uses slower ease-out */
 .card-inner.flip-second-half .card-face-front,
 .card-inner.flip-second-half .card-face-back {
-  transition: transform 0.25s cubic-bezier(0.0,0.4,0.6,1.0),
-              opacity   0.2s ease;
-}
-
-/* Scale-down at midpoint — applied via JS */
-.card-face.at-mid {
-  transition: none !important;
+  transition: transform 0.25s cubic-bezier(0.0,0.4,0.6,1.0);
 }
 
 /* Cover card */
@@ -310,7 +301,8 @@ function init() {
 
 // ── 3D flip ────────────────────────────────────────────────
 // card-inner never rotates. Each face rotates independently.
-// currentlyFlipped tells us which resting state we're starting from.
+// No backface-visibility used — the 90°→-90° jump at midpoint
+// means neither face is ever seen from behind.
 function flipCard3D(inner, toFlipped, onComplete) {
   if (inner.dataset.flipping) return;
   inner.dataset.flipping = '1';
@@ -321,43 +313,45 @@ function flipCard3D(inner, toFlipped, onComplete) {
 
   inner.classList.remove('flip-second-half');
 
-  // Lock in current computed positions as inline styles so the
-  // CSS class resting state doesn't interfere with the animation
-  const fromF = toFlipped ? '-180deg' : '0deg';
-  const fromB = toFlipped ? '0deg'    : '180deg';
+  // Snapshot current resting angles as inline styles so CSS class
+  // doesn't interfere during animation
+  const startF = toFlipped ? 'rotateY(-180deg)' : 'rotateY(0deg)';
+  const startB = toFlipped ? 'rotateY(0deg)'    : 'rotateY(180deg)';
+  const endF   = toFlipped ? 'rotateY(-180deg)' : 'rotateY(0deg)';
+  const endB   = toFlipped ? 'rotateY(0deg)'    : 'rotateY(180deg)';
 
-  // Remove is-flipped during animation so CSS class doesn't fight us
+  // Remove is-flipped so CSS class doesn't fight inline transforms
   inner.classList.remove('is-flipped');
+
+  // Lock starting positions without transition
   faceF.style.transition = 'none';
   faceB.style.transition = 'none';
-  faceF.style.transform = `rotateY(${fromF})`;
-  faceB.style.transform = `rotateY(${fromB})`;
+  faceF.style.transform = startF;
+  faceB.style.transform = startB;
 
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    // Phase 1: spin both to 90° edge-on, scale down slightly
+    // Phase 1: both faces spin toward 90° (edge-on, card appears to shrink)
     faceF.style.transition = 'transform 0.22s cubic-bezier(0.4,0.0,1.0,0.6)';
     faceB.style.transition = 'transform 0.22s cubic-bezier(0.4,0.0,1.0,0.6)';
     faceF.style.transform = 'rotateY(90deg) scaleY(0.92)';
     faceB.style.transform = 'rotateY(90deg) scaleY(0.92)';
 
     setTimeout(() => {
-      // Midpoint: invisible — jump to -90° instantly
+      // Midpoint: card is edge-on — jump both to -90° with no transition
       faceF.style.transition = 'none';
       faceB.style.transition = 'none';
       faceF.style.transform = 'rotateY(-90deg) scaleY(0.92)';
       faceB.style.transform = 'rotateY(-90deg) scaleY(0.92)';
 
       requestAnimationFrame(() => requestAnimationFrame(() => {
-        // Phase 2: spin from -90° to final resting positions
+        // Phase 2: spin from -90° to final resting angles
         faceF.style.transition = 'transform 0.25s cubic-bezier(0.0,0.4,0.6,1.0)';
         faceB.style.transition = 'transform 0.25s cubic-bezier(0.0,0.4,0.6,1.0)';
-        const toF = toFlipped ? '-180deg' : '0deg';
-        const toB = toFlipped ? '0deg'    : '180deg';
-        faceF.style.transform = `rotateY(${toF})`;
-        faceB.style.transform = `rotateY(${toB})`;
+        faceF.style.transform = endF;
+        faceB.style.transform = endB;
 
         setTimeout(() => {
-          // Hand resting state back to CSS class, clear inline styles
+          // Hand resting state back to CSS, clear inline styles
           inner.classList.toggle('is-flipped', toFlipped);
           faceF.style.transition = '';
           faceF.style.transform  = '';
