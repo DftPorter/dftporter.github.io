@@ -22,7 +22,7 @@ const FLASHCARD_BRANDING = {
   // ----------------------------------------------------------
   colors: {
     // Primary accent — used for card backs, buttons, progress bar
-    primary:        "#1D9E75",
+    primary:        "#0095ff",
 
     // Text on primary-colored backgrounds
     primaryText:    "#ffffff",
@@ -34,19 +34,19 @@ const FLASHCARD_BRANDING = {
     cardFrontText:  "#1a1a1a",
 
     // Card back background
-    cardBack:       "#1D9E75",
+    cardBack:       "#0000c9",
 
     // Card back text
     cardBackText:   "#ffffff",
 
     // Page background
-    pageBg:         "#f0f4f2",
+    pageBg:         "#0095ff",
 
     // Progress bar fill
-    progressFill:   "#1D9E75",
+    progressFill:   "#0000c9",
 
     // "Mastered" badge color
-    masteredColor:  "#0F6E56",
+    masteredColor:  "#0095ff",
 
     // Eliminated card indicator
     eliminatedBg:   "#e8f5f0"
