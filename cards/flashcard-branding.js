@@ -9,7 +9,7 @@ const FLASHCARD_BRANDING = {
   //  Company identity
   // ----------------------------------------------------------
   // Title shown next to the logo in the header
-  title: "Test Flashcards",
+  title: "Vaccines 101",
 
   // Local logo file — place it in the same folder as index.html
   // Set to null to use the logoEmoji fallback instead.
@@ -41,7 +41,7 @@ const FLASHCARD_BRANDING = {
     // Set imageUrl to use a full-bleed cover image (1080x1860px recommended).
     // Title/subtitle text should be baked into the image.
     // Set to null to use the emoji + title + subtitle below.
-    imageUrl: null,
+    imageUrl: "cover.jpg",
 
     title:    "Pfizer Learning",
     subtitle: "Review key terms and concepts",
