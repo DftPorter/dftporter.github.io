@@ -9,7 +9,7 @@ const FLASHCARD_BRANDING = {
   //  Company identity
   // ----------------------------------------------------------
   // Title shown next to the logo in the header
-  title: "Vaccines 101",
+  title: "Technology",
 
   // Local logo file — place it in the same folder as index.html
   // Set to null to use the logoEmoji fallback instead.
