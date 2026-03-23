@@ -87,12 +87,12 @@ const FLASHCARD_BRANDING = {
     title:        "You mastered the deck!",
     subtitle:     "Great work — you've reviewed all the terms.",
     restartLabel: "Start over"
-  }
+  },
 
   // ----------------------------------------------------------
   //  Legal footer  (shown beneath the buttons on every screen)
   //  Set to null to hide entirely.
   // ----------------------------------------------------------
-  legalText: "Company Confidential — For Internal Use Only"
+  legalText: "Pfizer Confidential — For Internal Use Only"
 
 };
