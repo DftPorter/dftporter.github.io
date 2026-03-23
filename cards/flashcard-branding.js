@@ -52,6 +52,9 @@ const FLASHCARD_BRANDING = {
   //  Instructions card
   // ----------------------------------------------------------
   instructions: {
+    // Short intro text shown above the how-to steps. Set to null to hide.
+    intro: "These cards will help you build familiarity with key vaccine concepts used across our portfolio.",
+
     title: "How to use these cards",
     steps: [
       "Tap a card to flip it and reveal the term",
