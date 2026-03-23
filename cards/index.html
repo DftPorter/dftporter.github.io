@@ -101,15 +101,15 @@
   }
   .cta-btn:active { opacity: .8; }
 
-  .card-term-label { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #aaa; margin-bottom: 10px; }
-  .card-term-text  { font-size: 28px; font-weight: 700; color: var(--card-front-text); line-height: 1.25; }
-  .card-flip-hint  { position: absolute; bottom: 16px; font-size: 12px; color: #bbb; }
-  .card-def-label  { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.6); margin-bottom: 10px; }
-  .card-def-text   { font-size: 16px; color: var(--card-back-text); line-height: 1.6; }
+  .card-term-label { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.6); margin-bottom: 10px; }
+  .card-term-text  { font-size: 36px; font-weight: 700; color: var(--card-back-text); line-height: 1.2; }
+  .card-flip-hint  { position: absolute; bottom: 16px; font-size: 12px; color: rgba(255,255,255,.5); }
+  .card-def-label  { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #aaa; margin-bottom: 10px; }
+  .card-def-text   { font-size: 20px; color: var(--card-front-text); line-height: 1.6; }
 
   #controls {
     width: 100%; max-width: 480px;
-    padding: 18px 20px 16px;
+    padding: 12px 16px 20px;
     display: none; gap: 10px; justify-content: center;
   }
   .ctrl-btn {
@@ -280,14 +280,14 @@ function renderStudyCard(anim) {
   const card = FLASHCARD_CONTENT[deck[currentIdx]];
   wrap.innerHTML = `
     <div class="card-inner${isFlipped ? ' flipped' : ''}" id="card-inner">
-      <div class="card-face card-front">
-        <div class="card-term-label">Term</div>
-        <div class="card-term-text">${card.term}</div>
-        <div class="card-flip-hint">Tap to reveal definition</div>
-      </div>
-      <div class="card-face card-back">
+      <div class="card-face card-front" style="background:var(--card-back)">
         <div class="card-def-label">Definition</div>
-        <div class="card-def-text">${card.definition}</div>
+        <div class="card-def-text" style="color:var(--card-back-text);font-size:20px">${card.definition}</div>
+        <div class="card-flip-hint">Tap to reveal term</div>
+      </div>
+      <div class="card-face card-back" style="background:var(--card-front)">
+        <div class="card-term-label" style="color:#aaa">Term</div>
+        <div class="card-term-text" style="color:var(--card-front-text)">${card.term}</div>
       </div>
     </div>`;
 
