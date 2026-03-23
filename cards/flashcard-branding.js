@@ -10,8 +10,8 @@ const FLASHCARD_BRANDING = {
   // ----------------------------------------------------------
   companyName: "Pfizer",
 
-  // Pfizer's logo served directly from pfizer.com
-  logoUrl: "https://www.pfizer.com/profiles/pfecpfizercomus_profile/themes/pfecpfizercomus/public/assets/images/logo-blue.svg",
+  // Local logo file — place it in the same folder as index.html
+  logoUrl: "logo.svg",
 
   logoEmoji: null,
 
