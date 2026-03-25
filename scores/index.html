@@ -666,7 +666,13 @@ function renderModal() {
           ${f.oppRecord ? `<div style="font-family:'DM Mono',monospace;font-size:11px;color:#6b7280;margin-top:4px">${f.oppRecord}</div>` : ''}
         </div>
       </div>
-      <div style="text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:#6b7280;margin-top:10px">${f.note}${f.venue ? ` · ${f.venue}` : ''}</div>`;
+      ${(fs === 'live' || fs === 'starting') ? `
+      <div style="text-align:center;margin-top:16px">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:.06em;color:${color};line-height:1">${f.note}</div>
+        ${f.venue ? `<div style="font-family:'DM Mono',monospace;font-size:11px;color:#6b7280;margin-top:6px">${f.venue}</div>` : ''}
+      </div>` : `
+      <div style="text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:#6b7280;margin-top:10px">${f.note}${f.venue ? ` · ${f.venue}` : ''}</div>`}
+      `;
   } else {
     scoreBlock = `
       <div style="text-align:center;padding:16px 0">
@@ -675,18 +681,6 @@ function renderModal() {
         ${data.offseasonNote ? `<div style="font-size:12px;color:#6b7280;margin-top:6px;font-family:'DM Mono',monospace">${data.offseasonNote}</div>` : ''}
       </div>`;
   }
-
-  const recentHtml = data.recentGames?.length
-    ? data.recentGames.map(g => {
-        const r = g.phiScore > g.oppScore ? { c: 'win', l: 'W' } : g.phiScore < g.oppScore ? { c: 'loss', l: 'L' } : { c: 'draw', l: 'D' };
-        return `<div class="result-row">
-          <div class="result-matchup">${g.home ? 'vs' : '@'} <span>${g.opp}</span></div>
-          <div class="result-score">${g.phiScore}&ndash;${g.oppScore}</div>
-          <div class="result-wl ${r.c}">${r.l}</div>
-          <div class="result-date">${g.date}</div>
-        </div>`;
-      }).join('')
-    : '<div class="no-recent">No recent games</div>';
 
   document.getElementById('score-modal-inner').innerHTML = `
     <div style="height:4px;background:${color}"></div>
