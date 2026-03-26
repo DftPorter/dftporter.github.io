@@ -432,7 +432,8 @@ function parseEvent(ev, teamId){
     state==='in'                              ? 'live'     :
     completed                                 ? 'final'    :
     state==='pre' && dateMs<=now              ? 'starting' :
-    state==='pre' && dateMs<=now+4*60*60*1000 ? 'upcoming' : 'final';
+    state==='pre' && dateMs<=now+4*60*60*1000 ? 'upcoming' :
+    state==='pre'                             ? 'final'    : 'offseason';
   const note =
     state==='in'                ? detail :
     featuredStatus==='starting' ? 'Starting now…' :
