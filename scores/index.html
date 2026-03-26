@@ -640,9 +640,11 @@ function renderNewsCard(items){
 function syncModalStatus(){
   const dot = document.getElementById('status-dot');
   const modalDot = document.getElementById('modal-status-dot');
-  modalDot.className = dot.className;
-  document.getElementById('modal-update-time').textContent = document.getElementById('update-time').textContent;
-  document.getElementById('modal-countdown').textContent   = document.getElementById('countdown').textContent;
+  const modalUpdateTime = document.getElementById('modal-update-time');
+  const modalCountdown = document.getElementById('modal-countdown');
+  if(modalDot) modalDot.className = dot.className;
+  if(modalUpdateTime) modalUpdateTime.textContent = document.getElementById('update-time').textContent;
+  if(modalCountdown) modalCountdown.textContent   = document.getElementById('countdown').textContent;
 }
 
 function openModal(key, data){
