@@ -368,7 +368,10 @@
         </div>
       </div>
       <div id="modal-game-note"></div>
-      <div id="modal-last-refreshed" style="margin-top:16px;font-family:'DM Mono',monospace;font-size:11px;color:#4b5563;letter-spacing:.08em;text-transform:uppercase;"></div>
+      <div id="modal-status" style="margin-top:20px;display:flex;align-items:center;gap:14px;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;flex-wrap:wrap;justify-content:center;">
+        <div style="display:flex;align-items:center;gap:8px;"><span class="pulse-dot" id="modal-status-dot"></span><span id="modal-update-time"></span></div>
+        <div style="display:flex;align-items:center;gap:8px;"><span style="color:#6b7280">Next refresh in</span><span id="modal-countdown"></span></div>
+      </div>
     </div>
   </div>
 </div>
@@ -634,6 +637,14 @@ function renderNewsCard(items){
 }
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
+function syncModalStatus(){
+  const dot = document.getElementById('status-dot');
+  const modalDot = document.getElementById('modal-status-dot');
+  modalDot.className = dot.className;
+  document.getElementById('modal-update-time').textContent = document.getElementById('update-time').textContent;
+  document.getElementById('modal-countdown').textContent   = document.getElementById('countdown').textContent;
+}
+
 function openModal(key, data){
   if(window.innerWidth <= 768) return;
   const team = TEAMS[key];
@@ -834,12 +845,15 @@ function getRefreshInterval(scores){
 function startCountdown(seconds){
   countdownSeconds=seconds;
   clearInterval(countdownInterval);
-  countdownInterval=setInterval(()=>{
+      countdownInterval=setInterval(()=>{
     countdownSeconds--;
     if(countdownSeconds<0) countdownSeconds=0;
     const m=Math.floor(countdownSeconds/60);
     const s=String(countdownSeconds%60).padStart(2,'0');
-    document.getElementById('countdown').textContent=`${m}:${s}`;
+    const txt = `${m}:${s}`;
+    document.getElementById('countdown').textContent=txt;
+    const mc = document.getElementById('modal-countdown');
+    if(mc) mc.textContent=txt;
   },1000);
 }
 
@@ -894,7 +908,7 @@ async function fetchScores(){
           phiEl.className='modal-team-score'+(phiS>oppS?' modal-winner':'');
           oppEl.className='modal-team-score'+(oppS>phiS?' modal-winner':'');
           document.getElementById('modal-game-note').textContent=f.note||'';
-          document.getElementById('modal-last-refreshed').textContent=`Last refreshed ${new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`;}
+          syncModalStatus();}
       }
     });
     prevScores=scores;
