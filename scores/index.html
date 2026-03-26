@@ -854,8 +854,7 @@ function startCountdown(seconds){
     const s=String(countdownSeconds%60).padStart(2,'0');
     const txt = `${m}:${s}`;
     document.getElementById('countdown').textContent=txt;
-    const mc = document.getElementById('modal-countdown');
-    if(mc) mc.textContent=txt;
+    if(document.getElementById('live-modal')?.classList.contains('open')) syncModalStatus();
   },1000);
 }
 
@@ -891,6 +890,20 @@ async function fetchScores(){
       sorted.map(({key,data})=>renderCard(key,data)).join('')+renderNewsCard(newsItems);
     TEAM_ORDER.forEach(k=>{
       const curr=scores[k]?.featured, prev=prevScores[k]?.featured;
+      // Always sync modal if open for this team
+      const modal = document.getElementById('live-modal');
+      if(modal?.classList.contains('open') && curr &&
+         document.getElementById('modal-sport-text')?.textContent.includes(TEAMS[k].sport)){
+        const phiS=curr.phiScore??0, oppS=curr.oppScore??0;
+        const phiEl=document.getElementById('modal-phi-score');
+        const oppEl=document.getElementById('modal-opp-score');
+        phiEl.textContent=phiS; oppEl.textContent=oppS;
+        phiEl.className='modal-team-score'+(phiS>oppS?' modal-winner':'');
+        oppEl.className='modal-team-score'+(oppS>phiS?' modal-winner':'');
+        document.getElementById('modal-game-note').textContent=curr.note||'';
+        syncModalStatus();
+      }
+      // Flash card on score change
       if(curr&&prev&&(curr.phiScore!==prev.phiScore||curr.oppScore!==prev.oppScore)){
         document.querySelectorAll('.team-card').forEach(card=>{
           if(card.querySelector('.team-name')?.textContent===TEAMS[k].name){
@@ -910,7 +923,9 @@ async function fetchScores(){
           phiEl.className='modal-team-score'+(phiS>oppS?' modal-winner':'');
           oppEl.className='modal-team-score'+(oppS>phiS?' modal-winner':'');
           document.getElementById('modal-game-note').textContent=f.note||'';
-          syncModalStatus();}
+          syncModalStatus();
+        }
+      }}
       }
     });
     prevScores=scores;
