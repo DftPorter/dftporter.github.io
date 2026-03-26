@@ -521,7 +521,7 @@ async function fetchTeamData(key){
 
   const activeLive  = liveGame?.featuredStatus==='live' ? liveGame : null;
   const featured    = isOffseason ? null : (activeLive||lastCompleted||nextGame||null);
-  const fs          = isOffseason ? 'offseason' : (featured?.featuredStatus||'offseason');
+  const fs          = isOffseason ? 'offseason' : featured ? (featured.featuredStatus==='final'&&!lastCompleted&&nextGame ? nextGame.featuredStatus : featured.featuredStatus) : 'offseason';
   const showRecords = fs==='live'||fs==='final'||fs==='starting';
 
   const soccerPhiRecord = isSoccer ? (mlsRecords[String(teamId)]||schRes?.team?.recordSummary||null) : null;
