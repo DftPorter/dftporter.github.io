@@ -341,7 +341,6 @@
 <main id="cards-container"></main>
 <footer>
   <div id="footer-text">Live data via ESPN &nbsp;&bull;&nbsp; porter.allen@gmail.com &nbsp;&bull;&nbsp; Built with Claude.ai</div>
-  <div id="last-refreshed" style="margin-top:4px;color:#4b5563;">—</div>
 </footer>
 
 <!-- Live Score Modal -->
@@ -369,6 +368,7 @@
         </div>
       </div>
       <div id="modal-game-note"></div>
+      <div id="modal-last-refreshed" style="margin-top:16px;font-family:'DM Mono',monospace;font-size:11px;color:#4b5563;letter-spacing:.08em;text-transform:uppercase;"></div>
     </div>
   </div>
 </div>
@@ -653,6 +653,7 @@ function openModal(key, data){
   oppEl.className = 'modal-team-score' + (oppS > phiS ? ' modal-winner' : '');
 
   document.getElementById('modal-game-note').textContent = f.note || '';
+  document.getElementById('modal-last-refreshed').textContent = `Last refreshed ${new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`;
 
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -888,7 +889,7 @@ async function fetchScores(){
           phiEl.className='modal-team-score'+(phiS>oppS?' modal-winner':'');
           oppEl.className='modal-team-score'+(oppS>phiS?' modal-winner':'');
           document.getElementById('modal-game-note').textContent=f.note||'';
-        }
+          document.getElementById('modal-last-refreshed').textContent=`Last refreshed ${new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`;}
       }
     });
     prevScores=scores;
