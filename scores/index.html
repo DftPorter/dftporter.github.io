@@ -506,7 +506,7 @@ async function fetchTeamData(key){
     if(p.completed){
       lastCompleted = p;
       recentGames.push(p);
-    } else if((p.featuredStatus==='upcoming'||p.featuredStatus==='starting') && !nextGame){
+    } else if(!nextGame && (p.featuredStatus==='upcoming'||p.featuredStatus==='starting'||p.featuredStatus==='final') && !p.completed){
       if(p.dateMs > now - 30*60*1000) nextGame = p;
     }
   }
