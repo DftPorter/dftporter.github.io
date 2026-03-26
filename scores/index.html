@@ -615,7 +615,6 @@ function renderCard(key,data){
 }
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
-const isDesktop = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 let modalKey = null;
 
 function openModal(key) {
@@ -820,6 +819,7 @@ applyTheme(localStorage.getItem('colorScheme')||'device');
 
 // ── Refresh ───────────────────────────────────────────────────────────────────
 let countdownSeconds=300, countdownInterval=null, refreshTimeout=null, prevScores={};
+const isDesktop = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
 function getRefreshInterval(scores){
   const vals = Object.values(scores);
