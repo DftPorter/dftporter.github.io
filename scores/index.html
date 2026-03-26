@@ -340,7 +340,7 @@
 <div id="error-banner"><div id="error-banner-inner"></div></div>
 <main id="cards-container"></main>
 <footer>
-  <div id="footer-text">Live data via ESPN &nbsp;&bull;&nbsp; porter.allen@gmail.com &nbsp;&bull;&nbsp; Built with Claude.ai</div>
+  <div id="footer-text">Live data via ESPN &nbsp;&bull;&nbsp; <a href="https://linktr.ee/daftporter" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:3px">linktr.ee/daftporter</a> &nbsp;&bull;&nbsp; Built with Claude.ai</div>
 </footer>
 
 <!-- Live Score Modal -->
@@ -865,7 +865,7 @@ async function fetchScores(){
         ?results[i].value
         :{featuredStatus:'offseason',featured:null,recentGames:[],nextGame:null,offseasonNote:'Data unavailable',featuredDateMs:0,nextGameDateMs:0};
     });
-    const rank=s=>({live:0,starting:0,final:1,upcoming:3,offseason:4}[s]??4);
+    const rank=s=>({live:0,starting:0,upcoming:1,final:2,offseason:3}[s]??3);
     const sorted=TEAM_ORDER.map(k=>({key:k,data:scores[k]})).sort((a,b)=>{
       const rd=rank(a.data.featuredStatus)-rank(b.data.featuredStatus);
       if(rd!==0) return rd;
@@ -900,7 +900,7 @@ async function fetchScores(){
     prevScores=scores;
     const t=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     setStatus('ok','Updated '+t);
-    document.getElementById('footer-text').innerHTML=`Live data via ESPN &nbsp;&bull;&nbsp; porter.allen@gmail.com &nbsp;&bull;&nbsp; Built with Claude.ai`;
+    document.getElementById('footer-text').innerHTML=`Live data via ESPN &nbsp;&bull;&nbsp; <a href="https://linktr.ee/daftporter" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:3px">linktr.ee/daftporter</a> &nbsp;&bull;&nbsp; Built with Claude.ai`;
     scheduleNextRefresh(scores);
   }catch(err){
     console.error(err);
