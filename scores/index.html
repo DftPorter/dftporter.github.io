@@ -50,8 +50,7 @@
   @keyframes liveGlow{0%,100%{opacity:1;box-shadow:0 0 8px 1px var(--team-color);}50%{opacity:.7;box-shadow:0 0 18px 4px var(--team-color);}}
   .team-card.is-live{background:color-mix(in srgb,var(--team-color) 6%,var(--surface));}
   .team-card.is-live::before{height:4px;animation:liveGlow 2.5s ease-in-out infinite;}
-  /* Clickable live card */
-  @media (min-width: 769px) {
+  @media(min-width:769px){
     .team-card.is-live{cursor:pointer;}
     .team-card.is-live:hover{transform:translateY(-4px);box-shadow:0 20px 56px rgba(0,0,0,.6),0 0 0 1px var(--team-color);}
     .team-card.is-live .live-expand-hint{display:flex;}
@@ -119,199 +118,79 @@
   #error-banner{display:none;position:relative;z-index:10;margin:16px auto 0;max-width:1400px;padding:0 20px;}
   #error-banner-inner{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);border-radius:10px;padding:14px 18px;font-family:'DM Mono',monospace;font-size:12px;color:#fca5a5;letter-spacing:.04em;}
   footer{position:relative;z-index:10;text-align:center;padding:20px;font-family:'DM Mono',monospace;font-size:11px;color:#374151;letter-spacing:.08em;border-top:1px solid var(--border);}
-  @media(max-width:480px){main{padding:16px 12px 32px;gap:14px;}header{padding:20px 16px;}}
 
-  /* ── Live Modal ──────────────────────────────────────────────────────────── */
-  #live-modal{
-    display:none;
-    position:fixed;inset:0;z-index:1000;
-    background:rgba(0,0,0,.85);
-    backdrop-filter:blur(8px);
-    -webkit-backdrop-filter:blur(8px);
-    align-items:center;justify-content:center;
-  }
+  /* ── Live Modal ── */
+  #live-modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);align-items:center;justify-content:center;}
   #live-modal.open{display:flex;animation:modalIn .25s ease;}
   @keyframes modalIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
-  #live-modal-inner{
-    position:relative;
-    width:calc(100vw - 48px);
-    height:calc(100vh - 48px);
-    background:var(--surface);
-    border:1px solid var(--border);
-    border-radius:20px;
-    overflow:hidden;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-  }
-  #live-modal-inner::before{
-    content:'';position:absolute;top:0;left:0;right:0;height:5px;
-    background:var(--modal-color,#22c55e);
-    animation:liveGlowBar 2.5s ease-in-out infinite;
-  }
+  #live-modal-inner{position:relative;width:calc(100vw - 48px);height:calc(100vh - 48px);background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  #live-modal-inner::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:var(--modal-color,#22c55e);animation:liveGlowBar 2.5s ease-in-out infinite;}
   @keyframes liveGlowBar{0%,100%{opacity:1;box-shadow:0 0 12px 2px var(--modal-color,#22c55e);}50%{opacity:.7;box-shadow:0 0 28px 8px var(--modal-color,#22c55e);}}
-  /* noise overlay inside modal */
-  #live-modal-inner::after{
-    content:'';position:absolute;inset:0;
-    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
-    opacity:.02;pointer-events:none;z-index:0;
-  }
-  #modal-close{
-    position:absolute;top:20px;right:20px;z-index:10;
-    width:44px;height:44px;border-radius:50%;
-    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
-    color:#9ca3af;font-size:20px;line-height:1;
-    cursor:pointer;display:flex;align-items:center;justify-content:center;
-    transition:background .15s,color .15s;
-    font-family:sans-serif;
-  }
+  #live-modal-inner::after{content:'';position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");opacity:.02;pointer-events:none;z-index:0;}
+  #modal-close{position:absolute;top:20px;right:20px;z-index:10;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#9ca3af;font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s;font-family:sans-serif;}
   #modal-close:hover{background:rgba(255,255,255,.15);color:#fff;}
   #modal-content{position:relative;z-index:1;text-align:center;width:100%;padding:40px;}
-  #modal-sport-badge{
-    font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.2em;text-transform:uppercase;
-    color:var(--modal-color,#4ade80);margin-bottom:16px;
-    display:flex;align-items:center;justify-content:center;gap:8px;
-  }
-  #modal-sport-badge .modal-pulse{
-    width:9px;height:9px;border-radius:50%;background:var(--modal-color,#4ade80);
-    animation:pulse 2s ease-in-out infinite;flex-shrink:0;
-  }
-  #modal-teams{display:flex;align-items:center;justify-content:center;gap:0;}
+  #modal-sport-badge{font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--modal-color,#4ade80);margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;}
+  #modal-sport-badge .modal-pulse{width:9px;height:9px;border-radius:50%;background:var(--modal-color,#4ade80);animation:pulse 2s ease-in-out infinite;flex-shrink:0;}
+  #modal-teams{display:flex;align-items:center;justify-content:center;}
   .modal-team{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;max-width:340px;}
-  .modal-team-icon{font-size:clamp(48px,8vw,96px);line-height:1;}
-  .modal-team-abbr{
-    font-family:'Bebas Neue',sans-serif;
-    font-size:clamp(48px,10vw,120px);
-    letter-spacing:.06em;line-height:1;
-    color:#d1d5db;
-  }
-  .modal-team-score{
-    font-family:'Bebas Neue',sans-serif;
-    font-size:clamp(100px,22vw,260px);
-    line-height:.9;color:#fff;
-    transition:color .3s;
-  }
+  .modal-team-abbr{font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,10vw,120px);letter-spacing:.06em;line-height:1;color:#d1d5db;}
+  .modal-team-score{font-family:'Bebas Neue',sans-serif;font-size:clamp(100px,22vw,260px);line-height:.9;color:#fff;transition:color .3s;}
   .modal-team-score.modal-winner{color:var(--modal-color,#4ade80);}
-  .modal-vs{
-    display:flex;flex-direction:column;align-items:center;gap:8px;
-    padding:0 clamp(16px,3vw,48px);flex-shrink:0;
-  }
+  .modal-vs{display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 clamp(16px,3vw,48px);flex-shrink:0;}
   .modal-vs-text{font-family:'DM Mono',monospace;font-size:clamp(13px,2vw,18px);color:#374151;letter-spacing:.1em;}
   .modal-vs-line{width:1px;height:clamp(80px,12vw,160px);background:var(--border);}
-  #modal-game-note{
-    margin-top:clamp(16px,3vh,36px);
-    font-family:'DM Mono',monospace;
-    font-size:clamp(14px,2.2vw,22px);
-    color:#9ca3af;letter-spacing:.08em;text-transform:uppercase;
-  }
-  /* Hide modal on mobile */
+  #modal-game-note{margin-top:clamp(16px,3vh,36px);font-family:'DM Mono',monospace;font-size:clamp(14px,2.2vw,22px);color:#9ca3af;letter-spacing:.08em;text-transform:uppercase;}
+  #modal-status-bar{margin-top:20px;display:flex;align-items:center;gap:14px;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;flex-wrap:wrap;justify-content:center;}
   @media(max-width:768px){#live-modal{display:none !important;}}
 
+  /* ── Light theme ── */
   @media(prefers-color-scheme:light){
     :root:not([data-theme="dark"]){--bg:#e8edf2;--surface:#ffffff;--border:rgba(0,0,0,0.10);--text:#111827;--muted:#4b5563;}
-    :root:not([data-theme="dark"]) body{color:#111827;}
     :root:not([data-theme="dark"]) body::before{opacity:.012;}
     :root:not([data-theme="dark"]) .header-left h1{background:linear-gradient(135deg,#111827 40%,#374151) !important;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent !important;background-clip:text !important;}
-    :root:not([data-theme="dark"]) .header-left p,:root:not([data-theme="dark"]) .live-badge{color:#4b5563 !important;}
     :root:not([data-theme="dark"]) #update-time,:root:not([data-theme="dark"]) #countdown{color:#111827 !important;}
-    :root:not([data-theme="dark"]) .refresh-label{color:#6b7280 !important;}
     :root:not([data-theme="dark"]) .refresh-btn{background:rgba(0,0,0,0.06) !important;border:1px solid rgba(0,0,0,0.12) !important;color:#111827 !important;}
     :root:not([data-theme="dark"]) .sk{background:linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%) !important;background-size:200% 100%;}
     :root:not([data-theme="dark"]) .team-name{color:#111827 !important;}
-    :root:not([data-theme="dark"]) .team-sport{color:#4b5563 !important;}
-    :root:not([data-theme="dark"]) .team-abv{color:#374151 !important;}
     :root:not([data-theme="dark"]) .team-score{color:#111827 !important;}
     :root:not([data-theme="dark"]) .team-score.winner{color:var(--team-color) !important;}
     :root:not([data-theme="dark"]) .team-score.no-score{color:#9ca3af !important;}
-    :root:not([data-theme="dark"]) .team-score.opp-winning{color:#111827 !important;}
-    :root:not([data-theme="dark"]) .team-record{color:#6b7280 !important;}
-    :root:not([data-theme="dark"]) .vs-text{color:#9ca3af !important;}
-    :root:not([data-theme="dark"]) .vs-line{background:rgba(0,0,0,0.1) !important;}
-    :root:not([data-theme="dark"]) .game-label{color:#6b7280 !important;}
-    :root:not([data-theme="dark"]) .game-info-row{color:#4b5563 !important;}
-    :root:not([data-theme="dark"]) .results-label{color:#6b7280 !important;}
-    :root:not([data-theme="dark"]) .result-matchup{color:#374151 !important;}
-    :root:not([data-theme="dark"]) .result-matchup span{color:#111827 !important;}
-    :root:not([data-theme="dark"]) .result-score{color:#111827 !important;}
-    :root:not([data-theme="dark"]) .result-date{color:#9ca3af !important;}
-    :root:not([data-theme="dark"]) .next-game-row{background:rgba(251,191,36,.1) !important;border:1px solid rgba(251,191,36,.3) !important;}
-    :root:not([data-theme="dark"]) .next-game-row.today{background:rgba(251,191,36,.25) !important;border:1px solid rgba(251,191,36,.6) !important;}
-    :root:not([data-theme="dark"]) .next-game-label{color:#d97706 !important;}
-    :root:not([data-theme="dark"]) .next-game-info{color:#374151 !important;}
-    :root:not([data-theme="dark"]) .no-recent{color:#9ca3af !important;}
     :root:not([data-theme="dark"]) .status-final{background:rgba(0,0,0,0.05) !important;color:#6b7280 !important;border:1px solid rgba(0,0,0,0.1) !important;}
     :root:not([data-theme="dark"]) .status-offseason{background:rgba(0,0,0,0.05) !important;color:#9ca3af !important;border:1px solid rgba(0,0,0,0.08) !important;}
     :root:not([data-theme="dark"]) .status-live,:root:not([data-theme="dark"]) .status-starting{background:rgba(22,163,74,.12) !important;color:#16a34a !important;border-color:rgba(22,163,74,.3) !important;}
     :root:not([data-theme="dark"]) .pulse-dot{background:#16a34a !important;}
     :root:not([data-theme="dark"]) .result-wl.win{color:#16a34a !important;}
     :root:not([data-theme="dark"]) .result-wl.loss{color:#dc2626 !important;}
-    :root:not([data-theme="dark"]) .result-wl.draw{color:#d97706 !important;}
-    :root:not([data-theme="dark"]) .streak-w{background:rgba(22,163,74,.12) !important;color:#16a34a !important;border-color:rgba(22,163,74,.3) !important;}
-    :root:not([data-theme="dark"]) .streak-l{background:rgba(220,38,38,.1) !important;color:#dc2626 !important;border-color:rgba(220,38,38,.25) !important;}
-    :root:not([data-theme="dark"]) .streak-d{background:rgba(217,119,6,.1) !important;color:#d97706 !important;border-color:rgba(217,119,6,.25) !important;}
     :root:not([data-theme="dark"]) .news-header-title{color:#111827 !important;}
-    :root:not([data-theme="dark"]) .news-item:hover{background:rgba(0,0,0,.03) !important;}
     :root:not([data-theme="dark"]) .news-item-title{color:#111827 !important;}
-    :root:not([data-theme="dark"]) .news-time{color:#9ca3af !important;}
     :root:not([data-theme="dark"]) footer{color:#6b7280 !important;}
     :root:not([data-theme="dark"]) #live-modal{background:rgba(200,210,220,.75) !important;}
-    :root:not([data-theme="dark"]) #modal-close{color:#374151 !important;}
     :root:not([data-theme="dark"]) .modal-team-abbr{color:#374151 !important;}
     :root:not([data-theme="dark"]) .modal-team-score{color:#111827 !important;}
-    :root:not([data-theme="dark"]) #modal-game-note{color:#6b7280 !important;}
   }
   [data-theme="light"]{--bg:#e8edf2;--surface:#ffffff;--border:rgba(0,0,0,0.10);--text:#111827;--muted:#4b5563;}
-  [data-theme="light"] body{color:#111827;}
   [data-theme="light"] body::before{opacity:.012;}
   [data-theme="light"] .header-left h1{background:linear-gradient(135deg,#111827 40%,#374151) !important;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent !important;background-clip:text !important;}
-  [data-theme="light"] .header-left p,[data-theme="light"] .live-badge{color:#4b5563 !important;}
   [data-theme="light"] #update-time,[data-theme="light"] #countdown{color:#111827 !important;}
-  [data-theme="light"] .refresh-label{color:#6b7280 !important;}
   [data-theme="light"] .refresh-btn{background:rgba(0,0,0,0.06) !important;border:1px solid rgba(0,0,0,0.12) !important;color:#111827 !important;}
   [data-theme="light"] .sk{background:linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%) !important;background-size:200% 100%;}
   [data-theme="light"] .team-name{color:#111827 !important;}
-  [data-theme="light"] .team-sport{color:#4b5563 !important;}
-  [data-theme="light"] .team-abv{color:#374151 !important;}
   [data-theme="light"] .team-score{color:#111827 !important;}
   [data-theme="light"] .team-score.winner{color:var(--team-color) !important;}
   [data-theme="light"] .team-score.no-score{color:#9ca3af !important;}
-  [data-theme="light"] .team-score.opp-winning{color:#111827 !important;}
-  [data-theme="light"] .team-record{color:#6b7280 !important;}
-  [data-theme="light"] .vs-text{color:#9ca3af !important;}
-  [data-theme="light"] .vs-line{background:rgba(0,0,0,0.1) !important;}
-  [data-theme="light"] .game-label{color:#6b7280 !important;}
-  [data-theme="light"] .game-info-row{color:#4b5563 !important;}
-  [data-theme="light"] .results-label{color:#6b7280 !important;}
-  [data-theme="light"] .result-matchup{color:#374151 !important;}
-  [data-theme="light"] .result-matchup span{color:#111827 !important;}
-  [data-theme="light"] .result-score{color:#111827 !important;}
-  [data-theme="light"] .result-date{color:#9ca3af !important;}
-  [data-theme="light"] .next-game-row{background:rgba(251,191,36,.1) !important;border:1px solid rgba(251,191,36,.3) !important;}
-  [data-theme="light"] .next-game-row.today{background:rgba(251,191,36,.25) !important;border:1px solid rgba(251,191,36,.6) !important;}
-  [data-theme="light"] .next-game-label{color:#d97706 !important;}
-  [data-theme="light"] .next-game-info{color:#374151 !important;}
-  [data-theme="light"] .no-recent{color:#9ca3af !important;}
   [data-theme="light"] .status-final{background:rgba(0,0,0,0.05) !important;color:#6b7280 !important;border:1px solid rgba(0,0,0,0.1) !important;}
   [data-theme="light"] .status-offseason{background:rgba(0,0,0,0.05) !important;color:#9ca3af !important;border:1px solid rgba(0,0,0,0.08) !important;}
   [data-theme="light"] .status-live,[data-theme="light"] .status-starting{background:rgba(22,163,74,.12) !important;color:#16a34a !important;border-color:rgba(22,163,74,.3) !important;}
   [data-theme="light"] .pulse-dot{background:#16a34a !important;}
   [data-theme="light"] .result-wl.win{color:#16a34a !important;}
   [data-theme="light"] .result-wl.loss{color:#dc2626 !important;}
-  [data-theme="light"] .result-wl.draw{color:#d97706 !important;}
-  [data-theme="light"] .streak-w{background:rgba(22,163,74,.12) !important;color:#16a34a !important;border-color:rgba(22,163,74,.3) !important;}
-  [data-theme="light"] .streak-l{background:rgba(220,38,38,.1) !important;color:#dc2626 !important;border-color:rgba(220,38,38,.25) !important;}
-  [data-theme="light"] .streak-d{background:rgba(217,119,6,.1) !important;color:#d97706 !important;border-color:rgba(217,119,6,.25) !important;}
   [data-theme="light"] .news-header-title{color:#111827 !important;}
-  [data-theme="light"] .news-item:hover{background:rgba(0,0,0,.03) !important;}
   [data-theme="light"] .news-item-title{color:#111827 !important;}
-  [data-theme="light"] .news-time{color:#9ca3af !important;}
   [data-theme="light"] footer{color:#6b7280 !important;}
   [data-theme="light"] #live-modal{background:rgba(200,210,220,.75) !important;}
-  [data-theme="light"] #modal-close{color:#374151 !important;}
   [data-theme="light"] .modal-team-abbr{color:#374151 !important;}
   [data-theme="light"] .modal-team-score{color:#111827 !important;}
-  [data-theme="light"] #modal-game-note{color:#6b7280 !important;}
 </style>
 </head>
 <body>
@@ -326,8 +205,8 @@
       <span id="update-time">Fetching scores…</span>
     </div>
     <div class="live-badge">
-      <span class="refresh-label" style="color:#9ca3af">Next refresh in</span>
-      <span id="countdown" style="font-family:'DM Mono',monospace;font-size:12px;">5:00</span>
+      <span style="color:#9ca3af">Next refresh in</span>
+      <span id="countdown">5:00</span>
     </div>
     <button class="refresh-btn" id="refresh-btn" onclick="fetchScores()">
       <span class="spin">&#8635;</span> Refresh
@@ -337,8 +216,10 @@
     </button>
   </div>
 </header>
+
 <div id="error-banner"><div id="error-banner-inner"></div></div>
 <main id="cards-container"></main>
+
 <footer>
   <div id="footer-text">Live data via ESPN &nbsp;&bull;&nbsp; <a href="https://linktr.ee/daftporter" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:3px">linktr.ee/daftporter</a> &nbsp;&bull;&nbsp; Built with Claude.ai</div>
 </footer>
@@ -353,7 +234,7 @@
         <span id="modal-sport-text">LIVE NOW</span>
       </div>
       <div id="modal-teams">
-        <div class="modal-team" id="modal-phi-side">
+        <div class="modal-team">
           <div class="modal-team-abbr">PHI</div>
           <div class="modal-team-score" id="modal-phi-score">0</div>
         </div>
@@ -362,15 +243,21 @@
           <div class="modal-vs-text">VS</div>
           <div class="modal-vs-line"></div>
         </div>
-        <div class="modal-team" id="modal-opp-side">
+        <div class="modal-team">
           <div class="modal-team-abbr" id="modal-opp-abbr">OPP</div>
           <div class="modal-team-score" id="modal-opp-score">0</div>
         </div>
       </div>
       <div id="modal-game-note"></div>
-      <div id="modal-status" style="margin-top:20px;display:flex;align-items:center;gap:14px;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;flex-wrap:wrap;justify-content:center;">
-        <div style="display:flex;align-items:center;gap:8px;"><span class="pulse-dot" id="modal-status-dot"></span><span id="modal-update-time"></span></div>
-        <div style="display:flex;align-items:center;gap:8px;"><span style="color:#6b7280">Next refresh in</span><span id="modal-countdown"></span></div>
+      <div id="modal-status-bar">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="pulse-dot" id="modal-status-dot"></span>
+          <span id="modal-update-time"></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="color:#6b7280">Next refresh in</span>
+          <span id="modal-countdown"></span>
+        </div>
       </div>
     </div>
   </div>
@@ -406,7 +293,7 @@ function parseScore(s){
 }
 async function espnFetch(url){
   const r = await fetch(url);
-  if(!r.ok) throw new Error(`ESPN ${r.status}`);
+  if(!r.ok) throw new Error('ESPN '+r.status);
   return r.json();
 }
 
@@ -430,7 +317,7 @@ function parseEvent(ev, teamId){
   const getRecord = c=>(c.record?.find(r=>r.type==='total')||c.record?.find(r=>r.type==='ytd')||c.record?.[0])?.displayValue||null;
   const phiRecord = getRecord(us);
   const oppRecord = getRecord(them);
-  const venue     = comp.venue ? `${comp.venue.fullName}, ${comp.venue.address?.city}` : null;
+  const venue     = comp.venue ? comp.venue.fullName+', '+comp.venue.address?.city : null;
   const featuredStatus =
     state==='in'                              ? 'live'     :
     completed                                 ? 'final'    :
@@ -451,7 +338,7 @@ function nextSeasonNote(path){
     const sep1 = new Date(yr,8,1);
     const ft = new Date(sep1);
     ft.setDate(1+(4-sep1.getDay()+7)%7);
-    return `Next season starts ~${ft.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}`;
+    return 'Next season starts ~'+ft.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   }
   if(path.startsWith('baseball/mlb')) return 'Spring Training underway · Regular season starts late March';
   return 'Season has ended';
@@ -471,14 +358,13 @@ let mlsRecords = {};
 
 async function fetchTeamData(key){
   const { path, teamId } = TEAMS[key];
-  const base     = `https://site.api.espn.com/apis/site/v2/sports/${path}`;
+  const base     = 'https://site.api.espn.com/apis/site/v2/sports/'+path;
   const isSoccer = path.startsWith('soccer');
-
   let schRes = null;
   if(isSoccer){
     const [sbBoard, teamInfo] = await Promise.all([
-      espnFetch(`${base}/scoreboard?dates=20260101-20261231&limit=300`).catch(()=>null),
-      espnFetch(`${base}/teams/${teamId}/schedule`).catch(()=>null),
+      espnFetch(base+'/scoreboard?dates=20260101-20261231&limit=300').catch(()=>null),
+      espnFetch(base+'/teams/'+teamId+'/schedule').catch(()=>null),
     ]);
     if(sbBoard?.events){
       schRes = {
@@ -488,12 +374,10 @@ async function fetchTeamData(key){
       };
     }
   } else {
-    schRes = await espnFetch(`${base}/teams/${teamId}/schedule`).catch(()=>null);
+    schRes = await espnFetch(base+'/teams/'+teamId+'/schedule').catch(()=>null);
   }
-
-  const sbRes = await espnFetch(`${base}/scoreboard`).catch(()=>null);
+  const sbRes = await espnFetch(base+'/scoreboard').catch(()=>null);
   const now   = Date.now();
-
   const seasonType  = schRes?.season?.type;
   const isOffseason = (typeof seasonType==='object' ? seasonType?.type : seasonType)===4;
   const rawEvents   = schRes?.events||schRes?.team?.events||[];
@@ -502,14 +386,13 @@ async function fetchTeamData(key){
   const recentGames = [];
   let lastCompleted = null;
   let nextGame      = null;
-
   for(const ev of schedEvents){
     const p = parseEvent(ev, teamId);
     if(!p) continue;
     if(p.completed){
       lastCompleted = p;
       recentGames.push(p);
-    } else if(!nextGame && (p.featuredStatus==='upcoming'||p.featuredStatus==='starting'||p.featuredStatus==='final') && !p.completed){
+    } else if(!nextGame && !p.completed){
       if(p.dateMs > now - 30*60*1000) nextGame = p;
     }
   }
@@ -524,33 +407,47 @@ async function fetchTeamData(key){
 
   const activeLive  = liveGame?.featuredStatus==='live' ? liveGame : null;
   const nextIsClose = nextGame && (nextGame.dateMs - now) <= 4*60*60*1000;
-  const featured    = isOffseason ? null : (activeLive || (nextIsClose ? nextGame : null) || lastCompleted || nextGame || null);
-  const fs          = isOffseason ? 'offseason' : !featured ? 'offseason' : activeLive ? activeLive.featuredStatus : (!lastCompleted && nextGame) || nextIsClose ? 'upcoming' : featured.featuredStatus;
-  const showRecords = fs==='live'||fs==='final'||fs==='starting';
+  // Feature the upcoming game if live, or if within 4hrs, or if no completed games yet
+  const featured = isOffseason ? null :
+    activeLive ? activeLive :
+    nextIsClose ? nextGame :
+    lastCompleted ? lastCompleted :
+    nextGame ? nextGame : null;
+  const fs = isOffseason ? 'offseason' :
+    !featured ? 'offseason' :
+    activeLive ? 'live' :
+    (nextIsClose || !lastCompleted) && nextGame ? 'upcoming' :
+    featured.featuredStatus;
 
+  const showRecords = fs==='live'||fs==='final'||fs==='starting';
   const soccerPhiRecord = isSoccer ? (mlsRecords[String(teamId)]||schRes?.team?.recordSummary||null) : null;
   const soccerOppRecord = isSoccer ? (mlsRecords[featured?.oppId||'']||null) : null;
 
   let streak = null;
   const allCompleted = [...schedEvents].reverse().filter(ev=>parseEvent(ev,teamId)?.completed);
-  if(allCompleted.length>0){
+  if(allCompleted.length){
     const outcomes = allCompleted.map(ev=>{
       const p=parseEvent(ev,teamId);
       return p.phiScore>p.oppScore?'W':p.phiScore<p.oppScore?'L':'D';
     });
     let count=1;
     for(let i=1;i<outcomes.length;i++){ if(outcomes[i]===outcomes[0]) count++; else break; }
-    streak=`${outcomes[0]}${count}`;
+    streak = outcomes[0]+count;
   }
 
-      const completedDateMs = lastCompleted?.dateMs || 0;
+  const completedDateMs = lastCompleted?.dateMs||0;
 
-    return {
+  // Recent games: when showing upcoming as featured, include lastCompleted in recent
+  const recentFiltered = isOffseason ? [] : recentGames
+    .slice(-3).reverse();
+
+  return {
     featuredStatus: fs,
     completedDateMs,
     featured: featured ? {
       label:     fs==='live' ? 'LIVE NOW' : fs==='starting' ? 'STARTING NOW' : fs==='upcoming' ? 'NEXT GAME' : null,
       oppAbbr:   featured.oppAbbr,
+      oppId:     featured.oppId,
       phiScore:  featured.phiScore,
       oppScore:  featured.oppScore,
       note:      featured.note,
@@ -558,12 +455,9 @@ async function fetchTeamData(key){
       phiRecord: showRecords ? (soccerPhiRecord||featured.phiRecord||null) : null,
       oppRecord: showRecords ? (soccerOppRecord||featured.oppRecord||null) : null,
     } : null,
-    recentGames: isOffseason ? [] : recentGames
-      .filter(g => g.dateMs !== (nextIsClose ? 0 : (featured?.dateMs||-1)))
-      .slice(-3).reverse()
-      .map(g=>({opp:g.oppAbbr,home:g.isHome,phiScore:g.phiScore,oppScore:g.oppScore,date:fmtShort(g.dateMs)})),
-    nextGame: nextGame&&fs!=='starting'&&fs!=='live'
-      ? `${nextGame.isHome?'vs':'@'} ${nextGame.oppAbbr} · ${fmtFull(nextGame.dateMs)}` : null,
+    recentGames: recentFiltered.map(g=>({opp:g.oppAbbr,home:g.isHome,phiScore:g.phiScore,oppScore:g.oppScore,date:fmtShort(g.dateMs)})),
+    nextGame: nextGame && fs!=='starting' && fs!=='live' && !nextIsClose
+      ? (nextGame.isHome?'vs':'@')+' '+nextGame.oppAbbr+' · '+fmtFull(nextGame.dateMs) : null,
     nextGameToday: nextGame ? new Date(nextGame.dateMs).toDateString()===new Date().toDateString() : false,
     featuredDateMs: featured?.dateMs||0,
     nextGameDateMs: nextGame?.dateMs||0,
@@ -573,119 +467,90 @@ async function fetchTeamData(key){
   };
 }
 
-// ── News feed ─────────────────────────────────────────────────────────────────
+// ── News ──
 const RSS_PROXY = 'https://api.rss2json.com/v1/api.json?rss_url=';
 let newsCache = { items:[], fetchedAt:0 };
-const NEWS_TTL = 5 * 60 * 1000;
-
-function parseRssDate(str){
-  if(!str) return 0;
-  return new Date(str.replace(' ','T')+'Z').getTime()||0;
-}
+const NEWS_TTL = 5*60*1000;
+function parseRssDate(str){ if(!str) return 0; return new Date(str.replace(' ','T')+'Z').getTime()||0; }
 function timeAgo(dateStr){
-  const diff = Date.now() - parseRssDate(dateStr);
+  const diff = Date.now()-parseRssDate(dateStr);
   if(diff<0||diff<60000) return 'just now';
-  const mins = Math.floor(diff/60000);
-  if(mins<60) return `${mins}m ago`;
-  const hrs = Math.round(mins/60);
-  if(hrs<24)  return `${hrs}h ago`;
-  return `${Math.floor(hrs/24)}d ago`;
+  const mins=Math.floor(diff/60000);
+  if(mins<60) return mins+'m ago';
+  const hrs=Math.round(mins/60);
+  if(hrs<24) return hrs+'h ago';
+  return Math.floor(hrs/24)+'d ago';
 }
 async function fetchNews(){
-  if(Date.now()-newsCache.fetchedAt < NEWS_TTL) return newsCache.items;
+  if(Date.now()-newsCache.fetchedAt<NEWS_TTL) return newsCache.items;
   try{
     const results = await Promise.all(NEWS_FEEDS.map(async feed=>{
-      const d = await fetch(`${RSS_PROXY}${encodeURIComponent(feed.url)}&_=${Math.floor(Date.now()/300000)}`).then(r=>r.json()).catch(()=>null);
-      return (d?.items||[]).slice(0,5).map(item=>({
-        title:   item.title?.trim(),
-        link:    item.link,
-        pubDate: item.pubDate,
-        team:    feed.team,
-        color:   feed.color,
-      }));
+      const d = await fetch(RSS_PROXY+encodeURIComponent(feed.url)+'&_='+Math.floor(Date.now()/300000)).then(r=>r.json()).catch(()=>null);
+      return (d?.items||[]).slice(0,5).map(item=>({title:item.title?.trim(),link:item.link,pubDate:item.pubDate,team:feed.team,color:feed.color}));
     }));
-    const merged = results.flat()
-      .filter(item=>item.title&&item.pubDate)
-      .sort((a,b)=>parseRssDate(b.pubDate)-parseRssDate(a.pubDate))
-      .slice(0,5);
+    const merged = results.flat().filter(i=>i.title&&i.pubDate).sort((a,b)=>parseRssDate(b.pubDate)-parseRssDate(a.pubDate)).slice(0,5);
     newsCache = { items:merged, fetchedAt:Date.now() };
     return merged;
-  } catch(err){
-    console.warn('News fetch failed', err);
-    return newsCache.items;
-  }
+  } catch(err){ console.warn('News fetch failed',err); return newsCache.items; }
 }
 function renderNewsCard(items){
   const content = items.length
-    ? items.map(item=>`
-        <a class="news-item" href="${item.link}" target="_blank" rel="noopener">
-          <div class="news-item-title">${item.title}</div>
-          <div class="news-item-meta">
-            <span class="news-team-tag" style="background:${item.color}22;color:${item.color};border:1px solid ${item.color}44">${item.team}</span>
-            <span class="news-time">${timeAgo(item.pubDate)}</span>
-          </div>
-        </a>`).join('')
+    ? items.map(item=>'<a class="news-item" href="'+item.link+'" target="_blank" rel="noopener"><div class="news-item-title">'+item.title+'</div><div class="news-item-meta"><span class="news-team-tag" style="background:'+item.color+'22;color:'+item.color+';border:1px solid '+item.color+'44">'+item.team+'</span><span class="news-time">'+timeAgo(item.pubDate)+'</span></div></a>').join('')
     : '<div class="news-loading">Loading headlines…</div>';
-  return `
-    <div class="news-card">
-      <div class="news-header">
-        <span class="news-header-icon">📰</span>
-        <span class="news-header-title">Philly Sports News</span>
-      </div>
-      ${content}
-    </div>`;
+  return '<div class="news-card"><div class="news-header"><span class="news-header-icon">📰</span><span class="news-header-title">Philly Sports News</span></div>'+content+'</div>';
 }
 
-// ── Modal ─────────────────────────────────────────────────────────────────────
+// ── Modal ──
+let modalOpenKey = null;
+
 function syncModalStatus(){
   const dot = document.getElementById('status-dot');
-  const modalDot = document.getElementById('modal-status-dot');
-  const modalUpdateTime = document.getElementById('modal-update-time');
-  const modalCountdown = document.getElementById('modal-countdown');
-  if(modalDot) modalDot.className = dot.className;
-  if(modalUpdateTime) modalUpdateTime.textContent = document.getElementById('update-time').textContent;
-  if(modalCountdown) modalCountdown.textContent   = document.getElementById('countdown').textContent;
+  const mDot = document.getElementById('modal-status-dot');
+  const mTime = document.getElementById('modal-update-time');
+  const mCD = document.getElementById('modal-countdown');
+  if(mDot) mDot.className = dot.className;
+  if(mTime) mTime.textContent = document.getElementById('update-time').textContent;
+  if(mCD) mCD.textContent = document.getElementById('countdown').textContent;
+}
+
+function updateModalScores(key){
+  const data = _cardData[key];
+  if(!data?.featured) return;
+  const f = data.featured;
+  const phiS = f.phiScore??0, oppS = f.oppScore??0;
+  const phiEl = document.getElementById('modal-phi-score');
+  const oppEl = document.getElementById('modal-opp-score');
+  if(phiEl){ phiEl.textContent=phiS; phiEl.className='modal-team-score'+(phiS>oppS?' modal-winner':''); }
+  if(oppEl){ oppEl.textContent=oppS; oppEl.className='modal-team-score'+(oppS>phiS?' modal-winner':''); }
+  const noteEl = document.getElementById('modal-game-note');
+  if(noteEl) noteEl.textContent = f.note||'';
+  syncModalStatus();
 }
 
 function openModal(key, data){
-  if(window.innerWidth <= 768) return;
+  if(window.innerWidth<=768) return;
   const team = TEAMS[key];
-  const f    = data.featured;
+  const f = data?.featured;
   if(!f) return;
-
-  const modal = document.getElementById('live-modal');
+  modalOpenKey = key;
   const inner = document.getElementById('live-modal-inner');
   inner.style.setProperty('--modal-color', team.color);
-
-  document.getElementById('modal-sport-text').textContent = team.sport + ' · LIVE NOW';
-  document.getElementById('modal-opp-abbr').textContent   = f.oppAbbr;
-
-  const phiS = f.phiScore ?? 0;
-  const oppS = f.oppScore ?? 0;
-  const phiEl = document.getElementById('modal-phi-score');
-  const oppEl = document.getElementById('modal-opp-score');
-
-  phiEl.textContent = phiS;
-  oppEl.textContent = oppS;
-  phiEl.className = 'modal-team-score' + (phiS > oppS ? ' modal-winner' : '');
-  oppEl.className = 'modal-team-score' + (oppS > phiS ? ' modal-winner' : '');
-
-  document.getElementById('modal-game-note').textContent = f.note || '';
-  document.getElementById('modal-last-refreshed').textContent = `Last refreshed ${new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`;
-
+  const sportEl = document.getElementById('modal-sport-text');
+  const oppEl   = document.getElementById('modal-opp-abbr');
+  if(sportEl) sportEl.textContent = team.sport+' · LIVE NOW';
+  if(oppEl)   oppEl.textContent   = f.oppAbbr;
+  updateModalScores(key);
+  const modal = document.getElementById('live-modal');
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
-
-  // Trap Escape key
-  modal._onKeyDown = e => { if(e.key === 'Escape') closeModal(); };
+  modal._onKeyDown = e=>{ if(e.key==='Escape') closeModal(); };
   document.addEventListener('keydown', modal._onKeyDown);
-
-  // Click backdrop to close
-  modal._onBgClick = e => { if(e.target === modal) closeModal(); };
+  modal._onBgClick = e=>{ if(e.target===modal) closeModal(); };
   modal.addEventListener('click', modal._onBgClick);
 }
 
 function closeModal(){
+  modalOpenKey = null;
   const modal = document.getElementById('live-modal');
   modal.classList.remove('open');
   document.body.style.overflow = '';
@@ -693,24 +558,11 @@ function closeModal(){
   if(modal._onBgClick) modal.removeEventListener('click', modal._onBgClick);
 }
 
-// ── Rendering ─────────────────────────────────────────────────────────────────
+// ── Rendering ──
+const _cardData = {};
+
 function showSkeletons(){
-  document.getElementById('cards-container').innerHTML=TEAM_ORDER.map(()=>`
-    <div class="skeleton-card">
-      <div class="skeleton-header">
-        <div class="sk sk-circle"></div>
-        <div style="flex:1;display:flex;flex-direction:column;gap:8px">
-          <div class="sk sk-line" style="width:60%"></div>
-          <div class="sk sk-line" style="width:35%;height:10px"></div>
-        </div>
-      </div>
-      <div class="sk-body">
-        <div class="sk sk-line" style="height:60px"></div>
-        <div class="sk sk-line" style="width:80%"></div>
-        <div class="sk sk-line" style="width:65%"></div>
-        <div class="sk sk-line" style="width:72%"></div>
-      </div>
-    </div>`).join('');
+  document.getElementById('cards-container').innerHTML=TEAM_ORDER.map(()=>'<div class="skeleton-card"><div class="skeleton-header"><div class="sk sk-circle"></div><div style="flex:1;display:flex;flex-direction:column;gap:8px"><div class="sk sk-line" style="width:60%"></div><div class="sk sk-line" style="width:35%;height:10px"></div></div></div><div class="sk-body"><div class="sk sk-line" style="height:60px"></div><div class="sk sk-line" style="width:80%"></div><div class="sk sk-line" style="width:65%"></div><div class="sk sk-line" style="width:72%"></div></div></div>').join('');
 }
 function setStatus(state,text){
   document.getElementById('status-dot').className='pulse-dot'+(state!=='ok'?' '+state:'');
@@ -721,13 +573,10 @@ function hideError(){document.getElementById('error-banner').style.display='none
 
 function scoreHtml(score,winner,upcoming,isPhi){
   if(upcoming||score===null) return '<div class="team-score no-score">&ndash;</div>';
-  if(winner&&isPhi)  return `<div class="team-score winner">${score}</div>`;
-  if(winner&&!isPhi) return `<div class="team-score opp-winning">${score}</div>`;
-  return `<div class="team-score">${score}</div>`;
+  if(winner&&isPhi)  return '<div class="team-score winner">'+score+'</div>';
+  if(winner&&!isPhi) return '<div class="team-score opp-winning">'+score+'</div>';
+  return '<div class="team-score">'+score+'</div>';
 }
-
-// Store data reference for modal use
-const _cardData = {};
 
 function renderCard(key,data){
   _cardData[key] = data;
@@ -737,83 +586,35 @@ function renderCard(key,data){
   const statusCls   = {live:'status-live',starting:'status-starting',final:'status-final',upcoming:'status-upcoming',offseason:'status-offseason'}[fs]||'status-offseason';
   const streakCls   = data.streak?.startsWith('W')?'streak-w':data.streak?.startsWith('L')?'streak-l':'streak-d';
   const isLive      = fs==='live'||fs==='starting';
-  const clickAttr   = isLive ? `onclick="openModal('${key}',_cardData['${key}'])"` : '';
+  const clickAttr   = isLive ? ' onclick="openModal(\''+key+'\',_cardData[\''+key+'\'])"' : '';
 
-  let featuredHtml;
-  if(data.featured&&fs!=='offseason'){
+  let featuredHtml = '';
+  if(data.featured && fs!=='offseason'){
     const f=data.featured, upcoming=fs==='upcoming';
     const phiWins=!upcoming&&f.phiScore>f.oppScore;
     const oppWins=!upcoming&&f.oppScore>f.phiScore;
-    featuredHtml=`
-      <div class="featured-game">
-        ${f.label?`<div class="game-label">${f.label}</div>`:''}
-        <div class="matchup">
-          <div class="team-side">
-            <div class="team-abv">PHI</div>
-            ${scoreHtml(f.phiScore,phiWins,upcoming,true)}
-            ${f.phiRecord?`<div class="team-record">${f.phiRecord}</div>`:''}
-          </div>
-          <div class="vs-divider"><div class="vs-line"></div><div class="vs-text">VS</div><div class="vs-line"></div></div>
-          <div class="team-side">
-            <div class="team-abv">${f.oppAbbr}</div>
-            ${scoreHtml(f.oppScore,oppWins,upcoming,false)}
-            ${f.oppRecord?`<div class="team-record">${f.oppRecord}</div>`:''}
-          </div>
-        </div>
-        <div class="game-info-row">${f.note}${f.venue?` · ${f.venue}`:''}</div>
-      </div>`;
+    featuredHtml = '<div class="featured-game">'+(f.label?'<div class="game-label">'+f.label+'</div>':'')+'<div class="matchup"><div class="team-side"><div class="team-abv">PHI</div>'+scoreHtml(f.phiScore,phiWins,upcoming,true)+(f.phiRecord?'<div class="team-record">'+f.phiRecord+'</div>':'')+'</div><div class="vs-divider"><div class="vs-line"></div><div class="vs-text">VS</div><div class="vs-line"></div></div><div class="team-side"><div class="team-abv">'+f.oppAbbr+'</div>'+scoreHtml(f.oppScore,oppWins,upcoming,false)+(f.oppRecord?'<div class="team-record">'+f.oppRecord+'</div>':'')+'</div></div><div class="game-info-row">'+f.note+(f.venue?' · '+f.venue:'')+'</div></div>';
   } else {
-    featuredHtml=`
-      <div class="featured-game" style="text-align:center;padding:24px 20px">
-        <div style="font-size:36px;margin-bottom:8px">🏆</div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:#4b5563;letter-spacing:.08em">Season Complete</div>
-        ${data.offseasonNote?`<div style="font-size:11px;color:#6b7280;margin-top:6px;font-family:'DM Mono',monospace">${data.offseasonNote}</div>`:''}
-      </div>`;
+    featuredHtml = '<div class="featured-game" style="text-align:center;padding:24px 20px"><div style="font-size:36px;margin-bottom:8px">🏆</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:18px;color:#4b5563;letter-spacing:.08em">Season Complete</div>'+(data.offseasonNote?'<div style="font-size:11px;color:#6b7280;margin-top:6px;font-family:\'DM Mono\',monospace">'+data.offseasonNote+'</div>':'')+'</div>';
   }
 
   const recentHtml = data.recentGames?.length
-    ? data.recentGames.map(g=>{
-        const r=g.phiScore>g.oppScore?{c:'win',l:'W'}:g.phiScore<g.oppScore?{c:'loss',l:'L'}:{c:'draw',l:'D'};
-        return `<div class="result-row">
-          <div class="result-matchup">${g.home?'vs':'@'} <span>${g.opp}</span></div>
-          <div class="result-score">${g.phiScore}&ndash;${g.oppScore}</div>
-          <div class="result-wl ${r.c}">${r.l}</div>
-          <div class="result-date">${g.date}</div>
-        </div>`;
-      }).join('')
+    ? data.recentGames.map(g=>{ const r=g.phiScore>g.oppScore?{c:'win',l:'W'}:g.phiScore<g.oppScore?{c:'loss',l:'L'}:{c:'draw',l:'D'}; return '<div class="result-row"><div class="result-matchup">'+(g.home?'vs':'@')+' <span>'+g.opp+'</span></div><div class="result-score">'+g.phiScore+'&ndash;'+g.oppScore+'</div><div class="result-wl '+r.c+'">'+r.l+'</div><div class="result-date">'+g.date+'</div></div>'; }).join('')
     : '<div class="no-recent">No recent games</div>';
 
   const nextHtml = data.nextGame
-    ? `<div class="next-game-row${data.nextGameToday?' today':''}">
-        <div class="next-game-label">Next &#9654;</div>
-        <div class="next-game-info">${data.nextGame}${data.nextGameToday?'<span class="today-badge">TODAY</span>':''}</div>
-      </div>`
+    ? '<div class="next-game-row'+(data.nextGameToday?' today':'')+'"><div class="next-game-label">Next &#9654;</div><div class="next-game-info">'+data.nextGame+(data.nextGameToday?'<span class="today-badge">TODAY</span>':'')+'</div></div>'
     : '';
 
-  return `
-    <div class="team-card${isLive?' is-live':''}" style="--team-color:${color}" ${clickAttr}>
-      <div class="card-header">
-        <div class="team-icon">${icon}</div>
-        <div class="team-meta">
-          <div class="team-name">${name}</div>
-          <div class="team-sport">${sport}</div>
-          ${data.standing?`<div class="team-sport" style="margin-top:2px">${data.standing}</div>`:''}
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
-          <span class="card-status ${statusCls}">${statusLabel}</span>
-          ${data.streak?`<span class="streak ${streakCls}">${data.streak}</span>`:''}
-        </div>
-      </div>
-      ${featuredHtml}
-      <div class="recent-results">
-        <div class="results-label">Recent Games</div>
-        ${recentHtml}${nextHtml}
-      </div>
-      ${isLive?'<div class="live-expand-hint">⛶ Click to expand</div>':''}
-    </div>`;
+  return '<div class="team-card'+(isLive?' is-live':'')+'" style="--team-color:'+color+'"'+clickAttr+'>'
+    +'<div class="card-header"><div class="team-icon">'+icon+'</div><div class="team-meta"><div class="team-name">'+name+'</div><div class="team-sport">'+sport+'</div>'+(data.standing?'<div class="team-sport" style="margin-top:2px">'+data.standing+'</div>':'')+'</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px"><span class="card-status '+statusCls+'">'+statusLabel+'</span>'+(data.streak?'<span class="streak '+streakCls+'">'+data.streak+'</span>':'')+'</div></div>'
+    +featuredHtml
+    +'<div class="recent-results"><div class="results-label">Recent Games</div>'+recentHtml+nextHtml+'</div>'
+    +(isLive?'<div class="live-expand-hint">⛶ Click to expand</div>':'')
+    +'</div>';
 }
 
-// ── Theme ─────────────────────────────────────────────────────────────────────
+// ── Theme ──
 const THEMES=['device','light','dark'];
 const THEME_ICONS={device:'🖥️',light:'☀️',dark:'🌙'};
 function cycleTheme(){
@@ -823,19 +624,19 @@ function cycleTheme(){
 function applyTheme(theme){
   localStorage.setItem('colorScheme',theme);
   const root=document.documentElement;
-  if(theme==='dark')       root.setAttribute('data-theme','dark');
+  if(theme==='dark') root.setAttribute('data-theme','dark');
   else if(theme==='light') root.setAttribute('data-theme','light');
-  else                     root.removeAttribute('data-theme');
+  else root.removeAttribute('data-theme');
   document.getElementById('theme-icon').textContent=THEME_ICONS[theme];
 }
 applyTheme(localStorage.getItem('colorScheme')||'device');
 
-// ── Refresh ───────────────────────────────────────────────────────────────────
+// ── Countdown & refresh ──
 let countdownSeconds=300, countdownInterval=null, refreshTimeout=null, prevScores={};
 
 function getRefreshInterval(scores){
-  const vals = Object.values(scores);
-  const now  = Date.now();
+  const vals=Object.values(scores);
+  const now=Date.now();
   if(vals.some(s=>s.featuredStatus==='live'||s.featuredStatus==='starting')) return 30;
   const in15=now+15*60*1000, ago30=now-30*60*1000;
   if(vals.some(s=>s.nextGameDateMs>ago30&&s.nextGameDateMs<=in15)) return 30;
@@ -847,14 +648,18 @@ function getRefreshInterval(scores){
 function startCountdown(seconds){
   countdownSeconds=seconds;
   clearInterval(countdownInterval);
-      countdownInterval=setInterval(()=>{
+  countdownInterval=setInterval(()=>{
     countdownSeconds--;
     if(countdownSeconds<0) countdownSeconds=0;
     const m=Math.floor(countdownSeconds/60);
     const s=String(countdownSeconds%60).padStart(2,'0');
-    const txt = `${m}:${s}`;
+    const txt=m+':'+s;
     document.getElementById('countdown').textContent=txt;
-    if(document.getElementById('live-modal')?.classList.contains('open')) syncModalStatus();
+    const modal=document.getElementById('live-modal');
+    if(modal?.classList.contains('open')){
+      const mCD=document.getElementById('modal-countdown');
+      if(mCD) mCD.textContent=txt;
+    }
   },1000);
 }
 
@@ -870,7 +675,7 @@ async function fetchScores(){
   btn.disabled=true; btn.classList.add('spinning');
   hideError(); setStatus('loading','Fetching live scores…'); showSkeletons();
   try{
-    const [results, newsItems] = await Promise.all([
+    const [results,newsItems] = await Promise.all([
       Promise.allSettled(TEAM_ORDER.map(k=>fetchTeamData(k))),
       fetchNews(),
     ]);
@@ -878,7 +683,7 @@ async function fetchScores(){
     TEAM_ORDER.forEach((k,i)=>{
       scores[k]=results[i].status==='fulfilled'
         ?results[i].value
-        :{featuredStatus:'offseason',featured:null,recentGames:[],nextGame:null,offseasonNote:'Data unavailable',featuredDateMs:0,nextGameDateMs:0};
+        :{featuredStatus:'offseason',featured:null,recentGames:[],nextGame:null,completedDateMs:0,offseasonNote:'Data unavailable',featuredDateMs:0,nextGameDateMs:0};
     });
     const rank=s=>({live:0,starting:0,upcoming:1,final:2,offseason:3}[s]??3);
     const sorted=TEAM_ORDER.map(k=>({key:k,data:scores[k]})).sort((a,b)=>{
@@ -886,24 +691,11 @@ async function fetchScores(){
       if(rd!==0) return rd;
       return (b.data.completedDateMs||0)-(a.data.completedDateMs||0);
     });
-    document.getElementById('cards-container').innerHTML=
-      sorted.map(({key,data})=>renderCard(key,data)).join('')+renderNewsCard(newsItems);
+    document.getElementById('cards-container').innerHTML=sorted.map(({key,data})=>renderCard(key,data)).join('')+renderNewsCard(newsItems);
+
+    // Flash cards on score change, update modal if open
     TEAM_ORDER.forEach(k=>{
       const curr=scores[k]?.featured, prev=prevScores[k]?.featured;
-      // Always sync modal if open for this team
-      const modal = document.getElementById('live-modal');
-      if(modal?.classList.contains('open') && curr &&
-         document.getElementById('modal-sport-text')?.textContent.includes(TEAMS[k].sport)){
-        const phiS=curr.phiScore??0, oppS=curr.oppScore??0;
-        const phiEl=document.getElementById('modal-phi-score');
-        const oppEl=document.getElementById('modal-opp-score');
-        phiEl.textContent=phiS; oppEl.textContent=oppS;
-        phiEl.className='modal-team-score'+(phiS>oppS?' modal-winner':'');
-        oppEl.className='modal-team-score'+(oppS>phiS?' modal-winner':'');
-        document.getElementById('modal-game-note').textContent=curr.note||'';
-        syncModalStatus();
-      }
-      // Flash card on score change
       if(curr&&prev&&(curr.phiScore!==prev.phiScore||curr.oppScore!==prev.oppScore)){
         document.querySelectorAll('.team-card').forEach(card=>{
           if(card.querySelector('.team-name')?.textContent===TEAMS[k].name){
@@ -912,26 +704,19 @@ async function fetchScores(){
             card.classList.add('score-changed');
           }
         });
-        // Update modal if open and showing this team
-        const modal = document.getElementById('live-modal');
-        if(modal.classList.contains('open') && document.getElementById('modal-sport-text').textContent.includes(TEAMS[k].sport)){
-          const f=curr;
-          const phiS=f.phiScore??0, oppS=f.oppScore??0;
-          const phiEl=document.getElementById('modal-phi-score');
-          const oppEl=document.getElementById('modal-opp-score');
-          phiEl.textContent=phiS; oppEl.textContent=oppS;
-          phiEl.className='modal-team-score'+(phiS>oppS?' modal-winner':'');
-          oppEl.className='modal-team-score'+(oppS>phiS?' modal-winner':'');
-          document.getElementById('modal-game-note').textContent=f.note||'';
-          syncModalStatus();
-        }
-      }}
       }
     });
+
+    // Always update modal if open
+    if(modalOpenKey){
+      const modal=document.getElementById('live-modal');
+      if(modal?.classList.contains('open')) updateModalScores(modalOpenKey);
+    }
+
     prevScores=scores;
     const t=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     setStatus('ok','Updated '+t);
-    document.getElementById('footer-text').innerHTML=`Live data via ESPN &nbsp;&bull;&nbsp; <a href="https://linktr.ee/daftporter" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:3px">linktr.ee/daftporter</a> &nbsp;&bull;&nbsp; Built with Claude.ai`;
+    syncModalStatus();
     scheduleNextRefresh(scores);
   }catch(err){
     console.error(err);
