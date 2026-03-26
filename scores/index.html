@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+// ── Theme ─────────────────────────────────────────────────────────────────────<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -429,10 +429,10 @@ function parseEvent(ev, teamId){
   const oppRecord = getRecord(them);
   const venue     = comp.venue ? `${comp.venue.fullName}, ${comp.venue.address?.city}` : null;
   const featuredStatus =
-    state==='in'                 ? 'live'     :
-    completed                    ? 'final'    :
-    state==='pre' && dateMs<=now ? 'starting' :
-    state==='pre'                ? 'upcoming' : 'offseason';
+    state==='in'                              ? 'live'     :
+    completed                                 ? 'final'    :
+    state==='pre' && dateMs<=now              ? 'starting' :
+    state==='pre' && dateMs<=now+4*60*60*1000 ? 'upcoming' : 'final';
   const note =
     state==='in'                ? detail :
     featuredStatus==='starting' ? 'Starting now…' :
