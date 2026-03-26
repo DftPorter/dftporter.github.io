@@ -896,7 +896,6 @@ async function fetchScores(){
     const t=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     setStatus('ok','Updated '+t);
     document.getElementById('footer-text').innerHTML=`Live data via ESPN &nbsp;&bull;&nbsp; porter.allen@gmail.com &nbsp;&bull;&nbsp; Built with Claude.ai`;
-    document.getElementById('last-refreshed').textContent=`Last refreshed ${t}`;
     scheduleNextRefresh(scores);
   }catch(err){
     console.error(err);
