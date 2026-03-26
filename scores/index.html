@@ -1,4 +1,4 @@
-// ── Theme ─────────────────────────────────────────────────────────────────────<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -539,8 +539,11 @@ async function fetchTeamData(key){
     streak=`${outcomes[0]}${count}`;
   }
 
-  return {
+      const completedDateMs = lastCompleted?.dateMs || 0;
+
+    return {
     featuredStatus: fs,
+    completedDateMs,
     featured: featured ? {
       label:     fs==='live' ? 'LIVE NOW' : fs==='starting' ? 'STARTING NOW' : fs==='upcoming' ? 'NEXT GAME' : null,
       oppAbbr:   featured.oppAbbr,
@@ -865,7 +868,7 @@ async function fetchScores(){
     const sorted=TEAM_ORDER.map(k=>({key:k,data:scores[k]})).sort((a,b)=>{
       const rd=rank(a.data.featuredStatus)-rank(b.data.featuredStatus);
       if(rd!==0) return rd;
-      return b.data.featuredDateMs-a.data.featuredDateMs;
+      return (b.data.completedDateMs||0)-(a.data.completedDateMs||0);
     });
     document.getElementById('cards-container').innerHTML=
       sorted.map(({key,data})=>renderCard(key,data)).join('')+renderNewsCard(newsItems);
