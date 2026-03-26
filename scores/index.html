@@ -339,7 +339,10 @@
 </header>
 <div id="error-banner"><div id="error-banner-inner"></div></div>
 <main id="cards-container"></main>
-<footer id="footer-text">Powered by ESPN &nbsp;&bull;&nbsp; porter.allen@gmail.com &nbsp;&bull;&nbsp; Built with Claude.ai</footer>
+<footer>
+  <div id="footer-text">Live data via ESPN &nbsp;&bull;&nbsp; porter.allen@gmail.com &nbsp;&bull;&nbsp; Built with Claude.ai</div>
+  <div id="last-refreshed" style="margin-top:4px;color:#4b5563;">—</div>
+</footer>
 
 <!-- Live Score Modal -->
 <div id="live-modal" role="dialog" aria-modal="true" aria-label="Live game score">
@@ -352,7 +355,6 @@
       </div>
       <div id="modal-teams">
         <div class="modal-team" id="modal-phi-side">
-          <div class="modal-team-icon" id="modal-phi-icon">🦅</div>
           <div class="modal-team-abbr">PHI</div>
           <div class="modal-team-score" id="modal-phi-score">0</div>
         </div>
@@ -362,7 +364,6 @@
           <div class="modal-vs-line"></div>
         </div>
         <div class="modal-team" id="modal-opp-side">
-          <div class="modal-team-icon" id="modal-opp-icon">🏟️</div>
           <div class="modal-team-abbr" id="modal-opp-abbr">OPP</div>
           <div class="modal-team-score" id="modal-opp-score">0</div>
         </div>
@@ -639,8 +640,6 @@ function openModal(key, data){
   inner.style.setProperty('--modal-color', team.color);
 
   document.getElementById('modal-sport-text').textContent = team.sport + ' · LIVE NOW';
-  document.getElementById('modal-phi-icon').textContent   = team.icon;
-  document.getElementById('modal-opp-icon').textContent   = '🏟️';
   document.getElementById('modal-opp-abbr').textContent   = f.oppAbbr;
 
   const phiS = f.phiScore ?? 0;
@@ -895,7 +894,8 @@ async function fetchScores(){
     prevScores=scores;
     const t=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     setStatus('ok','Updated '+t);
-    document.getElementById('footer-text').textContent=`Live data via ESPN · Last updated ${t} · porter.allen@gmail.com · Built with Claude.ai`;
+    document.getElementById('footer-text').innerHTML=`Live data via ESPN &nbsp;&bull;&nbsp; porter.allen@gmail.com &nbsp;&bull;&nbsp; Built with Claude.ai`;
+    document.getElementById('last-refreshed').textContent=`Last refreshed ${t}`;
     scheduleNextRefresh(scores);
   }catch(err){
     console.error(err);
