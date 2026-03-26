@@ -520,8 +520,9 @@ async function fetchTeamData(key){
   }
 
   const activeLive  = liveGame?.featuredStatus==='live' ? liveGame : null;
-  const featured    = isOffseason ? null : (activeLive||lastCompleted||nextGame||null);
-  const fs          = isOffseason ? 'offseason' : !featured ? 'offseason' : activeLive ? activeLive.featuredStatus : !lastCompleted && nextGame ? 'upcoming' : featured.featuredStatus;
+  const nextIsClose = nextGame && (nextGame.dateMs - now) <= 4*60*60*1000;
+  const featured    = isOffseason ? null : (activeLive || (nextIsClose ? nextGame : null) || lastCompleted || nextGame || null);
+  const fs          = isOffseason ? 'offseason' : !featured ? 'offseason' : activeLive ? activeLive.featuredStatus : (!lastCompleted && nextGame) || nextIsClose ? 'upcoming' : featured.featuredStatus;
   const showRecords = fs==='live'||fs==='final'||fs==='starting';
 
   const soccerPhiRecord = isSoccer ? (mlsRecords[String(teamId)]||schRes?.team?.recordSummary||null) : null;
@@ -555,7 +556,7 @@ async function fetchTeamData(key){
       oppRecord: showRecords ? (soccerOppRecord||featured.oppRecord||null) : null,
     } : null,
     recentGames: isOffseason ? [] : recentGames
-      .filter(g=>g.dateMs!==(featured?.dateMs||-1))
+      .filter(g => g.dateMs !== (nextIsClose ? 0 : (featured?.dateMs||-1)))
       .slice(-3).reverse()
       .map(g=>({opp:g.oppAbbr,home:g.isHome,phiScore:g.phiScore,oppScore:g.oppScore,date:fmtShort(g.dateMs)})),
     nextGame: nextGame&&fs!=='starting'&&fs!=='live'
