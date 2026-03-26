@@ -50,6 +50,13 @@
   @keyframes liveGlow{0%,100%{opacity:1;box-shadow:0 0 8px 1px var(--team-color);}50%{opacity:.7;box-shadow:0 0 18px 4px var(--team-color);}}
   .team-card.is-live{background:color-mix(in srgb,var(--team-color) 6%,var(--surface));}
   .team-card.is-live::before{height:4px;animation:liveGlow 2.5s ease-in-out infinite;}
+  /* Clickable live card */
+  @media (min-width: 769px) {
+    .team-card.is-live{cursor:pointer;}
+    .team-card.is-live:hover{transform:translateY(-4px);box-shadow:0 20px 56px rgba(0,0,0,.6),0 0 0 1px var(--team-color);}
+    .team-card.is-live .live-expand-hint{display:flex;}
+  }
+  .live-expand-hint{display:none;align-items:center;justify-content:center;gap:5px;padding:7px 20px 12px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;opacity:.6;}
   .card-header{padding:20px 20px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);}
   .team-icon{width:44px;height:44px;border-radius:50%;background:var(--team-color);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
   .team-meta{flex:1;}.team-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.04em;line-height:1;color:#fff;}
@@ -114,6 +121,93 @@
   footer{position:relative;z-index:10;text-align:center;padding:20px;font-family:'DM Mono',monospace;font-size:11px;color:#374151;letter-spacing:.08em;border-top:1px solid var(--border);}
   @media(max-width:480px){main{padding:16px 12px 32px;gap:14px;}header{padding:20px 16px;}}
 
+  /* ── Live Modal ──────────────────────────────────────────────────────────── */
+  #live-modal{
+    display:none;
+    position:fixed;inset:0;z-index:1000;
+    background:rgba(0,0,0,.85);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+    align-items:center;justify-content:center;
+  }
+  #live-modal.open{display:flex;animation:modalIn .25s ease;}
+  @keyframes modalIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+  #live-modal-inner{
+    position:relative;
+    width:calc(100vw - 48px);
+    height:calc(100vh - 48px);
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:20px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+  }
+  #live-modal-inner::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:5px;
+    background:var(--modal-color,#22c55e);
+    animation:liveGlowBar 2.5s ease-in-out infinite;
+  }
+  @keyframes liveGlowBar{0%,100%{opacity:1;box-shadow:0 0 12px 2px var(--modal-color,#22c55e);}50%{opacity:.7;box-shadow:0 0 28px 8px var(--modal-color,#22c55e);}}
+  /* noise overlay inside modal */
+  #live-modal-inner::after{
+    content:'';position:absolute;inset:0;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    opacity:.02;pointer-events:none;z-index:0;
+  }
+  #modal-close{
+    position:absolute;top:20px;right:20px;z-index:10;
+    width:44px;height:44px;border-radius:50%;
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+    color:#9ca3af;font-size:20px;line-height:1;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+    transition:background .15s,color .15s;
+    font-family:sans-serif;
+  }
+  #modal-close:hover{background:rgba(255,255,255,.15);color:#fff;}
+  #modal-content{position:relative;z-index:1;text-align:center;width:100%;padding:40px;}
+  #modal-sport-badge{
+    font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--modal-color,#4ade80);margin-bottom:16px;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  #modal-sport-badge .modal-pulse{
+    width:9px;height:9px;border-radius:50%;background:var(--modal-color,#4ade80);
+    animation:pulse 2s ease-in-out infinite;flex-shrink:0;
+  }
+  #modal-teams{display:flex;align-items:center;justify-content:center;gap:0;}
+  .modal-team{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;max-width:340px;}
+  .modal-team-icon{font-size:clamp(48px,8vw,96px);line-height:1;}
+  .modal-team-abbr{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(48px,10vw,120px);
+    letter-spacing:.06em;line-height:1;
+    color:#d1d5db;
+  }
+  .modal-team-score{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(100px,22vw,260px);
+    line-height:.9;color:#fff;
+    transition:color .3s;
+  }
+  .modal-team-score.modal-winner{color:var(--modal-color,#4ade80);}
+  .modal-vs{
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+    padding:0 clamp(16px,3vw,48px);flex-shrink:0;
+  }
+  .modal-vs-text{font-family:'DM Mono',monospace;font-size:clamp(13px,2vw,18px);color:#374151;letter-spacing:.1em;}
+  .modal-vs-line{width:1px;height:clamp(80px,12vw,160px);background:var(--border);}
+  #modal-game-note{
+    margin-top:clamp(16px,3vh,36px);
+    font-family:'DM Mono',monospace;
+    font-size:clamp(14px,2.2vw,22px);
+    color:#9ca3af;letter-spacing:.08em;text-transform:uppercase;
+  }
+  /* Hide modal on mobile */
+  @media(max-width:768px){#live-modal{display:none !important;}}
+
   @media(prefers-color-scheme:light){
     :root:not([data-theme="dark"]){--bg:#e8edf2;--surface:#ffffff;--border:rgba(0,0,0,0.10);--text:#111827;--muted:#4b5563;}
     :root:not([data-theme="dark"]) body{color:#111827;}
@@ -161,6 +255,11 @@
     :root:not([data-theme="dark"]) .news-item-title{color:#111827 !important;}
     :root:not([data-theme="dark"]) .news-time{color:#9ca3af !important;}
     :root:not([data-theme="dark"]) footer{color:#6b7280 !important;}
+    :root:not([data-theme="dark"]) #live-modal{background:rgba(200,210,220,.75) !important;}
+    :root:not([data-theme="dark"]) #modal-close{color:#374151 !important;}
+    :root:not([data-theme="dark"]) .modal-team-abbr{color:#374151 !important;}
+    :root:not([data-theme="dark"]) .modal-team-score{color:#111827 !important;}
+    :root:not([data-theme="dark"]) #modal-game-note{color:#6b7280 !important;}
   }
   [data-theme="light"]{--bg:#e8edf2;--surface:#ffffff;--border:rgba(0,0,0,0.10);--text:#111827;--muted:#4b5563;}
   [data-theme="light"] body{color:#111827;}
@@ -208,6 +307,11 @@
   [data-theme="light"] .news-item-title{color:#111827 !important;}
   [data-theme="light"] .news-time{color:#9ca3af !important;}
   [data-theme="light"] footer{color:#6b7280 !important;}
+  [data-theme="light"] #live-modal{background:rgba(200,210,220,.75) !important;}
+  [data-theme="light"] #modal-close{color:#374151 !important;}
+  [data-theme="light"] .modal-team-abbr{color:#374151 !important;}
+  [data-theme="light"] .modal-team-score{color:#111827 !important;}
+  [data-theme="light"] #modal-game-note{color:#6b7280 !important;}
 </style>
 </head>
 <body>
@@ -236,6 +340,37 @@
 <div id="error-banner"><div id="error-banner-inner"></div></div>
 <main id="cards-container"></main>
 <footer id="footer-text">Powered by ESPN &nbsp;&bull;&nbsp; porter.allen@gmail.com &nbsp;&bull;&nbsp; Built with Claude.ai</footer>
+
+<!-- Live Score Modal -->
+<div id="live-modal" role="dialog" aria-modal="true" aria-label="Live game score">
+  <div id="live-modal-inner">
+    <button id="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
+    <div id="modal-content">
+      <div id="modal-sport-badge">
+        <span class="modal-pulse"></span>
+        <span id="modal-sport-text">LIVE NOW</span>
+      </div>
+      <div id="modal-teams">
+        <div class="modal-team" id="modal-phi-side">
+          <div class="modal-team-icon" id="modal-phi-icon">🦅</div>
+          <div class="modal-team-abbr">PHI</div>
+          <div class="modal-team-score" id="modal-phi-score">0</div>
+        </div>
+        <div class="modal-vs">
+          <div class="modal-vs-line"></div>
+          <div class="modal-vs-text">VS</div>
+          <div class="modal-vs-line"></div>
+        </div>
+        <div class="modal-team" id="modal-opp-side">
+          <div class="modal-team-icon" id="modal-opp-icon">🏟️</div>
+          <div class="modal-team-abbr" id="modal-opp-abbr">OPP</div>
+          <div class="modal-team-score" id="modal-opp-score">0</div>
+        </div>
+      </div>
+      <div id="modal-game-note"></div>
+    </div>
+  </div>
+</div>
 
 <script>
 const TEAMS = {
@@ -317,7 +452,6 @@ function nextSeasonNote(path){
   return 'Season has ended';
 }
 
-// ── MLS standings cache ───────────────────────────────────────────────────────
 let mlsRecords = {};
 (async()=>{
   try{
@@ -330,7 +464,6 @@ let mlsRecords = {};
   } catch(err){ console.warn('MLS standings fetch failed', err); }
 })();
 
-// ── Fetch team data (no caching — always fresh) ───────────────────────────────
 async function fetchTeamData(key){
   const { path, teamId } = TEAMS[key];
   const base     = `https://site.api.espn.com/apis/site/v2/sports/${path}`;
@@ -376,7 +509,6 @@ async function fetchTeamData(key){
     }
   }
 
-  // Use scoreboard for live games
   let liveGame = null;
   if(sbRes?.events){
     for(const ev of sbRes.events){
@@ -435,7 +567,7 @@ async function fetchTeamData(key){
 // ── News feed ─────────────────────────────────────────────────────────────────
 const RSS_PROXY = 'https://api.rss2json.com/v1/api.json?rss_url=';
 let newsCache = { items:[], fetchedAt:0 };
-const NEWS_TTL = 5 * 60 * 1000; // refresh news every 5 minutes
+const NEWS_TTL = 5 * 60 * 1000;
 
 function parseRssDate(str){
   if(!str) return 0;
@@ -495,6 +627,54 @@ function renderNewsCard(items){
     </div>`;
 }
 
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function openModal(key, data){
+  if(window.innerWidth <= 768) return;
+  const team = TEAMS[key];
+  const f    = data.featured;
+  if(!f) return;
+
+  const modal = document.getElementById('live-modal');
+  const inner = document.getElementById('live-modal-inner');
+  inner.style.setProperty('--modal-color', team.color);
+
+  document.getElementById('modal-sport-text').textContent = team.sport + ' · LIVE NOW';
+  document.getElementById('modal-phi-icon').textContent   = team.icon;
+  document.getElementById('modal-opp-icon').textContent   = '🏟️';
+  document.getElementById('modal-opp-abbr').textContent   = f.oppAbbr;
+
+  const phiS = f.phiScore ?? 0;
+  const oppS = f.oppScore ?? 0;
+  const phiEl = document.getElementById('modal-phi-score');
+  const oppEl = document.getElementById('modal-opp-score');
+
+  phiEl.textContent = phiS;
+  oppEl.textContent = oppS;
+  phiEl.className = 'modal-team-score' + (phiS > oppS ? ' modal-winner' : '');
+  oppEl.className = 'modal-team-score' + (oppS > phiS ? ' modal-winner' : '');
+
+  document.getElementById('modal-game-note').textContent = f.note || '';
+
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Trap Escape key
+  modal._onKeyDown = e => { if(e.key === 'Escape') closeModal(); };
+  document.addEventListener('keydown', modal._onKeyDown);
+
+  // Click backdrop to close
+  modal._onBgClick = e => { if(e.target === modal) closeModal(); };
+  modal.addEventListener('click', modal._onBgClick);
+}
+
+function closeModal(){
+  const modal = document.getElementById('live-modal');
+  modal.classList.remove('open');
+  document.body.style.overflow = '';
+  if(modal._onKeyDown) document.removeEventListener('keydown', modal._onKeyDown);
+  if(modal._onBgClick) modal.removeEventListener('click', modal._onBgClick);
+}
+
 // ── Rendering ─────────────────────────────────────────────────────────────────
 function showSkeletons(){
   document.getElementById('cards-container').innerHTML=TEAM_ORDER.map(()=>`
@@ -528,13 +708,18 @@ function scoreHtml(score,winner,upcoming,isPhi){
   return `<div class="team-score">${score}</div>`;
 }
 
+// Store data reference for modal use
+const _cardData = {};
+
 function renderCard(key,data){
+  _cardData[key] = data;
   const {name,sport,icon,color} = TEAMS[key];
   const fs          = data.featuredStatus||'offseason';
   const statusLabel = {live:'● Live',starting:'● Starting',final:'Final',upcoming:'Upcoming',offseason:'Off-Season'}[fs]||'Off-Season';
   const statusCls   = {live:'status-live',starting:'status-starting',final:'status-final',upcoming:'status-upcoming',offseason:'status-offseason'}[fs]||'status-offseason';
   const streakCls   = data.streak?.startsWith('W')?'streak-w':data.streak?.startsWith('L')?'streak-l':'streak-d';
   const isLive      = fs==='live'||fs==='starting';
+  const clickAttr   = isLive ? `onclick="openModal('${key}',_cardData['${key}'])"` : '';
 
   let featuredHtml;
   if(data.featured&&fs!=='offseason'){
@@ -588,7 +773,7 @@ function renderCard(key,data){
     : '';
 
   return `
-    <div class="team-card${isLive?' is-live':''}" style="--team-color:${color}">
+    <div class="team-card${isLive?' is-live':''}" style="--team-color:${color}" ${clickAttr}>
       <div class="card-header">
         <div class="team-icon">${icon}</div>
         <div class="team-meta">
@@ -606,6 +791,7 @@ function renderCard(key,data){
         <div class="results-label">Recent Games</div>
         ${recentHtml}${nextHtml}
       </div>
+      ${isLive?'<div class="live-expand-hint">⛶ Click to expand</div>':''}
     </div>`;
 }
 
@@ -692,6 +878,18 @@ async function fetchScores(){
             card.classList.add('score-changed');
           }
         });
+        // Update modal if open and showing this team
+        const modal = document.getElementById('live-modal');
+        if(modal.classList.contains('open') && document.getElementById('modal-sport-text').textContent.includes(TEAMS[k].sport)){
+          const f=curr;
+          const phiS=f.phiScore??0, oppS=f.oppScore??0;
+          const phiEl=document.getElementById('modal-phi-score');
+          const oppEl=document.getElementById('modal-opp-score');
+          phiEl.textContent=phiS; oppEl.textContent=oppS;
+          phiEl.className='modal-team-score'+(phiS>oppS?' modal-winner':'');
+          oppEl.className='modal-team-score'+(oppS>phiS?' modal-winner':'');
+          document.getElementById('modal-game-note').textContent=f.note||'';
+        }
       }
     });
     prevScores=scores;
