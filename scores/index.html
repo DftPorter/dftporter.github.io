@@ -146,51 +146,103 @@
 
   /* ── Light theme ── */
   @media(prefers-color-scheme:light){
-    :root:not([data-theme="dark"]){--bg:#e8edf2;--surface:#ffffff;--border:rgba(0,0,0,0.10);--text:#111827;--muted:#4b5563;}
+    :root:not([data-theme="dark"]){--bg:#e8edf2;--surface:#ffffff;--border:rgba(0,0,0,0.12);--text:#111827;--muted:#374151;}
     :root:not([data-theme="dark"]) body::before{opacity:.012;}
     :root:not([data-theme="dark"]) .header-left h1{background:linear-gradient(135deg,#111827 40%,#374151) !important;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent !important;background-clip:text !important;}
+    :root:not([data-theme="dark"]) .header-left p{color:#374151 !important;}
+    :root:not([data-theme="dark"]) .live-badge{color:#374151 !important;}
     :root:not([data-theme="dark"]) #update-time,:root:not([data-theme="dark"]) #countdown{color:#111827 !important;}
-    :root:not([data-theme="dark"]) .refresh-btn{background:rgba(0,0,0,0.06) !important;border:1px solid rgba(0,0,0,0.12) !important;color:#111827 !important;}
+    :root:not([data-theme="dark"]) .refresh-btn{background:rgba(0,0,0,0.06) !important;border:1px solid rgba(0,0,0,0.15) !important;color:#111827 !important;}
     :root:not([data-theme="dark"]) .sk{background:linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%) !important;background-size:200% 100%;}
     :root:not([data-theme="dark"]) .team-name{color:#111827 !important;}
+    :root:not([data-theme="dark"]) .team-sport{color:#374151 !important;}
+    :root:not([data-theme="dark"]) .team-abv{color:#374151 !important;}
     :root:not([data-theme="dark"]) .team-score{color:#111827 !important;}
     :root:not([data-theme="dark"]) .team-score.winner{color:var(--team-color) !important;}
-    :root:not([data-theme="dark"]) .team-score.no-score{color:#9ca3af !important;}
-    :root:not([data-theme="dark"]) .status-final{background:rgba(0,0,0,0.05) !important;color:#6b7280 !important;border:1px solid rgba(0,0,0,0.1) !important;}
-    :root:not([data-theme="dark"]) .status-offseason{background:rgba(0,0,0,0.05) !important;color:#9ca3af !important;border:1px solid rgba(0,0,0,0.08) !important;}
-    :root:not([data-theme="dark"]) .status-live,:root:not([data-theme="dark"]) .status-starting{background:rgba(22,163,74,.12) !important;color:#16a34a !important;border-color:rgba(22,163,74,.3) !important;}
+    :root:not([data-theme="dark"]) .team-score.no-score{color:#6b7280 !important;}
+    :root:not([data-theme="dark"]) .team-score.opp-winning{color:#111827 !important;}
+    :root:not([data-theme="dark"]) .team-record{color:#374151 !important;}
+    :root:not([data-theme="dark"]) .vs-text{color:#6b7280 !important;}
+    :root:not([data-theme="dark"]) .vs-line{background:rgba(0,0,0,0.15) !important;}
+    :root:not([data-theme="dark"]) .game-label{color:#374151 !important;}
+    :root:not([data-theme="dark"]) .game-info-row{color:#374151 !important;}
+    :root:not([data-theme="dark"]) .results-label{color:#374151 !important;}
+    :root:not([data-theme="dark"]) .result-matchup{color:#374151 !important;}
+    :root:not([data-theme="dark"]) .result-matchup span{color:#111827 !important;}
+    :root:not([data-theme="dark"]) .result-score{color:#111827 !important;}
+    :root:not([data-theme="dark"]) .result-date{color:#6b7280 !important;}
+    :root:not([data-theme="dark"]) .next-game-label{color:#d97706 !important;}
+    :root:not([data-theme="dark"]) .next-game-info{color:#374151 !important;}
+    :root:not([data-theme="dark"]) .no-recent{color:#6b7280 !important;}
+    :root:not([data-theme="dark"]) .status-final{background:rgba(0,0,0,0.07) !important;color:#374151 !important;border:1px solid rgba(0,0,0,0.15) !important;}
+    :root:not([data-theme="dark"]) .status-offseason{background:rgba(0,0,0,0.07) !important;color:#6b7280 !important;border:1px solid rgba(0,0,0,0.12) !important;}
+    :root:not([data-theme="dark"]) .status-upcoming{background:rgba(180,120,0,.1) !important;color:#92400e !important;border:1px solid rgba(180,120,0,.25) !important;}
+    :root:not([data-theme="dark"]) .status-live,:root:not([data-theme="dark"]) .status-starting{background:rgba(22,163,74,.12) !important;color:#15803d !important;border-color:rgba(22,163,74,.35) !important;}
     :root:not([data-theme="dark"]) .pulse-dot{background:#16a34a !important;}
-    :root:not([data-theme="dark"]) .result-wl.win{color:#16a34a !important;}
-    :root:not([data-theme="dark"]) .result-wl.loss{color:#dc2626 !important;}
+    :root:not([data-theme="dark"]) .streak-w{background:rgba(22,163,74,.12) !important;color:#15803d !important;border-color:rgba(22,163,74,.3) !important;}
+    :root:not([data-theme="dark"]) .streak-l{background:rgba(220,38,38,.1) !important;color:#b91c1c !important;border-color:rgba(220,38,38,.25) !important;}
+    :root:not([data-theme="dark"]) .streak-d{background:rgba(180,120,0,.1) !important;color:#92400e !important;border-color:rgba(180,120,0,.25) !important;}
+    :root:not([data-theme="dark"]) .result-wl.win{color:#15803d !important;}
+    :root:not([data-theme="dark"]) .result-wl.loss{color:#b91c1c !important;}
+    :root:not([data-theme="dark"]) .result-wl.draw{color:#92400e !important;}
     :root:not([data-theme="dark"]) .news-header-title{color:#111827 !important;}
     :root:not([data-theme="dark"]) .news-item-title{color:#111827 !important;}
-    :root:not([data-theme="dark"]) footer{color:#6b7280 !important;}
+    :root:not([data-theme="dark"]) .news-time{color:#6b7280 !important;}
+    :root:not([data-theme="dark"]) footer{color:#4b5563 !important;}
     :root:not([data-theme="dark"]) #live-modal{background:rgba(200,210,220,.75) !important;}
     :root:not([data-theme="dark"]) .modal-team-abbr{color:#374151 !important;}
     :root:not([data-theme="dark"]) .modal-team-score{color:#111827 !important;}
+    :root:not([data-theme="dark"]) #modal-game-note{color:#374151 !important;}
+    :root:not([data-theme="dark"]) #modal-status-bar{color:#374151 !important;}
   }
-  [data-theme="light"]{--bg:#e8edf2;--surface:#ffffff;--border:rgba(0,0,0,0.10);--text:#111827;--muted:#4b5563;}
+  [data-theme="light"]{--bg:#e8edf2;--surface:#ffffff;--border:rgba(0,0,0,0.12);--text:#111827;--muted:#374151;}
   [data-theme="light"] body::before{opacity:.012;}
   [data-theme="light"] .header-left h1{background:linear-gradient(135deg,#111827 40%,#374151) !important;-webkit-background-clip:text !important;-webkit-text-fill-color:transparent !important;background-clip:text !important;}
+  [data-theme="light"] .header-left p{color:#374151 !important;}
+  [data-theme="light"] .live-badge{color:#374151 !important;}
   [data-theme="light"] #update-time,[data-theme="light"] #countdown{color:#111827 !important;}
-  [data-theme="light"] .refresh-btn{background:rgba(0,0,0,0.06) !important;border:1px solid rgba(0,0,0,0.12) !important;color:#111827 !important;}
+  [data-theme="light"] .refresh-btn{background:rgba(0,0,0,0.06) !important;border:1px solid rgba(0,0,0,0.15) !important;color:#111827 !important;}
   [data-theme="light"] .sk{background:linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%) !important;background-size:200% 100%;}
   [data-theme="light"] .team-name{color:#111827 !important;}
+  [data-theme="light"] .team-sport{color:#374151 !important;}
+  [data-theme="light"] .team-abv{color:#374151 !important;}
   [data-theme="light"] .team-score{color:#111827 !important;}
   [data-theme="light"] .team-score.winner{color:var(--team-color) !important;}
-  [data-theme="light"] .team-score.no-score{color:#9ca3af !important;}
-  [data-theme="light"] .status-final{background:rgba(0,0,0,0.05) !important;color:#6b7280 !important;border:1px solid rgba(0,0,0,0.1) !important;}
-  [data-theme="light"] .status-offseason{background:rgba(0,0,0,0.05) !important;color:#9ca3af !important;border:1px solid rgba(0,0,0,0.08) !important;}
-  [data-theme="light"] .status-live,[data-theme="light"] .status-starting{background:rgba(22,163,74,.12) !important;color:#16a34a !important;border-color:rgba(22,163,74,.3) !important;}
+  [data-theme="light"] .team-score.no-score{color:#6b7280 !important;}
+  [data-theme="light"] .team-score.opp-winning{color:#111827 !important;}
+  [data-theme="light"] .team-record{color:#374151 !important;}
+  [data-theme="light"] .vs-text{color:#6b7280 !important;}
+  [data-theme="light"] .vs-line{background:rgba(0,0,0,0.15) !important;}
+  [data-theme="light"] .game-label{color:#374151 !important;}
+  [data-theme="light"] .game-info-row{color:#374151 !important;}
+  [data-theme="light"] .results-label{color:#374151 !important;}
+  [data-theme="light"] .result-matchup{color:#374151 !important;}
+  [data-theme="light"] .result-matchup span{color:#111827 !important;}
+  [data-theme="light"] .result-score{color:#111827 !important;}
+  [data-theme="light"] .result-date{color:#6b7280 !important;}
+  [data-theme="light"] .next-game-label{color:#d97706 !important;}
+  [data-theme="light"] .next-game-info{color:#374151 !important;}
+  [data-theme="light"] .no-recent{color:#6b7280 !important;}
+  [data-theme="light"] .status-final{background:rgba(0,0,0,0.07) !important;color:#374151 !important;border:1px solid rgba(0,0,0,0.15) !important;}
+  [data-theme="light"] .status-offseason{background:rgba(0,0,0,0.07) !important;color:#6b7280 !important;border:1px solid rgba(0,0,0,0.12) !important;}
+  [data-theme="light"] .status-upcoming{background:rgba(180,120,0,.1) !important;color:#92400e !important;border:1px solid rgba(180,120,0,.25) !important;}
+  [data-theme="light"] .status-live,[data-theme="light"] .status-starting{background:rgba(22,163,74,.12) !important;color:#15803d !important;border-color:rgba(22,163,74,.35) !important;}
   [data-theme="light"] .pulse-dot{background:#16a34a !important;}
-  [data-theme="light"] .result-wl.win{color:#16a34a !important;}
-  [data-theme="light"] .result-wl.loss{color:#dc2626 !important;}
+  [data-theme="light"] .streak-w{background:rgba(22,163,74,.12) !important;color:#15803d !important;border-color:rgba(22,163,74,.3) !important;}
+  [data-theme="light"] .streak-l{background:rgba(220,38,38,.1) !important;color:#b91c1c !important;border-color:rgba(220,38,38,.25) !important;}
+  [data-theme="light"] .streak-d{background:rgba(180,120,0,.1) !important;color:#92400e !important;border-color:rgba(180,120,0,.25) !important;}
+  [data-theme="light"] .result-wl.win{color:#15803d !important;}
+  [data-theme="light"] .result-wl.loss{color:#b91c1c !important;}
+  [data-theme="light"] .result-wl.draw{color:#92400e !important;}
   [data-theme="light"] .news-header-title{color:#111827 !important;}
   [data-theme="light"] .news-item-title{color:#111827 !important;}
-  [data-theme="light"] footer{color:#6b7280 !important;}
+  [data-theme="light"] .news-time{color:#6b7280 !important;}
+  [data-theme="light"] footer{color:#4b5563 !important;}
   [data-theme="light"] #live-modal{background:rgba(200,210,220,.75) !important;}
   [data-theme="light"] .modal-team-abbr{color:#374151 !important;}
   [data-theme="light"] .modal-team-score{color:#111827 !important;}
+  [data-theme="light"] #modal-game-note{color:#374151 !important;}
+  [data-theme="light"] #modal-status-bar{color:#374151 !important;}
 </style>
 </head>
 <body>
