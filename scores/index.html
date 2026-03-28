@@ -396,6 +396,23 @@ function nextSeasonNote(path){
   return 'Season has ended';
 }
 
+// Cache for opponent records fetched on demand
+const oppRecordCache = {};
+async function fetchOppRecord(path, oppId){
+  if(!oppId || oppRecordCache[oppId] !== undefined) return oppRecordCache[oppId]||null;
+  try{
+    const base = 'https://site.api.espn.com/apis/site/v2/sports/'+path;
+    const d = await espnFetch(base+'/teams/'+oppId+'/schedule').catch(()=>null);
+    const events = d?.events||d?.team?.events||[];
+    const last = [...events].reverse().find(e=>e.competitions?.[0]?.status?.type?.completed);
+    const comp = last?.competitions?.[0];
+    const them = comp?.competitors?.find(c=>String(c.team?.id)===String(oppId));
+    const getRecord = c=>(c?.record?.find(r=>r.type==='total')||c?.record?.find(r=>r.type==='ytd')||c?.record?.[0])?.displayValue||null;
+    oppRecordCache[oppId] = getRecord(them);
+  } catch(e){ oppRecordCache[oppId] = null; }
+  return oppRecordCache[oppId]||null;
+}
+
 let mlsRecords = {};
 (async()=>{
   try{
@@ -471,8 +488,13 @@ async function fetchTeamData(key){
     (nextIsClose || !lastCompleted) && nextGame ? 'upcoming' :
     featured.featuredStatus;
 
-  const showRecords = fs==='live'||fs==='final'||fs==='starting';
-  const soccerPhiRecord = isSoccer ? (mlsRecords[String(teamId)]||schRes?.team?.recordSummary||null) : null;
+  const showRecords = fs!=='offseason';
+  // For upcoming/pre games, ESPN doesn't return records — carry forward from last completed game
+  const phiRecordFallback = lastCompleted?.phiRecord || null;
+  // Fetch opponent record whenever it's missing from the featured event (any status)
+  const oppRecordFallback = (featured && !featured.oppRecord && featured.oppId && fs!=='offseason')
+    ? await fetchOppRecord(path, featured.oppId) : null;
+  const soccerPhiRecord = isSoccer ? (mlsRecords[String(teamId)]||schRes?.team?.recordSummary||phiRecordFallback||null) : null;
   const soccerOppRecord = isSoccer ? (mlsRecords[featured?.oppId||'']||null) : null;
 
   let streak = null;
@@ -499,13 +521,13 @@ async function fetchTeamData(key){
     featured: featured ? {
       label:     fs==='live' ? 'LIVE NOW' : fs==='starting' ? 'STARTING NOW' : fs==='upcoming' ? 'NEXT GAME' : null,
       oppAbbr:   featured.oppAbbr,
-      oppId:     featured.oppId,
+      oppId:     featured.oppId||null,
       phiScore:  featured.phiScore,
       oppScore:  featured.oppScore,
       note:      featured.note,
       venue:     featured.venue||null,
-      phiRecord: showRecords ? (soccerPhiRecord||featured.phiRecord||null) : null,
-      oppRecord: showRecords ? (soccerOppRecord||featured.oppRecord||null) : null,
+      phiRecord: showRecords ? (soccerPhiRecord||featured.phiRecord||phiRecordFallback||null) : null,
+      oppRecord: showRecords ? (soccerOppRecord||featured.oppRecord||oppRecordFallback||null) : null,
     } : null,
     recentGames: recentFiltered.map(g=>({opp:g.oppAbbr,home:g.isHome,phiScore:g.phiScore,oppScore:g.oppScore,date:fmtShort(g.dateMs)})),
     nextGame: nextGame && fs!=='starting' && fs!=='live' && !nextIsClose
