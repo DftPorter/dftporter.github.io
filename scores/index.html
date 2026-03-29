@@ -561,7 +561,7 @@ async function fetchTeamData(key){
       venue:     featured.venue||null,
       phiRecord: showRecords ? (soccerPhiRecord||featured.phiRecord||phiRecordFallback||null) : null,
       oppRecord: showRecords ? (soccerOppRecord||featured.oppRecord||oppRecordFallback||null) : null,
-      oppColor:  oppColor||null,
+      oppColor:  (await fetchOppColor(path, featured?.oppId||''))||null,
     } : null,
     recentGames: recentFiltered.map(g=>({opp:g.oppAbbr,home:g.isHome,phiScore:g.phiScore,oppScore:g.oppScore,date:fmtShort(g.dateMs)})),
     nextGame: nextGame && fs!=='starting' && fs!=='live' && !nextIsClose
