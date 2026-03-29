@@ -335,7 +335,7 @@ const NEWS_FEEDS = [
 function fmtShort(ms){ return new Date(ms).toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
 function fmtFull(ms){
   const d = new Date(ms);
-  return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) + ', ' +
+  return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})+', '+
          d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
 }
 function parseScore(s){
@@ -396,41 +396,20 @@ function nextSeasonNote(path){
   return 'Season has ended';
 }
 
+let mlsRecords = {};
+(async()=>{
+  try{
+    const d = await espnFetch('https://site.api.espn.com/apis/v2/sports/soccer/usa.1/standings');
+    const entries = d.children?.flatMap(c=>c.standings?.entries||[])||[];
+    entries.forEach(e=>{
+      const overall = e.stats?.find(s=>s.name==='overall')?.displayValue;
+      if(e.team?.id && overall) mlsRecords[String(e.team.id)] = overall;
+    });
+  } catch(err){ console.warn('MLS standings fetch failed', err); }
+})();
+
 // Cache for opponent records fetched on demand
 const oppRecordCache = {};
-
-// Opponent color cache — stored in localStorage with 7-day TTL
-const OPP_COLOR_TTL = 7 * 24 * 60 * 60 * 1000;
-const oppColorCache = {};
-(()=>{
-  try {
-    const stored = JSON.parse(localStorage.getItem('oppColors')||'{}');
-    const now = Date.now();
-    Object.entries(stored).forEach(([id, entry]) => {
-      if(now - entry.ts < OPP_COLOR_TTL) oppColorCache[id] = entry.color;
-    });
-  } catch(e) { /* localStorage unavailable (e.g. file://) — use in-memory cache only */ }
-})();
-function saveOppColors(){
-  try {
-    const now = Date.now();
-    const out = {};
-    Object.entries(oppColorCache).forEach(([id, color]) => { out[id] = { color, ts: now }; });
-    localStorage.setItem('oppColors', JSON.stringify(out));
-  } catch(e) { /* ignore */ }
-}
-async function fetchOppColor(path, oppId){
-  if(!oppId) return null;
-  if(oppColorCache[oppId] !== undefined) return oppColorCache[oppId];
-  try {
-    const base = 'https://site.api.espn.com/apis/site/v2/sports/'+path;
-    const d = await espnFetch(base+'/teams/'+oppId).catch(()=>null);
-    const hex = d?.team?.color ? '#'+d.team.color : null;
-    oppColorCache[oppId] = hex;
-    saveOppColors();
-    return hex;
-  } catch(e) { return null; }
-}
 async function fetchOppRecord(path, oppId){
   if(!oppId || oppRecordCache[oppId] !== undefined) return oppRecordCache[oppId]||null;
   try{
@@ -445,18 +424,6 @@ async function fetchOppRecord(path, oppId){
   } catch(e){ oppRecordCache[oppId] = null; }
   return oppRecordCache[oppId]||null;
 }
-
-let mlsRecords = {};
-(async()=>{
-  try{
-    const d = await espnFetch('https://site.api.espn.com/apis/v2/sports/soccer/usa.1/standings');
-    const entries = d.children?.flatMap(c=>c.standings?.entries||[])||[];
-    entries.forEach(e=>{
-      const overall = e.stats?.find(s=>s.name==='overall')?.displayValue;
-      if(e.team?.id && overall) mlsRecords[String(e.team.id)] = overall;
-    });
-  } catch(err){ console.warn('MLS standings fetch failed', err); }
-})();
 
 async function fetchTeamData(key){
   const { path, teamId } = TEAMS[key];
@@ -509,8 +476,7 @@ async function fetchTeamData(key){
 
   const activeLive  = liveGame?.featuredStatus==='live' ? liveGame : null;
   const nextIsClose = nextGame && (nextGame.dateMs - now) <= 4*60*60*1000;
-  // Feature the upcoming game if live, or if within 4hrs, or if no completed games yet
-  const featured = isOffseason ? null :
+  const featured    = isOffseason ? null :
     activeLive ? activeLive :
     nextIsClose ? nextGame :
     lastCompleted ? lastCompleted :
@@ -522,31 +488,23 @@ async function fetchTeamData(key){
     featured.featuredStatus;
 
   const showRecords = fs!=='offseason';
-  // For upcoming/pre games, ESPN doesn't return records — carry forward from last completed game
   const phiRecordFallback = lastCompleted?.phiRecord || null;
-  // Fetch opponent record whenever it's missing from the featured event (any status)
   const oppRecordFallback = (featured && !featured.oppRecord && featured.oppId && fs!=='offseason')
-    ? await fetchOppRecord(path, featured.oppId) : null;
+    ? await fetchOppRecord(path, featured.oppId).catch(()=>null) : null;
   const soccerPhiRecord = isSoccer ? (mlsRecords[String(teamId)]||schRes?.team?.recordSummary||phiRecordFallback||null) : null;
   const soccerOppRecord = isSoccer ? (mlsRecords[featured?.oppId||'']||null) : null;
 
   let streak = null;
   const allCompleted = [...schedEvents].reverse().filter(ev=>parseEvent(ev,teamId)?.completed);
   if(allCompleted.length){
-    const outcomes = allCompleted.map(ev=>{
-      const p=parseEvent(ev,teamId);
-      return p.phiScore>p.oppScore?'W':p.phiScore<p.oppScore?'L':'D';
-    });
+    const outcomes = allCompleted.map(ev=>{ const p=parseEvent(ev,teamId); return p.phiScore>p.oppScore?'W':p.phiScore<p.oppScore?'L':'D'; });
     let count=1;
     for(let i=1;i<outcomes.length;i++){ if(outcomes[i]===outcomes[0]) count++; else break; }
     streak = outcomes[0]+count;
   }
 
   const completedDateMs = lastCompleted?.dateMs||0;
-
-  // Recent games: when showing upcoming as featured, include lastCompleted in recent
-  const recentFiltered = isOffseason ? [] : recentGames
-    .slice(-3).reverse();
+  const recentFiltered  = isOffseason ? [] : recentGames.slice(-3).reverse();
 
   return {
     featuredStatus: fs,
@@ -561,7 +519,6 @@ async function fetchTeamData(key){
       venue:     featured.venue||null,
       phiRecord: showRecords ? (soccerPhiRecord||featured.phiRecord||phiRecordFallback||null) : null,
       oppRecord: showRecords ? (soccerOppRecord||featured.oppRecord||oppRecordFallback||null) : null,
-      oppColor:  (await fetchOppColor(path, featured?.oppId||''))||null,
     } : null,
     recentGames: recentFiltered.map(g=>({opp:g.oppAbbr,home:g.isHome,phiScore:g.phiScore,oppScore:g.oppScore,date:fmtShort(g.dateMs)})),
     nextGame: nextGame && fs!=='starting' && fs!=='live' && !nextIsClose
@@ -629,11 +586,7 @@ function updateModalScores(key){
   const phiEl = document.getElementById('modal-phi-score');
   const oppEl = document.getElementById('modal-opp-score');
   if(phiEl){ phiEl.textContent=phiS; phiEl.className='modal-team-score'+(phiS>oppS?' modal-winner':''); }
-  if(oppEl){
-    oppEl.textContent=oppS;
-    oppEl.className='modal-team-score'+(oppS>phiS?' modal-winner':'');
-    oppEl.style.color = (oppS>phiS && data.featured?.oppColor) ? data.featured.oppColor : '';
-  }
+  if(oppEl){ oppEl.textContent=oppS; oppEl.className='modal-team-score'+(oppS>phiS?' modal-winner':''); }
   const noteEl = document.getElementById('modal-game-note');
   if(noteEl) noteEl.textContent = f.note||'';
   syncModalStatus();
@@ -683,14 +636,14 @@ function setStatus(state,text){
 function showError(msg){document.getElementById('error-banner').style.display='block';document.getElementById('error-banner-inner').textContent='⚠ '+msg;}
 function hideError(){document.getElementById('error-banner').style.display='none';}
 
-function scoreHtml(score, winner, upcoming, isPhi, oppColor){
+function scoreHtml(score, winner, upcoming, isPhi){
   if(upcoming||score===null) return '<div class="team-score no-score">&ndash;</div>';
   if(winner&&isPhi)  return '<div class="team-score winner">'+score+'</div>';
-  if(winner&&!isPhi) return '<div class="team-score opp-winning"'+(oppColor?' style="color:'+oppColor+'"':'')+'>'+score+'</div>';
+  if(winner&&!isPhi) return '<div class="team-score opp-winning">'+score+'</div>';
   return '<div class="team-score">'+score+'</div>';
 }
 
-function renderCard(key,data){
+function renderCard(key, data){
   _cardData[key] = data;
   const {name,sport,icon,color} = TEAMS[key];
   const fs          = data.featuredStatus||'offseason';
@@ -705,14 +658,28 @@ function renderCard(key,data){
     const f=data.featured, upcoming=fs==='upcoming';
     const phiWins=!upcoming&&f.phiScore>f.oppScore;
     const oppWins=!upcoming&&f.oppScore>f.phiScore;
-    const oc=f.oppColor||null;
-    featuredHtml = '<div class="featured-game">'+(f.label?'<div class="game-label">'+f.label+'</div>':'')+'<div class="matchup"><div class="team-side"><div class="team-abv">PHI</div>'+scoreHtml(f.phiScore,phiWins,upcoming,true,null)+(f.phiRecord?'<div class="team-record">'+f.phiRecord+'</div>':'')+'</div><div class="vs-divider"><div class="vs-line"></div><div class="vs-text">VS</div><div class="vs-line"></div></div><div class="team-side"><div class="team-abv">'+f.oppAbbr+'</div>'+scoreHtml(f.oppScore,oppWins,upcoming,false,oc)+(f.oppRecord?'<div class="team-record">'+f.oppRecord+'</div>':'')+'</div></div><div class="game-info-row">'+f.note+(f.venue?' · '+f.venue:'')+'</div></div>';
+    featuredHtml = '<div class="featured-game">'
+      +(f.label?'<div class="game-label">'+f.label+'</div>':'')
+      +'<div class="matchup">'
+      +'<div class="team-side"><div class="team-abv">PHI</div>'+scoreHtml(f.phiScore,phiWins,upcoming,true)+(f.phiRecord?'<div class="team-record">'+f.phiRecord+'</div>':'')+'</div>'
+      +'<div class="vs-divider"><div class="vs-line"></div><div class="vs-text">VS</div><div class="vs-line"></div></div>'
+      +'<div class="team-side"><div class="team-abv">'+f.oppAbbr+'</div>'+scoreHtml(f.oppScore,oppWins,upcoming,false)+(f.oppRecord?'<div class="team-record">'+f.oppRecord+'</div>':'')+'</div>'
+      +'</div>'
+      +'<div class="game-info-row">'+f.note+(f.venue?' · '+f.venue:'')+'</div>'
+      +'</div>';
   } else {
-    featuredHtml = '<div class="featured-game" style="text-align:center;padding:24px 20px"><div style="font-size:36px;margin-bottom:8px">🏆</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:18px;color:#4b5563;letter-spacing:.08em">Season Complete</div>'+(data.offseasonNote?'<div style="font-size:11px;color:#6b7280;margin-top:6px;font-family:\'DM Mono\',monospace">'+data.offseasonNote+'</div>':'')+'</div>';
+    featuredHtml = '<div class="featured-game" style="text-align:center;padding:24px 20px">'
+      +'<div style="font-size:36px;margin-bottom:8px">🏆</div>'
+      +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:18px;color:#4b5563;letter-spacing:.08em">Season Complete</div>'
+      +(data.offseasonNote?'<div style="font-size:11px;color:#6b7280;margin-top:6px;font-family:\'DM Mono\',monospace">'+data.offseasonNote+'</div>':'')
+      +'</div>';
   }
 
   const recentHtml = data.recentGames?.length
-    ? data.recentGames.map(g=>{ const r=g.phiScore>g.oppScore?{c:'win',l:'W'}:g.phiScore<g.oppScore?{c:'loss',l:'L'}:{c:'draw',l:'D'}; return '<div class="result-row"><div class="result-matchup">'+(g.home?'vs':'@')+' <span>'+g.opp+'</span></div><div class="result-score">'+g.phiScore+'&ndash;'+g.oppScore+'</div><div class="result-wl '+r.c+'">'+r.l+'</div><div class="result-date">'+g.date+'</div></div>'; }).join('')
+    ? data.recentGames.map(g=>{
+        const r=g.phiScore>g.oppScore?{c:'win',l:'W'}:g.phiScore<g.oppScore?{c:'loss',l:'L'}:{c:'draw',l:'D'};
+        return '<div class="result-row"><div class="result-matchup">'+(g.home?'vs':'@')+' <span>'+g.opp+'</span></div><div class="result-score">'+g.phiScore+'&ndash;'+g.oppScore+'</div><div class="result-wl '+r.c+'">'+r.l+'</div><div class="result-date">'+g.date+'</div></div>';
+      }).join('')
     : '<div class="no-recent">No recent games</div>';
 
   const nextHtml = data.nextGame
@@ -805,8 +772,6 @@ async function fetchScores(){
       return (b.data.completedDateMs||0)-(a.data.completedDateMs||0);
     });
     document.getElementById('cards-container').innerHTML=sorted.map(({key,data})=>renderCard(key,data)).join('')+renderNewsCard(newsItems);
-
-    // Flash cards on score change, update modal if open
     TEAM_ORDER.forEach(k=>{
       const curr=scores[k]?.featured, prev=prevScores[k]?.featured;
       if(curr&&prev&&(curr.phiScore!==prev.phiScore||curr.oppScore!==prev.oppScore)){
@@ -819,13 +784,10 @@ async function fetchScores(){
         });
       }
     });
-
-    // Always update modal if open
     if(modalOpenKey){
       const modal=document.getElementById('live-modal');
       if(modal?.classList.contains('open')) updateModalScores(modalOpenKey);
     }
-
     prevScores=scores;
     const t=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     setStatus('ok','Updated '+t);
