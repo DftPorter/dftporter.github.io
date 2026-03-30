@@ -504,7 +504,10 @@ async function fetchTeamData(key){
   }
 
   const completedDateMs = lastCompleted?.dateMs||0;
-  const recentFiltered  = isOffseason ? [] : recentGames.slice(-3).reverse();
+  const featuredDateMs  = featured?.dateMs||0;
+  const recentFiltered  = isOffseason ? [] : recentGames
+    .filter(g => g.dateMs !== featuredDateMs)
+    .slice(-3).reverse();
 
   return {
     featuredStatus: fs,
