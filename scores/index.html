@@ -589,7 +589,7 @@ function updateModalScores(key){
   const phiEl = document.getElementById('modal-phi-score');
   const oppEl = document.getElementById('modal-opp-score');
   if(phiEl){ phiEl.textContent=phiS; phiEl.className='modal-team-score'+(phiS>oppS?' modal-winner':''); }
-  if(oppEl){ oppEl.textContent=oppS; oppEl.className='modal-team-score'+(oppS>phiS?' modal-winner':''); }
+  if(oppEl){ oppEl.textContent=oppS; oppEl.className='modal-team-score'; }
   const noteEl = document.getElementById('modal-game-note');
   if(noteEl) noteEl.textContent = f.note||'';
   syncModalStatus();
