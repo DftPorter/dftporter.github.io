@@ -286,16 +286,16 @@
         <span id="modal-sport-text">LIVE NOW</span>
       </div>
       <div id="modal-teams">
-        <div class="modal-team">
-          <div class="modal-team-abbr">PHI</div>
+        <div class="modal-team" id="modal-phi-side">
+          <div class="modal-team-abbr" id="modal-phi-abbr">PHI</div>
           <div class="modal-team-score" id="modal-phi-score">0</div>
         </div>
-        <div class="modal-vs">
+        <div class="modal-vs" id="modal-divider">
           <div class="modal-vs-line"></div>
           <div class="modal-vs-text">VS</div>
           <div class="modal-vs-line"></div>
         </div>
-        <div class="modal-team">
+        <div class="modal-team" id="modal-opp-side">
           <div class="modal-team-abbr" id="modal-opp-abbr">OPP</div>
           <div class="modal-team-score" id="modal-opp-score">0</div>
         </div>
@@ -514,7 +514,7 @@ async function fetchTeamData(key){
     completedDateMs,
     featured: featured ? {
       label:     fs==='live' ? 'LIVE NOW' : fs==='starting' ? 'STARTING NOW' : fs==='upcoming' ? 'NEXT GAME' : null,
-      oppAbbr:   featured.oppAbbr,
+      isHome:    featured.isHome,
       oppId:     featured.oppId||null,
       phiScore:  featured.phiScore,
       oppScore:  featured.oppScore,
@@ -604,9 +604,25 @@ function openModal(key, data){
   const inner = document.getElementById('live-modal-inner');
   inner.style.setProperty('--modal-color', team.color);
   const sportEl = document.getElementById('modal-sport-text');
-  const oppEl   = document.getElementById('modal-opp-abbr');
   if(sportEl) sportEl.textContent = team.sport+' · LIVE NOW';
-  if(oppEl)   oppEl.textContent   = f.oppAbbr;
+  // Set up home/away order
+  const phiAbbr = document.getElementById('modal-phi-abbr');
+  const oppAbbr = document.getElementById('modal-opp-abbr');
+  if(phiAbbr) phiAbbr.textContent = 'PHI';
+  if(oppAbbr) oppAbbr.textContent = f.oppAbbr;
+  const teamsEl = document.getElementById('modal-teams');
+  const phiSide = document.getElementById('modal-phi-side');
+  const oppSide = document.getElementById('modal-opp-side');
+  const divider = document.getElementById('modal-divider');
+  if(teamsEl && phiSide && oppSide && divider){
+    if(f.isHome){
+      teamsEl.insertBefore(oppSide, phiSide);
+      teamsEl.insertBefore(divider, phiSide);
+    } else {
+      teamsEl.insertBefore(phiSide, oppSide);
+      teamsEl.insertBefore(divider, oppSide);
+    }
+  }
   updateModalScores(key);
   const modal = document.getElementById('live-modal');
   modal.classList.add('open');
@@ -661,13 +677,13 @@ function renderCard(key, data){
     const f=data.featured, upcoming=fs==='upcoming';
     const phiWins=!upcoming&&f.phiScore>f.oppScore;
     const oppWins=!upcoming&&f.oppScore>f.phiScore;
+    const phiSide = '<div class="team-side"><div class="team-abv">PHI</div>'+scoreHtml(f.phiScore,phiWins,upcoming,true)+(f.phiRecord?'<div class="team-record">'+f.phiRecord+'</div>':'')+'</div>';
+    const oppSide = '<div class="team-side"><div class="team-abv">'+(f.oppAbbr||'OPP')+'</div>'+scoreHtml(f.oppScore,oppWins,upcoming,false)+(f.oppRecord?'<div class="team-record">'+f.oppRecord+'</div>':'')+'</div>';
+    const divider = '<div class="vs-divider"><div class="vs-line"></div><div class="vs-text">VS</div><div class="vs-line"></div></div>';
+    const matchup = f.isHome ? oppSide+divider+phiSide : phiSide+divider+oppSide;
     featuredHtml = '<div class="featured-game">'
       +(f.label?'<div class="game-label">'+f.label+'</div>':'')
-      +'<div class="matchup">'
-      +'<div class="team-side"><div class="team-abv">PHI</div>'+scoreHtml(f.phiScore,phiWins,upcoming,true)+(f.phiRecord?'<div class="team-record">'+f.phiRecord+'</div>':'')+'</div>'
-      +'<div class="vs-divider"><div class="vs-line"></div><div class="vs-text">VS</div><div class="vs-line"></div></div>'
-      +'<div class="team-side"><div class="team-abv">'+f.oppAbbr+'</div>'+scoreHtml(f.oppScore,oppWins,upcoming,false)+(f.oppRecord?'<div class="team-record">'+f.oppRecord+'</div>':'')+'</div>'
-      +'</div>'
+      +'<div class="matchup">'+matchup+'</div>'
       +'<div class="game-info-row">'+f.note+(f.venue?' · '+f.venue:'')+'</div>'
       +'</div>';
   } else {
