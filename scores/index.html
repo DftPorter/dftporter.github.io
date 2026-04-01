@@ -514,7 +514,8 @@ async function fetchTeamData(key){
     completedDateMs,
     featured: featured ? {
       label:     fs==='live' ? 'LIVE NOW' : fs==='starting' ? 'STARTING NOW' : fs==='upcoming' ? 'NEXT GAME' : null,
-      isHome:    featured.isHome,
+      isHome:    featured.isHome||false,
+      oppAbbr:   featured.oppAbbr||'OPP',
       oppId:     featured.oppId||null,
       phiScore:  featured.phiScore,
       oppScore:  featured.oppScore,
