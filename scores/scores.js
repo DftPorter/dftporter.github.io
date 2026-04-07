@@ -1,8 +1,8 @@
 const TEAMS = {
-  eagles:   { name:'Eagles',   sport:'NFL', icon:'🦅', color:'#004C54', path:'football/nfl',   teamId:'21',    logo:'https://a.espncdn.com/i/teamlogos/nfl/500/21.png'     },
-  sixers:   { name:'76ers',    sport:'NBA', icon:'🏀', color:'#006BB6', path:'basketball/nba', teamId:'20',    logo:'https://a.espncdn.com/i/teamlogos/nba/500/20.png'     },
-  flyers:   { name:'Flyers',   sport:'NHL', icon:'🏒', color:'#F74902', path:'hockey/nhl',     teamId:'15',    logo:'https://a.espncdn.com/i/teamlogos/nhl/500/15.png'     },
-  phillies: { name:'Phillies', sport:'MLB', icon:'⚾', color:'#E81828', path:'baseball/mlb',   teamId:'22',    logo:'https://a.espncdn.com/i/teamlogos/mlb/500/22.png'     },
+  eagles:   { name:'Eagles',   sport:'NFL', icon:'🦅', color:'#004C54', path:'football/nfl',   teamId:'21',    logo:'https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/phi.png'    },
+  sixers:   { name:'76ers',    sport:'NBA', icon:'🏀', color:'#006BB6', path:'basketball/nba', teamId:'20',    logo:'https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/phi.png'    },
+  flyers:   { name:'Flyers',   sport:'NHL', icon:'🏒', color:'#F74902', path:'hockey/nhl',     teamId:'15',    logo:'https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/phi.png'    },
+  phillies: { name:'Phillies', sport:'MLB', icon:'⚾', color:'#E81828', path:'baseball/mlb',   teamId:'22',    logo:'https://a.espncdn.com/i/teamlogos/mlb/500/scoreboard/phi.png'    },
   union:    { name:'Union',    sport:'MLS', icon:'⚽', color:'#8b6914', path:'soccer/usa.1',   teamId:'10739', logo:'https://a.espncdn.com/i/teamlogos/soccer/500/10739.png'},
 };
 const TEAM_ORDER = ['eagles','sixers','flyers','phillies','union'];
@@ -83,6 +83,9 @@ const OPP_LOGO_TTL = 30*24*60*60*1000;
 const oppLogoCache = {};
 (()=>{
   try{
+    // v2: switched to scoreboard/abbr format — clear old cache
+    const ver = localStorage.getItem('oppLogosVer');
+    if(ver !== '2') { localStorage.removeItem('oppLogos'); localStorage.setItem('oppLogosVer','2'); }
     const stored = JSON.parse(localStorage.getItem('oppLogos')||'{}');
     const now = Date.now();
     Object.entries(stored).forEach(([id,entry])=>{
@@ -97,16 +100,21 @@ function saveOppLogos(){
     localStorage.setItem('oppLogos',JSON.stringify(out));
   } catch(e){}
 }
-function oppLogoUrl(path, oppId){
+function oppLogoUrl(path, oppId, oppAbbr){
   if(!oppId) return null;
-  if(oppLogoCache[oppId]!==undefined) return oppLogoCache[oppId];
+  const cacheKey = oppId;
+  if(oppLogoCache[cacheKey]!==undefined) return oppLogoCache[cacheKey];
   const sport = path.startsWith('football')  ? 'nfl'
     : path.startsWith('basketball') ? 'nba'
     : path.startsWith('hockey')     ? 'nhl'
     : path.startsWith('baseball')   ? 'mlb'
     : 'soccer';
-  const url = 'https://a.espncdn.com/i/teamlogos/'+sport+'/500/'+oppId+'.png';
-  oppLogoCache[oppId]=url;
+  const isSoccerLogo = sport === 'soccer';
+  // Soccer uses ID-based URLs; other sports use scoreboard/abbr format
+  const slug = (!isSoccerLogo && oppAbbr) ? oppAbbr.toLowerCase() : oppId;
+  const subdir = (!isSoccerLogo && oppAbbr) ? 'scoreboard/' : '';
+  const url = 'https://a.espncdn.com/i/teamlogos/'+sport+'/500/'+subdir+slug+'.png';
+  oppLogoCache[cacheKey]=url;
   saveOppLogos();
   return url;
 }
@@ -226,7 +234,7 @@ async function fetchTeamData(key){
       isHome:    featured.isHome||false,
       oppAbbr:   featured.oppAbbr||'OPP',
       oppId:     featured.oppId||null,
-      oppLogo:   oppLogoUrl(path,featured.oppId||null),
+      oppLogo:   oppLogoUrl(path, featured.oppId||null, featured.oppAbbr||null),
       phiScore:  featured.phiScore,
       oppScore:  featured.oppScore,
       note:      featured.note,
