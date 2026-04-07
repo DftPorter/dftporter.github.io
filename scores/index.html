@@ -142,7 +142,8 @@
   .modal-vs-line{width:1px;height:clamp(80px,12vw,160px);background:var(--border);}
   #modal-game-note{margin-top:clamp(16px,3vh,36px);font-family:'DM Mono',monospace;font-size:clamp(14px,2.2vw,22px);color:#9ca3af;letter-spacing:.08em;text-transform:uppercase;}
   #modal-status-bar{margin-top:20px;display:flex;align-items:center;gap:14px;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;flex-wrap:wrap;justify-content:center;}
-  @media(max-width:768px){#live-modal{display:none !important;}}
+  .team-logo{width:32px;height:32px;object-fit:contain;display:block;margin:4px auto 0;}
+  .team-logo-lg{width:80px;height:80px;object-fit:contain;display:block;margin:0 auto 8px;}
 
   /* ── Light theme ── */
   @media(prefers-color-scheme:light){
@@ -287,6 +288,7 @@
       </div>
       <div id="modal-teams">
         <div class="modal-team" id="modal-phi-side">
+          <img class="team-logo-lg" id="modal-phi-logo" src="" alt="PHI" onerror="this.style.display='none'">
           <div class="modal-team-abbr" id="modal-phi-abbr">PHI</div>
           <div class="modal-team-score" id="modal-phi-score">0</div>
         </div>
@@ -296,6 +298,7 @@
           <div class="modal-vs-line"></div>
         </div>
         <div class="modal-team" id="modal-opp-side">
+          <img class="team-logo-lg" id="modal-opp-logo" src="" alt="OPP" onerror="this.style.display='none'">
           <div class="modal-team-abbr" id="modal-opp-abbr">OPP</div>
           <div class="modal-team-score" id="modal-opp-score">0</div>
         </div>
@@ -317,11 +320,11 @@
 
 <script>
 const TEAMS = {
-  eagles:   { name:'Eagles',   sport:'NFL', icon:'🦅', color:'#004C54', path:'football/nfl',   teamId:'21'    },
-  sixers:   { name:'76ers',    sport:'NBA', icon:'🏀', color:'#006BB6', path:'basketball/nba', teamId:'20'    },
-  flyers:   { name:'Flyers',   sport:'NHL', icon:'🏒', color:'#F74902', path:'hockey/nhl',     teamId:'15'    },
-  phillies: { name:'Phillies', sport:'MLB', icon:'⚾', color:'#E81828', path:'baseball/mlb',   teamId:'22'    },
-  union:    { name:'Union',    sport:'MLS', icon:'⚽', color:'#8b6914', path:'soccer/usa.1',   teamId:'10739' },
+  eagles:   { name:'Eagles',   sport:'NFL', icon:'🦅', color:'#004C54', path:'football/nfl',   teamId:'21',    logo:'https://a.espncdn.com/i/teamlogos/nfl/500/21.png'    },
+  sixers:   { name:'76ers',    sport:'NBA', icon:'🏀', color:'#006BB6', path:'basketball/nba', teamId:'20',    logo:'https://a.espncdn.com/i/teamlogos/nba/500/20.png'    },
+  flyers:   { name:'Flyers',   sport:'NHL', icon:'🏒', color:'#F74902', path:'hockey/nhl',     teamId:'15',    logo:'https://a.espncdn.com/i/teamlogos/nhl/500/15.png'    },
+  phillies: { name:'Phillies', sport:'MLB', icon:'⚾', color:'#E81828', path:'baseball/mlb',   teamId:'22',    logo:'https://a.espncdn.com/i/teamlogos/mlb/500/22.png'    },
+  union:    { name:'Union',    sport:'MLS', icon:'⚽', color:'#8b6914', path:'soccer/usa.1',   teamId:'10739', logo:'https://a.espncdn.com/i/teamlogos/soccer/500/10739.png' },
 };
 const TEAM_ORDER = ['eagles','sixers','flyers','phillies','union'];
 
@@ -394,6 +397,40 @@ function nextSeasonNote(path){
   }
   if(path.startsWith('baseball/mlb')) return 'Spring Training underway · Regular season starts late March';
   return 'Season has ended';
+}
+
+// Opponent logo URL cache — localStorage with 30-day TTL
+const OPP_LOGO_TTL = 30 * 24 * 60 * 60 * 1000;
+const oppLogoCache = {};
+(()=>{
+  try{
+    const stored = JSON.parse(localStorage.getItem('oppLogos')||'{}');
+    const now = Date.now();
+    Object.entries(stored).forEach(([id, entry])=>{
+      if(now - entry.ts < OPP_LOGO_TTL) oppLogoCache[id] = entry.url;
+    });
+  } catch(e){}
+})();
+function saveOppLogos(){
+  try{
+    const now = Date.now();
+    const out = {};
+    Object.entries(oppLogoCache).forEach(([id, url])=>{ out[id]={url,ts:now}; });
+    localStorage.setItem('oppLogos', JSON.stringify(out));
+  } catch(e){}
+}
+function oppLogoUrl(path, oppId){
+  if(!oppId) return null;
+  if(oppLogoCache[oppId] !== undefined) return oppLogoCache[oppId];
+  const sport = path.startsWith('football')  ? 'nfl'
+    : path.startsWith('basketball') ? 'nba'
+    : path.startsWith('hockey')     ? 'nhl'
+    : path.startsWith('baseball')   ? 'mlb'
+    : 'soccer';
+  const url = 'https://a.espncdn.com/i/teamlogos/'+sport+'/500/'+oppId+'.png';
+  oppLogoCache[oppId] = url;
+  saveOppLogos();
+  return url;
 }
 
 let mlsRecords = {};
@@ -517,6 +554,7 @@ async function fetchTeamData(key){
       isHome:    featured.isHome||false,
       oppAbbr:   featured.oppAbbr||'OPP',
       oppId:     featured.oppId||null,
+      oppLogo:   oppLogoUrl(path, featured.oppId||null),
       phiScore:  featured.phiScore,
       oppScore:  featured.oppScore,
       note:      featured.note,
