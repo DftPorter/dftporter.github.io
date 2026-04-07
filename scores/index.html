@@ -114,6 +114,8 @@
   .news-item-meta{display:flex;align-items:center;gap:8px;margin-top:2px;}
   .news-team-tag{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:100px;font-weight:500;}
   .news-time{font-family:'DM Mono',monospace;font-size:10px;color:#4b5563;}
+  .team-logo{width:32px;height:32px;object-fit:contain;display:block;margin:4px auto 0;}
+  .team-logo-lg{width:80px;height:80px;object-fit:contain;display:block;margin:0 auto 12px;}
   .news-loading{padding:24px 20px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:#4b5563;}
   #error-banner{display:none;position:relative;z-index:10;margin:16px auto 0;max-width:1400px;padding:0 20px;}
   #error-banner-inner{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);border-radius:10px;padding:14px 18px;font-family:'DM Mono',monospace;font-size:12px;color:#fca5a5;letter-spacing:.04em;}
@@ -716,8 +718,10 @@ function renderCard(key, data){
     const f=data.featured, upcoming=fs==='upcoming';
     const phiWins=!upcoming&&f.phiScore>f.oppScore;
     const oppWins=!upcoming&&f.oppScore>f.phiScore;
-    const phiSide = '<div class="team-side"><div class="team-abv">PHI</div>'+scoreHtml(f.phiScore,phiWins,upcoming,true)+(f.phiRecord?'<div class="team-record">'+f.phiRecord+'</div>':'')+'</div>';
-    const oppSide = '<div class="team-side"><div class="team-abv">'+(f.oppAbbr||'OPP')+'</div>'+scoreHtml(f.oppScore,oppWins,upcoming,false)+(f.oppRecord?'<div class="team-record">'+f.oppRecord+'</div>':'')+'</div>';
+    const phiImg='<img class="team-logo" src="'+TEAMS[key].logo+'" alt="PHI" onerror="this.style.display=\'none\'">';
+const oppImg=f.oppLogo?'<img class="team-logo" src="'+f.oppLogo+'" alt="'+f.oppAbbr+'" onerror="this.style.display=\'none\'">':'';
+const phiSide='<div class="team-side"><div class="team-abv">PHI</div>'+phiImg+scoreHtml(f.phiScore,phiWins,upcoming,true)+(f.phiRecord?'<div class="team-record">'+f.phiRecord+'</div>':'')+'</div>';
+    const oppSide='<div class="team-side"><div class="team-abv">'+f.oppAbbr+'</div>'+oppImg+scoreHtml(f.oppScore,oppWins,upcoming,false)+(f.oppRecord?'<div class="team-record">'+f.oppRecord+'</div>':'')+'</div>';
     const divider = '<div class="vs-divider"><div class="vs-line"></div><div class="vs-text">VS</div><div class="vs-line"></div></div>';
     const matchup = f.isHome ? oppSide+divider+phiSide : phiSide+divider+oppSide;
     featuredHtml = '<div class="featured-game">'
