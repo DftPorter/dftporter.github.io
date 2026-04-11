@@ -599,9 +599,9 @@
           <th>Run Type</th>
           <th>Runs</th>
           <th>Exfils</th>
+          <th>Exfil %</th>
           <th>Contracts</th>
           <th>PvP Kills</th>
-          <th>Exfil %</th>
           <th>Kills / Run</th>
         </tr>
       </thead>
@@ -778,7 +778,8 @@
       const contracts = num(r['Contracts Completed']);
       const kills     = num(r['PvP Kills']);
       const exfPct    = pct(exfils || 0, runs);
-      const kpr       = runs ? (kills || 0) / runs : null;
+      const kprSheet  = num(r['PvP Kills per Run']);
+      const kpr       = kprSheet !== null ? kprSheet : (runs ? (kills || 0) / runs : null);
       return { r, runs, exfils, contracts, kills, exfPct, kpr };
     });
     const maxOf = key => Math.max(...derived.map(d => d[key] ?? -Infinity));
@@ -811,8 +812,6 @@
         </td>
         ${cell(runs,      'runs')}
         ${cell(exfils,    'exfils')}
-        ${cell(contracts, 'contracts')}
-        ${cell(kills,     'kills')}
         <td class="${isBest('exfPct', exfPct) ? 'best' : exfPct === null ? 'nil' : ''}">
           <div class="rate-cell-wrap">
             <div class="inline-bar">
@@ -821,6 +820,8 @@
             <span>${fmtP(exfPct)}</span>
           </div>
         </td>
+        ${cell(contracts, 'contracts')}
+        ${cell(kills,     'kills')}
         <td class="${isBest('kpr', kpr) ? 'best' : kpr === null ? 'nil' : ''}">${fmtF(kpr)}</td>
       </tr>`;
     }).join('');
