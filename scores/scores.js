@@ -83,9 +83,9 @@ const OPP_LOGO_TTL = 30*24*60*60*1000;
 const oppLogoCache = {};
 (()=>{
   try{
-    // v2: switched to scoreboard/abbr format — clear old cache
+    // v3: fix cache key collision between sports — clear old cache
     const ver = localStorage.getItem('oppLogosVer');
-    if(ver !== '2') { localStorage.removeItem('oppLogos'); localStorage.setItem('oppLogosVer','2'); }
+    if(ver !== '3') { localStorage.removeItem('oppLogos'); localStorage.setItem('oppLogosVer','3'); }
     const stored = JSON.parse(localStorage.getItem('oppLogos')||'{}');
     const now = Date.now();
     Object.entries(stored).forEach(([id,entry])=>{
