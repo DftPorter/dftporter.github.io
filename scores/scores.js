@@ -333,11 +333,19 @@ function openModal(key,data){
   // Reorder modal sides based on home/away
   const teamsEl=document.getElementById('modal-teams');
   const phiSide=document.getElementById('modal-phi-side');
-  const oppSide=document.getElementById('modal-opp-side');
   const divider=document.getElementById('modal-divider');
-  if(teamsEl&&phiSide&&oppSide&&divider){
-    if(f.isHome){ teamsEl.appendChild(phiSide); }
-    else { teamsEl.insertBefore(phiSide,teamsEl.firstChild); }
+  const oppSide=document.getElementById('modal-opp-side');
+  if(teamsEl&&phiSide&&divider&&oppSide){
+    teamsEl.innerHTML='';
+    if(f.isHome){
+      teamsEl.appendChild(oppSide);
+      teamsEl.appendChild(divider);
+      teamsEl.appendChild(phiSide);
+    } else {
+      teamsEl.appendChild(phiSide);
+      teamsEl.appendChild(divider);
+      teamsEl.appendChild(oppSide);
+    }
   }
   updateModalScores(key);
   const modal=document.getElementById('live-modal');
