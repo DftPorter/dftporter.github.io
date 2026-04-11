@@ -793,7 +793,9 @@
     };
     const isBest = (key, val) => val !== null && val === bests[key];
 
-    tbody.innerHTML = derived.map(({ r, runs, exfils, contracts, kills, exfPct, kpr }) => {
+    tbody.innerHTML = derived.filter(({ runs, exfils, contracts, kills, kpr }) =>
+      runs !== null || exfils !== null || contracts !== null || kills !== null || kpr !== null
+    ).map(({ r, runs, exfils, contracts, kills, exfPct, kpr }) => {
       const rt    = (r['Run Type'] || '').trim() || '—';
       const style = badgeStyle(rt);
 
