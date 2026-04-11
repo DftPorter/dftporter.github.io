@@ -763,7 +763,7 @@
       const runsB = num(b['Runs']) || 0;
       const rateA = runsA ? (num(a['Successful Exfils']) || 0) / runsA : -1;
       const rateB = runsB ? (num(b['Successful Exfils']) || 0) / runsB : -1;
-      return rateB - rateA;
+      return (rateB - rateA) || (runsB - runsA);
     });
 
     const tbody = document.getElementById('tableBody');
