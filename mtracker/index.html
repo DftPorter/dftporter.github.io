@@ -3,7 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MARATHON TRACKER // TAU CETI IV OPS LOG</title>
+  <title>DEAD DROP // TAU CETI IV OPS LOG</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#c8f400">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Dead Drop">
+  <link rel="apple-touch-icon" href="images/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -526,7 +532,7 @@
 <body>
 
 <div class="bg-grid"></div>
-<div class="side-label">MARATHON</div>
+<div class="side-label">DEAD DROP</div>
 
 <div class="page">
 
@@ -534,10 +540,10 @@
   <header>
     <div class="header-left">
       <div class="logo-mark">
-        <img src="images/Marathon_Bungie_Icon.webp" alt="Marathon logo">
+        <img src="images/Marathon_Bungie_Icon.webp" alt="Dead Drop logo">
       </div>
       <div class="title-block">
-        <h1 class="glitch">MARATHON <em>TRACKER</em></h1>
+        <h1 class="glitch">DEAD <em>DROP</em></h1>
         <div class="sub">// TAU CETI IV // OPERATIONS LOG // ROOK DIVISION</div>
       </div>
     </div>
@@ -714,7 +720,7 @@
   <!-- ═══════════════ FOOTER ═══════════════ -->
   <footer>
     <div class="footer-l">DATA SOURCE: GOOGLE SHEETS &nbsp;// &nbsp;AUTO-REFRESH: 60S</div>
-    <div class="footer-r">MARATHON TRACKER v2.0 &nbsp;// &nbsp;TAU CETI IV</div>
+    <div class="footer-r">DEAD DROP v2.0 &nbsp;// &nbsp;TAU CETI IV</div>
   </footer>
 
 </div><!-- .page -->
@@ -1054,7 +1060,7 @@
       const rows = parseSheet(raw);
       render(rows);
     } catch (err) {
-      console.error('[Marathon Tracker] fetch failed:', err);
+      console.error('[Dead Drop] fetch failed:', err);
       document.getElementById('alertBanner').classList.add('show');
       document.getElementById('lastUpdated').textContent =
         'FETCH FAILED — ' + new Date().toLocaleTimeString('en-US', { hour12: false });
