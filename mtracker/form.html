@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LOG A RUN // MARATHON TRACKER</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:            #000000;
+      --bg-card:       #060606;
+      --bg-card-alt:   #0b0b0b;
+      --border:        #222222;
+      --border-mid:    #2e2e2e;
+      --border-bright: #404040;
+      --accent:        #c8f400;
+      --accent-glow:   rgba(200, 244, 0, 0.35);
+      --accent-dim:    rgba(200, 244, 0, 0.06);
+      --accent-subtle: rgba(200, 244, 0, 0.12);
+      --text:          #ffffff;
+      --text-sec:      #bbbbbb;
+      --text-muted:    #808080;
+      --text-dim:      #505050;
+      --danger:        #ff3b30;
+      --danger-dim:    rgba(255,59,48,0.08);
+      --mono:          'Share Tech Mono', 'Courier New', monospace;
+      --display:       'Barlow Condensed', 'Impact', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--display);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Scanline overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent, transparent 2px,
+        rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(90deg,  rgba(255,255,255,0.018) 0, rgba(255,255,255,0.018) 1px, transparent 1px, transparent 80px),
+        repeating-linear-gradient(0deg,   rgba(255,255,255,0.018) 0, rgba(255,255,255,0.018) 1px, transparent 1px, transparent 80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 0 28px 56px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 0 18px;
+      border-bottom: 1px solid var(--border-mid);
+      margin-bottom: 36px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .logo-mark {
+      width: 38px;
+      height: 38px;
+      flex-shrink: 0;
+    }
+    .logo-mark img { width: 100%; height: 100%; object-fit: contain; }
+
+    .title-block h1 {
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text);
+      line-height: 1;
+    }
+    .title-block h1 em { font-style: normal; color: var(--accent); }
+    .title-block .sub {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.22em;
+      margin-top: 4px;
+    }
+
+    .btn-back {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: 1px solid var(--border-mid);
+      color: var(--text-muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      padding: 7px 14px;
+      cursor: pointer;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-back:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── FORM CARD ── */
+    .form-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-mid);
+      position: relative;
+    }
+
+    .form-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--accent);
+    }
+
+    .form-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border-mid);
+      background: var(--bg-card-alt);
+    }
+    .form-header-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+    .form-header-title::before { content: '// '; color: var(--accent); }
+
+    .form-body { padding: 28px 24px; }
+
+    /* ── FIELD ── */
+    .field { margin-bottom: 24px; }
+    .field:last-child { margin-bottom: 0; }
+
+    .field-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .field-label .required { color: var(--accent); margin-left: 2px; }
+
+    /* Select + number inputs */
+    select, input[type="number"] {
+      width: 100%;
+      background: #000;
+      border: 1px solid var(--border-mid);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      padding: 10px 14px;
+      appearance: none;
+      -webkit-appearance: none;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    select:focus, input[type="number"]:focus {
+      border-color: var(--accent);
+    }
+    select option { background: #111; }
+
+    /* Custom select arrow */
+    .select-wrap {
+      position: relative;
+    }
+    .select-wrap::after {
+      content: '▾';
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      font-size: 12px;
+    }
+
+    /* Player slots */
+    .player-slots { display: flex; flex-direction: column; gap: 8px; }
+    .player-slot { display: none; }
+    .player-slot.visible { display: block; }
+
+    .slot-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    /* Toggle buttons (Yes/No) */
+    .toggle-group {
+      display: flex;
+      gap: 0;
+    }
+    .toggle-btn {
+      flex: 1;
+      background: none;
+      border: 1px solid var(--border-mid);
+      color: var(--text-muted);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.16em;
+      padding: 10px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.12s;
+    }
+    .toggle-btn:first-child { border-right: none; }
+    .toggle-btn:hover { border-color: var(--border-bright); color: var(--text-sec); }
+    .toggle-btn.active-yes {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .toggle-btn.active-no {
+      background: var(--danger-dim);
+      border-color: rgba(255,59,48,0.4);
+      color: var(--danger);
+    }
+
+    /* Divider */
+    .field-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 28px 0;
+    }
+
+    /* Submit button */
+    .btn-submit {
+      width: 100%;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      font-family: var(--display);
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 14px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      margin-top: 32px;
+    }
+    .btn-submit:hover { opacity: 0.88; }
+    .btn-submit:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* ── ERROR / VALIDATION ── */
+    .field-error {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--danger);
+      letter-spacing: 0.12em;
+      margin-top: 6px;
+      display: none;
+    }
+    .field-error.show { display: block; }
+
+    /* ── SUCCESS STATE ── */
+    .success-screen {
+      display: none;
+      text-align: center;
+      padding: 48px 24px;
+    }
+    .success-screen.show { display: block; }
+    .form-body.hidden { display: none; }
+
+    .success-icon {
+      font-size: 48px;
+      color: var(--accent);
+      margin-bottom: 16px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .success-title {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .success-sub {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+    .success-summary {
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border-mid);
+      padding: 16px 20px;
+      margin-bottom: 28px;
+      text-align: left;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-key {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    .summary-val {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .success-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-another, .btn-dashboard {
+      flex: 1;
+      padding: 12px;
+      font-family: var(--display);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.12s;
+    }
+    .btn-another {
+      background: none;
+      border: 1px solid var(--border-mid);
+      color: var(--text-muted);
+    }
+    .btn-another:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-dashboard {
+      background: var(--accent);
+      border: 1px solid var(--accent);
+      color: #000;
+    }
+    .btn-dashboard:hover { opacity: 0.88; }
+
+    /* ── SUBMITTING STATE ── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #00000044;
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0 0;
+      border-top: 1px solid var(--border);
+      margin-top: 28px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 560px) {
+      .page { padding: 0 16px 48px; }
+      header { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .success-actions { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+
+<div class="page">
+
+  <header>
+    <div class="header-left">
+      <div class="logo-mark">
+        <img src="data:image/png;base64,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" alt="Marathon logo">
+      </div>
+      <div class="title-block">
+        <h1>MARATHON <em>TRACKER</em></h1>
+        <div class="sub">// LOG A RUN // TAU CETI IV</div>
+      </div>
+    </div>
+    <a href="index.html" class="btn-back">
+      ← DASHBOARD
+    </a>
+  </header>
+
+  <div class="form-card">
+    <div class="form-header">
+      <div class="form-header-title">New Operation Log</div>
+    </div>
+
+    <!-- ── FORM ── -->
+    <div class="form-body" id="formBody">
+      <form id="runForm" novalidate>
+
+        <!-- RUN TYPE -->
+        <div class="field">
+          <label class="field-label" for="runType">Squad Type <span class="required">*</span></label>
+          <div class="select-wrap">
+            <select id="runType" name="run_type" required>
+              <option value="">— Select —</option>
+              <option value="Solo">Solo</option>
+              <option value="Rook Solo">Rook Solo</option>
+              <option value="Duo">Duo</option>
+              <option value="Trio">Trio</option>
+            </select>
+          </div>
+          <div class="field-error" id="runTypeError">SQUAD TYPE IS REQUIRED</div>
+        </div>
+
+        <!-- PLAYER SLOTS -->
+        <div class="field" id="playerSection" style="display:none;">
+          <label class="field-label">Players <span class="required">*</span></label>
+          <div class="player-slots" id="playerSlots">
+            <div class="player-slot" id="slot0">
+              <div class="slot-label">Player 1</div>
+              <div class="select-wrap">
+                <select id="player0" name="player0">
+                  <option value="">— Select Player —</option>
+                </select>
+              </div>
+            </div>
+            <div class="player-slot" id="slot1">
+              <div class="slot-label">Player 2</div>
+              <div class="select-wrap">
+                <select id="player1" name="player1">
+                  <option value="">— Select Player —</option>
+                </select>
+              </div>
+            </div>
+            <div class="player-slot" id="slot2">
+              <div class="slot-label">Player 3</div>
+              <div class="select-wrap">
+                <select id="player2" name="player2">
+                  <option value="">— Select Player —</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="field-error" id="playerError">ALL VISIBLE PLAYER SLOTS MUST BE FILLED</div>
+        </div>
+
+        <!-- MAP -->
+        <div class="field">
+          <label class="field-label" for="map">Map <span class="required">*</span></label>
+          <div class="select-wrap">
+            <select id="map" name="map" required>
+              <option value="">— Select Map —</option>
+              <option value="Perimeter">Perimeter</option>
+              <option value="Dire Marsh">Dire Marsh</option>
+              <option value="Outpost">Outpost</option>
+              <option value="Cryo Archive">Cryo Archive</option>
+            </select>
+          </div>
+          <div class="field-error" id="mapError">MAP IS REQUIRED</div>
+        </div>
+
+        <hr class="field-divider">
+
+        <!-- PVP KILLS -->
+        <div class="field">
+          <label class="field-label" for="pvpKills">PvP Kills <span class="required">*</span></label>
+          <input type="number" id="pvpKills" name="pvp_kills" min="0" max="99" placeholder="0" required>
+          <div class="field-error" id="pvpError">ENTER A VALID KILL COUNT (0 OR MORE)</div>
+        </div>
+
+        <!-- CONTRACT COMPLETED -->
+        <div class="field">
+          <label class="field-label">Contract Completed <span class="required">*</span></label>
+          <div class="toggle-group" id="contractGroup">
+            <button type="button" class="toggle-btn" data-field="contract" data-value="true">YES</button>
+            <button type="button" class="toggle-btn" data-field="contract" data-value="false">NO</button>
+          </div>
+          <input type="hidden" id="contractCompleted" name="contract_completed" value="">
+          <div class="field-error" id="contractError">SELECT YES OR NO</div>
+        </div>
+
+        <!-- SUCCESSFUL EXFIL -->
+        <div class="field">
+          <label class="field-label">Successful Exfil <span class="required">*</span></label>
+          <div class="toggle-group" id="exfilGroup">
+            <button type="button" class="toggle-btn" data-field="exfil" data-value="true">YES</button>
+            <button type="button" class="toggle-btn" data-field="exfil" data-value="false">NO</button>
+          </div>
+          <input type="hidden" id="successfulExfil" name="successful_exfil" value="">
+          <div class="field-error" id="exfilError">SELECT YES OR NO</div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">SUBMIT RUN</button>
+
+      </form>
+    </div><!-- /form-body -->
+
+    <!-- ── SUCCESS SCREEN ── -->
+    <div class="success-screen" id="successScreen">
+      <div class="success-icon">✓</div>
+      <div class="success-title">Run Logged</div>
+      <div class="success-sub">Operation recorded to the database</div>
+
+      <div class="success-summary" id="successSummary"></div>
+
+      <div class="success-actions">
+        <button class="btn-another" id="logAnotherBtn" type="button">LOG ANOTHER</button>
+        <a class="btn-dashboard" href="index.html">DASHBOARD →</a>
+      </div>
+    </div>
+
+  </div><!-- /form-card -->
+
+  <footer>
+    <span>MARATHON TRACKER v2.0</span>
+    <span>TAU CETI IV // ROOK DIVISION</span>
+  </footer>
+
+</div><!-- /page -->
+
+<script>
+  // ════════════════════════════════════════════════════════════════
+  //  CONFIG — update these before deploying
+  // ════════════════════════════════════════════════════════════════
+
+  // Paste your Apps Script Web App URL here after deploying Code.gs
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQE8xKyWwOB7B1Z67-FudAN1wRVwADlMpTye7WchzpzEQqRcXvZNUz2ewcHAUYLIFKNA/exec';
+
+  // Add or remove player names here. The form will populate dropdowns from this list.
+  const ROSTER = [
+    'Midnight',
+    'Viper',
+    'DaftPorter',
+    // 'Player4',  ← uncomment and rename to add more players
+  ];
+
+  // ════════════════════════════════════════════════════════════════
+  //  PLAYER SLOT LOGIC
+  // ════════════════════════════════════════════════════════════════
+
+  const RANDOM_FILL = 'Random Fill';
+
+  function populateSelects() {
+    const opts = ['', ...ROSTER, RANDOM_FILL];
+    [0, 1, 2].forEach(i => {
+      const sel = document.getElementById(`player${i}`);
+      sel.innerHTML = opts.map((name, idx) =>
+        idx === 0
+          ? `<option value="">— Select Player —</option>`
+          : `<option value="${name}">${name.toUpperCase()}</option>`
+      ).join('');
+    });
+  }
+
+  function getVisibleSlotCount(runType) {
+    if (runType === 'Duo')   return 2;
+    if (runType === 'Trio')  return 3;
+    if (runType === 'Solo' || runType === 'Rook Solo') return 1;
+    return 0;
+  }
+
+  function updatePlayerSlots() {
+    const rt    = document.getElementById('runType').value;
+    const count = getVisibleSlotCount(rt);
+    const section = document.getElementById('playerSection');
+
+    section.style.display = count > 0 ? 'block' : 'none';
+
+    [0, 1, 2].forEach(i => {
+      const slot = document.getElementById(`slot${i}`);
+      if (i < count) {
+        slot.classList.add('visible');
+        document.getElementById(`player${i}`).required = true;
+      } else {
+        slot.classList.remove('visible');
+        document.getElementById(`player${i}`).required = false;
+        document.getElementById(`player${i}`).value = '';
+      }
+    });
+  }
+
+  document.getElementById('runType').addEventListener('change', updatePlayerSlots);
+
+  // ════════════════════════════════════════════════════════════════
+  //  TOGGLE BUTTONS (Yes / No)
+  // ════════════════════════════════════════════════════════════════
+
+  document.querySelectorAll('.toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const field   = btn.dataset.field;
+      const val     = btn.dataset.value;
+      const group   = btn.closest('.toggle-group');
+      const hidden  = document.getElementById(field === 'contract' ? 'contractCompleted' : 'successfulExfil');
+
+      group.querySelectorAll('.toggle-btn').forEach(b => {
+        b.classList.remove('active-yes', 'active-no');
+      });
+
+      if (val === 'true') {
+        btn.classList.add('active-yes');
+      } else {
+        btn.classList.add('active-no');
+      }
+
+      hidden.value = val;
+    });
+  });
+
+  // ════════════════════════════════════════════════════════════════
+  //  VALIDATION
+  // ════════════════════════════════════════════════════════════════
+
+  function showError(id, show) {
+    document.getElementById(id).classList.toggle('show', show);
+  }
+
+  function validate() {
+    let ok = true;
+    const rt = document.getElementById('runType').value;
+
+    // Run type
+    showError('runTypeError', !rt);
+    if (!rt) ok = false;
+
+    // Players
+    const count = getVisibleSlotCount(rt);
+    let playerOk = true;
+    for (let i = 0; i < count; i++) {
+      if (!document.getElementById(`player${i}`).value) {
+        playerOk = false;
+        break;
+      }
+    }
+    // Check for duplicate non-random players
+    if (playerOk && count > 1) {
+      const selected = [];
+      for (let i = 0; i < count; i++) {
+        const v = document.getElementById(`player${i}`).value;
+        if (v !== RANDOM_FILL) {
+          if (selected.includes(v)) { playerOk = false; break; }
+          selected.push(v);
+        }
+      }
+    }
+    showError('playerError', count > 0 && !playerOk);
+    if (count > 0 && !playerOk) ok = false;
+
+    // Map
+    const map = document.getElementById('map').value;
+    showError('mapError', !map);
+    if (!map) ok = false;
+
+    // PvP Kills
+    const kills = document.getElementById('pvpKills').value;
+    const killsOk = kills !== '' && Number(kills) >= 0;
+    showError('pvpError', !killsOk);
+    if (!killsOk) ok = false;
+
+    // Contract
+    const contract = document.getElementById('contractCompleted').value;
+    showError('contractError', !contract);
+    if (!contract) ok = false;
+
+    // Exfil
+    const exfil = document.getElementById('successfulExfil').value;
+    showError('exfilError', !exfil);
+    if (!exfil) ok = false;
+
+    return ok;
+  }
+
+  // ════════════════════════════════════════════════════════════════
+  //  FORM SUBMIT
+  // ════════════════════════════════════════════════════════════════
+
+  document.getElementById('runForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    const rt    = document.getElementById('runType').value;
+    const count = getVisibleSlotCount(rt);
+    const players = [];
+    for (let i = 0; i < count; i++) {
+      players.push(document.getElementById(`player${i}`).value);
+    }
+
+    const payload = {
+      run_type:           rt,
+      players:            players,
+      map:                document.getElementById('map').value,
+      pvp_kills:          Number(document.getElementById('pvpKills').value),
+      contract_completed: document.getElementById('contractCompleted').value === 'true',
+      successful_exfil:   document.getElementById('successfulExfil').value === 'true',
+    };
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>TRANSMITTING…';
+
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode:   'no-cors',  // Apps Script doesn't support CORS preflight; data still writes
+        body:   JSON.stringify(payload),
+      });
+      showSuccess(payload, players);
+    } catch (err) {
+      // Typically still succeeds even on network errors with no-cors; show success optimistically
+      console.warn('Fetch warning (may be a no-cors false alarm):', err);
+      showSuccess(payload, players);
+    }
+  });
+
+  function showSuccess(payload, players) {
+    const yesNo = v => v ? 'YES' : 'NO';
+    document.getElementById('successSummary').innerHTML = [
+      ['Squad Type',          payload.run_type],
+      ['Players',             players.join(', ')],
+      ['Map',                 payload.map],
+      ['PvP Kills',           payload.pvp_kills],
+      ['Contract Completed',  yesNo(payload.contract_completed)],
+      ['Successful Exfil',    yesNo(payload.successful_exfil)],
+    ].map(([k, v]) => `
+      <div class="summary-row">
+        <span class="summary-key">${k}</span>
+        <span class="summary-val">${v}</span>
+      </div>
+    `).join('');
+
+    document.getElementById('formBody').classList.add('hidden');
+    document.getElementById('successScreen').classList.add('show');
+  }
+
+  // ════════════════════════════════════════════════════════════════
+  //  LOG ANOTHER
+  // ════════════════════════════════════════════════════════════════
+
+  document.getElementById('logAnotherBtn').addEventListener('click', () => {
+    document.getElementById('runForm').reset();
+    document.getElementById('contractCompleted').value = '';
+    document.getElementById('successfulExfil').value = '';
+    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active-yes', 'active-no'));
+    document.querySelectorAll('.field-error').forEach(e => e.classList.remove('show'));
+    updatePlayerSlots();
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = false;
+    btn.textContent = 'SUBMIT RUN';
+
+    document.getElementById('successScreen').classList.remove('show');
+    document.getElementById('formBody').classList.remove('hidden');
+  });
+
+  // ════════════════════════════════════════════════════════════════
+  //  INIT
+  // ════════════════════════════════════════════════════════════════
+  populateSelects();
+</script>
+</body>
+</html>

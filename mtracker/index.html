@@ -30,7 +30,6 @@
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     html { scroll-behavior: smooth; }
 
     body {
@@ -48,10 +47,8 @@
       inset: 0;
       background: repeating-linear-gradient(
         0deg,
-        transparent,
-        transparent 2px,
-        rgba(0, 0, 0, 0.12) 2px,
-        rgba(0, 0, 0, 0.12) 4px
+        transparent, transparent 2px,
+        rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px
       );
       pointer-events: none;
       z-index: 9999;
@@ -93,14 +90,13 @@
       gap: 18px;
     }
 
-    /* Crosshair logo */
     .logo-mark {
       width: 44px;
       height: 44px;
       flex-shrink: 0;
       position: relative;
     }
-    .logo-mark svg { width: 100%; height: 100%; }
+    .logo-mark img { width: 100%; height: 100%; object-fit: contain; }
 
     .title-block h1 {
       font-size: 32px;
@@ -110,10 +106,7 @@
       color: var(--text);
       line-height: 1;
     }
-    .title-block h1 em {
-      font-style: normal;
-      color: var(--accent);
-    }
+    .title-block h1 em { font-style: normal; color: var(--accent); }
     .title-block .sub {
       font-family: var(--mono);
       font-size: 11px;
@@ -151,6 +144,25 @@
       0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--accent-glow); }
       50%       { opacity: 0.3; box-shadow: none; }
     }
+
+    .btn-log {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent);
+      border: 1px solid var(--accent);
+      color: #000;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 0.14em;
+      padding: 7px 14px;
+      cursor: pointer;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .btn-log:hover { opacity: 0.85; }
 
     .btn-refresh {
       display: flex;
@@ -206,7 +218,6 @@
     }
     .card:last-child { border-right: none; }
 
-    /* top accent strip */
     .card::before {
       content: '';
       position: absolute;
@@ -217,7 +228,6 @@
     }
     .card.primary::before { background: var(--accent); }
 
-    /* bottom-right corner bracket */
     .card::after {
       content: '';
       position: absolute;
@@ -235,7 +245,6 @@
       text-transform: uppercase;
       margin-bottom: 12px;
     }
-
     .card-value {
       font-size: 64px;
       font-weight: 900;
@@ -243,7 +252,6 @@
       letter-spacing: -0.02em;
       color: var(--text);
       font-family: var(--display);
-      transition: color 0.3s;
     }
     .card.primary .card-value { color: var(--accent); }
 
@@ -316,10 +324,7 @@
       text-transform: uppercase;
       color: var(--text);
     }
-    .section-head-title::before {
-      content: '// ';
-      color: var(--accent);
-    }
+    .section-head-title::before { content: '// '; color: var(--accent); }
     .section-meta {
       font-family: var(--mono);
       font-size: 11px;
@@ -330,18 +335,15 @@
     .table-wrap {
       border: 1px solid var(--border-mid);
       overflow-x: auto;
+      margin-bottom: 32px;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
+    table { width: 100%; border-collapse: collapse; }
 
     thead tr {
       background: var(--bg-card-alt);
       border-bottom: 1px solid var(--border-mid);
     }
-
     th {
       font-family: var(--mono);
       font-size: 11px;
@@ -380,51 +382,53 @@
     }
     td.nil { color: var(--text-dim); }
 
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .badge-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .badge-dot { box-shadow: none; }
+    .badge { display: inline-flex; align-items: center; gap: 8px; }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 
-    /* inline bar in exfil rate column */
     .rate-cell-wrap {
       display: flex;
       align-items: center;
       justify-content: flex-end;
       gap: 10px;
     }
-    .inline-bar {
-      width: 52px;
-      height: 3px;
-      background: var(--border);
-      flex-shrink: 0;
-    }
-    .inline-bar-fill {
-      height: 100%;
-      background: var(--accent);
-      transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
-    }
+    .inline-bar { width: 52px; height: 3px; background: var(--border); flex-shrink: 0; }
+    .inline-bar-fill { height: 100%; background: var(--accent); transition: width 1.2s cubic-bezier(0.4,0,0.2,1); }
 
-    /* best-in-column highlight */
-    td.best {
-      color: var(--accent) !important;
-      font-weight: 700;
-    }
+    td.best { color: var(--accent) !important; font-weight: 700; }
     td.best .rate-cell-wrap span { color: var(--accent); }
-
-    /* worst-in-column highlight */
-    td.worst {
-      color: #ff3b30 !important;
-    }
+    td.worst { color: #ff3b30 !important; }
     td.worst .rate-cell-wrap span { color: #ff3b30; }
     td.worst .inline-bar-fill { background: #ff3b30; }
+
+    /* ── RECENT RUNS TABLE ── */
+    .recent-timestamp {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: normal;
+      text-transform: none;
+      letter-spacing: 0.05em;
+    }
+    .pill-yes {
+      display: inline-block;
+      padding: 2px 8px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(200,244,0,0.2);
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+    }
+    .pill-no {
+      display: inline-block;
+      padding: 2px 8px;
+      background: var(--danger-dim);
+      border: 1px solid rgba(255,59,48,0.2);
+      color: var(--danger);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+    }
 
     /* ── FOOTER ── */
     footer {
@@ -433,7 +437,7 @@
       justify-content: space-between;
       padding: 14px 0 0;
       border-top: 1px solid var(--border);
-      margin-top: 28px;
+      margin-top: 4px;
     }
     .footer-l, .footer-r {
       font-family: var(--mono);
@@ -461,7 +465,7 @@
       white-space: nowrap;
     }
 
-    /* ── LOADING STATE ── */
+    /* ── LOADING / SKELETON ── */
     .skeleton {
       display: inline-block;
       background: linear-gradient(90deg, var(--border) 25%, var(--border-mid) 50%, var(--border) 75%);
@@ -491,6 +495,10 @@
       .card { border-bottom: 1px solid var(--border-mid); }
       .rate { border-bottom: 1px solid var(--border-mid); }
       .card-value { font-size: 48px; }
+      .header-right { gap: 8px; }
+    }
+    @media (max-width: 700px) {
+      .btn-log span { display: none; }
     }
     @media (max-width: 560px) {
       .page { padding: 0 16px 48px; }
@@ -510,7 +518,7 @@
   <header>
     <div class="header-left">
       <div class="logo-mark">
-        <img src="data:image/png;base64,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" alt="Marathon logo" style="width:100%;height:100%;object-fit:contain;">
+        <img src="data:image/png;base64,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" alt="Marathon logo">
       </div>
       <div class="title-block">
         <h1 class="glitch">MARATHON <em>TRACKER</em></h1>
@@ -522,6 +530,9 @@
         <div class="live-dot"></div>
         LIVE DATA
       </div>
+      <a href="form.html" class="btn-log">
+        + <span>LOG A RUN</span>
+      </a>
       <button class="btn-refresh" id="refreshBtn" onclick="loadData()">
         <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
           <path d="M10 5.5A4.5 4.5 0 1 1 5.5 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -544,35 +555,30 @@
 
   <!-- ═══════════════ STAT CARDS ═══════════════ -->
   <div class="cards">
-
     <div class="card primary">
       <div class="card-label">Total Runs</div>
       <div class="card-value" id="totalRuns">—</div>
       <div class="card-sub">Lifetime operations</div>
     </div>
-
     <div class="card">
       <div class="card-label">Successful Exfils</div>
       <div class="card-value" id="totalExfils">—</div>
       <div class="card-sub" id="exfilSub">—% exfil rate</div>
       <div class="card-bar"><div class="card-bar-fill" id="exfilBarFill"></div></div>
     </div>
-
     <div class="card">
       <div class="card-label">Contracts Completed</div>
       <div class="card-value" id="totalContracts">—</div>
       <div class="card-sub" id="contractSub">—% completion rate</div>
       <div class="card-bar"><div class="card-bar-fill" id="contractBarFill"></div></div>
     </div>
-
     <div class="card">
       <div class="card-label">PvP Kills</div>
       <div class="card-value" id="totalKills">—</div>
       <div class="card-sub" id="killsSub">— kills / run</div>
       <div class="card-bar"><div class="card-bar-fill" id="killsBarFill"></div></div>
     </div>
-
-  </div><!-- .cards -->
+  </div>
 
   <!-- ═══════════════ RATES STRIP ═══════════════ -->
   <div class="rates">
@@ -589,21 +595,21 @@
       <span class="rate-value" id="kprRate">—</span>
     </div>
     <div class="rate">
-      <span class="rate-label">Active Run Types</span>
+      <span class="rate-label">Squad Types</span>
       <span class="rate-value" id="activeTypes">—</span>
     </div>
   </div>
 
-  <!-- ═══════════════ BREAKDOWN TABLE ═══════════════ -->
+  <!-- ═══════════════ SQUAD TYPE BREAKDOWN ═══════════════ -->
   <div class="section-head">
-    <span class="section-head-title">Operation Breakdown</span>
+    <span class="section-head-title">Squad Type Breakdown</span>
     <span class="section-meta" id="lastUpdated">LOADING…</span>
   </div>
   <div class="table-wrap">
     <table>
       <thead>
         <tr>
-          <th>Run Type</th>
+          <th>Squad Type</th>
           <th>Runs</th>
           <th>Exfils</th>
           <th>Exfil %</th>
@@ -612,25 +618,63 @@
           <th>Kills / Run</th>
         </tr>
       </thead>
-      <tbody id="tableBody">
-        <!-- skeleton rows while loading -->
+      <tbody id="typeTableBody">
+        <tr><td colspan="7" style="text-align:center;padding:32px;font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:0.2em;">LOADING OPERATIONS DATA…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════ MAP BREAKDOWN ═══════════════ -->
+  <div class="section-head">
+    <span class="section-head-title">Map Breakdown</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
         <tr>
-          <td colspan="7" style="text-align:center;padding:32px;font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:0.2em;">
-            LOADING OPERATIONS DATA…
-          </td>
+          <th>Map</th>
+          <th>Runs</th>
+          <th>Exfils</th>
+          <th>Exfil %</th>
+          <th>Contracts</th>
+          <th>PvP Kills</th>
+          <th>Kills / Run</th>
         </tr>
+      </thead>
+      <tbody id="mapTableBody">
+        <tr><td colspan="7" style="text-align:center;padding:32px;font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:0.2em;">LOADING OPERATIONS DATA…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════ RECENT RUNS ═══════════════ -->
+  <div class="section-head">
+    <span class="section-head-title">Recent Operations</span>
+    <span class="section-meta">LAST 15 RUNS</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Date / Time</th>
+          <th>Squad Type</th>
+          <th>Players</th>
+          <th>Map</th>
+          <th>Kills</th>
+          <th>Contract</th>
+          <th>Exfil</th>
+        </tr>
+      </thead>
+      <tbody id="recentTableBody">
+        <tr><td colspan="7" style="text-align:center;padding:32px;font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:0.2em;">LOADING OPERATIONS DATA…</td></tr>
       </tbody>
     </table>
   </div>
 
   <!-- ═══════════════ FOOTER ═══════════════ -->
   <footer>
-    <div class="footer-l">
-      DATA SOURCE: GOOGLE SHEETS &nbsp;// &nbsp;AUTO-REFRESH: 60S
-    </div>
-    <div class="footer-r">
-      MARATHON TRACKER v1.0 &nbsp;// &nbsp;TAU CETI IV
-    </div>
+    <div class="footer-l">DATA SOURCE: GOOGLE SHEETS &nbsp;// &nbsp;AUTO-REFRESH: 60S</div>
+    <div class="footer-r">MARATHON TRACKER v2.0 &nbsp;// &nbsp;TAU CETI IV</div>
   </footer>
 
 </div><!-- .page -->
@@ -640,17 +684,15 @@
 ═══════════════════════════════════════════ -->
 <script>
   const SHEET_ID = '13aaNxGAUPJ0eKmTBhuDjuqesVhNfl54TSSgdqWSIKpc';
+  const LOG_TAB  = 'Log';
 
-  /* ── Fetch via JSONP (no CORS issues) ── */
+  /* ── Fetch via JSONP targeting the Log tab ── */
   function fetchSheet() {
     return new Promise((resolve, reject) => {
       const cb = '_gviz_' + Date.now();
       const s  = document.createElement('script');
 
-      const timer = setTimeout(() => {
-        cleanup();
-        reject(new Error('timeout'));
-      }, 12000);
+      const timer = setTimeout(() => { cleanup(); reject(new Error('timeout')); }, 12000);
 
       function cleanup() {
         clearTimeout(timer);
@@ -658,13 +700,9 @@
         if (s.parentNode) s.parentNode.removeChild(s);
       }
 
-      window[cb] = function(data) {
-        cleanup();
-        resolve(data);
-      };
-
-      s.onerror = () => { cleanup(); reject(new Error('script error')); };
-      s.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${cb}`;
+      window[cb] = function(data) { cleanup(); resolve(data); };
+      s.onerror  = () => { cleanup(); reject(new Error('script error')); };
+      s.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${cb}&sheet=${encodeURIComponent(LOG_TAB)}`;
       document.head.appendChild(s);
     });
   }
@@ -675,7 +713,7 @@
     return (data.table.rows || []).map(row => {
       const obj = {};
       (row.c || []).forEach((cell, i) => {
-        obj[cols[i]] = cell && cell.v !== null && cell.v !== undefined ? cell.v : null;
+        obj[cols[i]] = (cell && cell.v !== null && cell.v !== undefined) ? cell.v : null;
       });
       return obj;
     });
@@ -684,172 +722,221 @@
   /* ── Helpers ── */
   const num  = v  => (v !== null && v !== undefined ? Number(v) : null);
   const pct  = (n, d) => d ? (n / d) * 100 : null;
-  const fmt0 = v  => v !== null ? Math.round(v).toString() : '—';
   const fmtP = v  => v !== null ? v.toFixed(1) + '%' : '—';
   const fmtF = v  => v !== null ? v.toFixed(2) : '—';
 
-  /* Animate a number element counting up */
   function countUp(el, target) {
-    if (target === null) { el.textContent = '—'; return; }
+    if (target === null || target === 0) { el.textContent = target === 0 ? '0' : '—'; return; }
     const duration = 900;
     const t0 = performance.now();
     (function step(now) {
-      const p = Math.min((now - t0) / duration, 1);
+      const p    = Math.min((now - t0) / duration, 1);
       const ease = 1 - Math.pow(1 - p, 3);
       el.textContent = Math.round(target * ease);
       if (p < 1) requestAnimationFrame(step);
     })(t0);
   }
 
-  /* Run-type badge — auto-assigns a colour from the palette to any new type */
+  /* Run-type / map badge colour palette */
   const TYPE_PALETTE = [
-    { dot: '#c8f400', name: '#c8f400' },  // lime (accent)
-    { dot: '#ffffff', name: '#ffffff' },  // white
-    { dot: '#5ac8fa', name: '#5ac8fa' },  // sky blue
-    { dot: '#ff9f0a', name: '#ff9f0a' },  // amber
-    { dot: '#ff6b6b', name: '#ff6b6b' },  // coral
-    { dot: '#bf5af2', name: '#bf5af2' },  // purple
-    { dot: '#30d158', name: '#30d158' },  // green
-    { dot: '#ff375f', name: '#ff375f' },  // red
-    { dot: '#64d2ff', name: '#64d2ff' },  // cyan
-    { dot: '#ffd60a', name: '#ffd60a' },  // yellow
+    '#c8f400', '#ffffff', '#5ac8fa', '#ff9f0a',
+    '#ff6b6b', '#bf5af2', '#30d158', '#ff375f', '#64d2ff', '#ffd60a',
   ];
-  const _typeColorCache = {};
-
-  function badgeStyle(rt) {
-    const key = (rt || '').toLowerCase().trim();
-    if (!_typeColorCache[key]) {
-      const idx = Object.keys(_typeColorCache).length % TYPE_PALETTE.length;
-      _typeColorCache[key] = TYPE_PALETTE[idx];
+  const _colorCache = {};
+  function badgeColor(label) {
+    const key = (label || '').toLowerCase().trim();
+    if (!_colorCache[key]) {
+      const idx = Object.keys(_colorCache).length % TYPE_PALETTE.length;
+      _colorCache[key] = TYPE_PALETTE[idx];
     }
-    return _typeColorCache[key];
+    return _colorCache[key];
   }
 
-  /* ── Render dashboard ── */
-  function render(rows) {
-    /* Aggregate */
-    let totRuns = 0, totExfils = 0, totContracts = 0, totKills = 0, activeTypes = 0;
+  /* ── Aggregate raw log rows ── */
+  function aggregate(rows) {
+    const byType = {};
+    const byMap  = {};
+
     rows.forEach(r => {
-      totRuns      += num(r['Runs'])                  || 0;
-      totExfils    += num(r['Successful Exfils'])     || 0;
-      totContracts += num(r['Contracts Completed'])   || 0;
-      totKills     += num(r['PvP Kills'])             || 0;
-      if ((num(r['Runs']) || 0) > 0) activeTypes++;
+      const rt       = (r['Run Type'] || 'Unknown').trim();
+      const map      = (r['Map']      || 'Unknown').trim();
+      const kills    = Number(r['PvP Kills']) || 0;
+      const exfil    = r['Successful Exfil']    === true;
+      const contract = r['Contract Completed']  === true;
+
+      if (!byType[rt])  byType[rt]  = { runs: 0, exfils: 0, contracts: 0, kills: 0 };
+      if (!byMap[map])  byMap[map]  = { runs: 0, exfils: 0, contracts: 0, kills: 0 };
+
+      [byType[rt], byMap[map]].forEach(bucket => {
+        bucket.runs++;
+        if (exfil)    bucket.exfils++;
+        if (contract) bucket.contracts++;
+        bucket.kills += kills;
+      });
     });
 
-    const exfilRate    = pct(totExfils, totRuns);
+    const toRows = obj => Object.entries(obj).map(([label, d]) => ({
+      label,
+      runs:      d.runs,
+      exfils:    d.exfils,
+      contracts: d.contracts,
+      kills:     d.kills,
+      exfPct:    d.runs ? (d.exfils    / d.runs) * 100 : null,
+      kpr:       d.runs ? (d.kills     / d.runs)       : null,
+    }));
+
+    return { byType: toRows(byType), byMap: toRows(byMap) };
+  }
+
+  /* ── Build a breakdown table (shared for type + map) ── */
+  function buildBreakdownTable(tbodyId, aggRows) {
+    const tbody = document.getElementById(tbodyId);
+
+    if (!aggRows.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:0.2em;">NO OPERATIONS DATA FOUND</td></tr>`;
+      return;
+    }
+
+    const sorted = [...aggRows].sort((a, b) =>
+      (b.exfPct ?? -1) - (a.exfPct ?? -1) || b.runs - a.runs
+    );
+
+    const maxOf = key => Math.max(...sorted.map(d => d[key] ?? -Infinity));
+    const minOf = key => Math.min(...sorted.filter(d => d[key] !== null).map(d => d[key]));
+    const bests  = { runs: maxOf('runs'), exfils: maxOf('exfils'), contracts: maxOf('contracts'), kills: maxOf('kills'), exfPct: maxOf('exfPct'), kpr: maxOf('kpr') };
+    const worsts = { runs: minOf('runs'), exfils: minOf('exfils'), contracts: minOf('contracts'), kills: minOf('kills'), exfPct: minOf('exfPct'), kpr: minOf('kpr') };
+    const isBest  = (k, v) => v !== null && sorted.length > 1 && v === bests[k];
+    const isWorst = (k, v) => v !== null && sorted.length > 1 && v === worsts[k] && !isBest(k, v);
+
+    const cell = (v, key, decimals) => {
+      if (v === null) return `<td class="nil">—</td>`;
+      const cls = isBest(key, v) ? 'best' : isWorst(key, v) ? 'worst' : '';
+      return `<td class="${cls}">${decimals !== undefined ? v.toFixed(decimals) : Math.round(v)}</td>`;
+    };
+
+    tbody.innerHTML = sorted.map(d => {
+      const color = badgeColor(d.label);
+      const exfCls = isBest('exfPct', d.exfPct) ? 'best' : isWorst('exfPct', d.exfPct) ? 'worst' : d.exfPct === null ? 'nil' : '';
+      const kprCls = isBest('kpr', d.kpr) ? 'best' : isWorst('kpr', d.kpr) ? 'worst' : d.kpr === null ? 'nil' : '';
+      return `<tr>
+        <td>
+          <span class="badge">
+            <span class="badge-dot" style="background:${color};box-shadow:0 0 6px ${color}55"></span>
+            <span style="color:${color}">${d.label.toUpperCase()}</span>
+          </span>
+        </td>
+        ${cell(d.runs,      'runs')}
+        ${cell(d.exfils,    'exfils')}
+        <td class="${exfCls}">
+          <div class="rate-cell-wrap">
+            <div class="inline-bar"><div class="inline-bar-fill" style="width:${d.exfPct !== null ? Math.min(d.exfPct, 100) : 0}%"></div></div>
+            <span>${fmtP(d.exfPct)}</span>
+          </div>
+        </td>
+        ${cell(d.contracts, 'contracts')}
+        ${cell(d.kills,     'kills')}
+        <td class="${kprCls}">${fmtF(d.kpr)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  /* ── Build recent runs table ── */
+  function buildRecentTable(rows) {
+    const tbody = document.getElementById('recentTableBody');
+    const recent = [...rows].reverse().slice(0, 15);
+
+    if (!recent.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:0.2em;">NO OPERATIONS DATA FOUND</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = recent.map(r => {
+      const rt      = (r['Run Type'] || '—').trim();
+      const players = (r['Players']  || '—').toString().trim();
+      const map     = (r['Map']      || '—').trim();
+      const kills   = r['PvP Kills'] !== null ? Math.round(Number(r['PvP Kills'])) : '—';
+      const contract = r['Contract Completed'] === true;
+      const exfil    = r['Successful Exfil']   === true;
+      const color    = badgeColor(rt);
+
+      // gviz returns dates as Date objects with a string representation
+      let ts = '—';
+      if (r['Timestamp']) {
+        try {
+          const d = new Date(r['Timestamp']);
+          if (!isNaN(d)) {
+            ts = d.toLocaleDateString('en-CA') + ' ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+          }
+        } catch(e) { ts = String(r['Timestamp']).slice(0, 16); }
+      }
+
+      return `<tr>
+        <td><span class="recent-timestamp">${ts}</span></td>
+        <td>
+          <span class="badge">
+            <span class="badge-dot" style="background:${color};box-shadow:0 0 6px ${color}55"></span>
+            <span style="color:${color}">${rt.toUpperCase()}</span>
+          </span>
+        </td>
+        <td style="font-family:var(--mono);font-size:12px;text-align:left;color:var(--text-sec);text-transform:none;letter-spacing:0.04em;">${players}</td>
+        <td style="text-align:right;">${map.toUpperCase()}</td>
+        <td style="text-align:right;">${kills}</td>
+        <td style="text-align:right;"><span class="${contract ? 'pill-yes' : 'pill-no'}">${contract ? 'YES' : 'NO'}</span></td>
+        <td style="text-align:right;"><span class="${exfil ? 'pill-yes' : 'pill-no'}">${exfil ? 'YES' : 'NO'}</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  /* ── Render full dashboard ── */
+  function render(rows) {
+    // Filter out empty rows
+    const validRows = rows.filter(r => r['Run Type']);
+
+    // Totals
+    let totRuns = 0, totExfils = 0, totContracts = 0, totKills = 0;
+    validRows.forEach(r => {
+      totRuns++;
+      if (r['Successful Exfil']   === true) totExfils++;
+      if (r['Contract Completed'] === true) totContracts++;
+      totKills += Number(r['PvP Kills']) || 0;
+    });
+
+    const exfilRate    = pct(totExfils,    totRuns);
     const contractRate = pct(totContracts, totRuns);
     const kpr          = totRuns ? totKills / totRuns : null;
 
-    /* Top cards */
+    /* Stat cards */
     countUp(document.getElementById('totalRuns'),      totRuns      || null);
     countUp(document.getElementById('totalExfils'),    totExfils    || null);
     countUp(document.getElementById('totalContracts'), totContracts || null);
     countUp(document.getElementById('totalKills'),     totKills     || null);
 
-    document.getElementById('exfilSub').textContent    = exfilRate    !== null ? `${exfilRate.toFixed(0)}% exfil rate`       : '—% exfil rate';
+    document.getElementById('exfilSub').textContent    = exfilRate    !== null ? `${exfilRate.toFixed(0)}% exfil rate`        : '—% exfil rate';
     document.getElementById('contractSub').textContent = contractRate !== null ? `${contractRate.toFixed(0)}% completion rate` : '—% completion rate';
-    document.getElementById('killsSub').textContent    = kpr          !== null ? `${kpr.toFixed(2)} kills per run`            : '— kills per run';
+    document.getElementById('killsSub').textContent    = kpr          !== null ? `${kpr.toFixed(2)} kills per run`             : '— kills per run';
 
-    /* Bars (with small delay so transition fires) */
     setTimeout(() => {
       document.getElementById('exfilBarFill').style.width    = exfilRate    !== null ? `${Math.min(exfilRate,    100)}%` : '0%';
       document.getElementById('contractBarFill').style.width = contractRate !== null ? `${Math.min(contractRate, 100)}%` : '0%';
       document.getElementById('killsBarFill').style.width    = kpr          !== null ? `${Math.min(kpr * 20, 100)}%`    : '0%';
     }, 150);
 
-    /* Rate strip */
+    /* Rates strip */
+    const { byType, byMap } = aggregate(validRows);
     document.getElementById('exfilRate').textContent    = fmtP(exfilRate);
     document.getElementById('contractRate').textContent = fmtP(contractRate);
     document.getElementById('kprRate').textContent      = fmtF(kpr);
-    document.getElementById('activeTypes').textContent  = activeTypes || '—';
+    document.getElementById('activeTypes').textContent  = byType.length || '—';
 
-    /* Table */
-    const sorted = [...rows].sort((a, b) => {
-      const runsA = num(a['Runs']) || 0;
-      const runsB = num(b['Runs']) || 0;
-      const rateA = runsA ? (num(a['Successful Exfils']) || 0) / runsA : -1;
-      const rateB = runsB ? (num(b['Successful Exfils']) || 0) / runsB : -1;
-      return (rateB - rateA) || (runsB - runsA);
-    });
-
-    const tbody = document.getElementById('tableBody');
-    if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:0.2em;">NO OPERATIONS DATA FOUND</td></tr>`;
-      return;
-    }
-    /* compute per-column bests */
-    const derived = sorted.map(r => {
-      const runs      = num(r['Runs']);
-      const exfils    = num(r['Successful Exfils']);
-      const contracts = num(r['Contracts Completed']);
-      const kills     = num(r['PvP Kills']);
-      const exfPct    = pct(exfils || 0, runs);
-      const kprSheet  = num(r['PvP Kills per Run']);
-      const kpr       = kprSheet !== null ? kprSheet : (runs ? (kills || 0) / runs : null);
-      return { r, runs, exfils, contracts, kills, exfPct, kpr };
-    });
-    const maxOf = key => Math.max(...derived.map(d => d[key] ?? -Infinity));
-    const minOf = key => Math.min(...derived.filter(d => d[key] !== null && d[key] !== undefined).map(d => d[key]));
-    const bests = {
-      runs:      maxOf('runs'),
-      exfils:    maxOf('exfils'),
-      contracts: maxOf('contracts'),
-      kills:     maxOf('kills'),
-      exfPct:    maxOf('exfPct'),
-      kpr:       maxOf('kpr'),
-    };
-    const worsts = {
-      runs:      minOf('runs'),
-      exfils:    minOf('exfils'),
-      contracts: minOf('contracts'),
-      kills:     minOf('kills'),
-      exfPct:    minOf('exfPct'),
-      kpr:       minOf('kpr'),
-    };
-    const isBest  = (key, val) => val !== null && val === bests[key];
-    const isWorst = (key, val) => val !== null && val === worsts[key] && !isBest(key, val);
-
-    tbody.innerHTML = derived.filter(({ runs, exfils, contracts, kills, kpr }) =>
-      runs !== null || exfils !== null || contracts !== null || kills !== null || kpr !== null
-    ).map(({ r, runs, exfils, contracts, kills, exfPct, kpr }) => {
-      const rt    = (r['Run Type'] || '').trim() || '—';
-      const style = badgeStyle(rt);
-
-      const cell = (v, key, decimals) => {
-        if (v === null) return `<td class="nil">—</td>`;
-        const cls = isBest(key, v) ? 'best' : isWorst(key, v) ? 'worst' : '';
-        return `<td class="${cls}">${decimals !== undefined ? v.toFixed(decimals) : Math.round(v)}</td>`;
-      };
-
-      return `<tr>
-        <td>
-          <span class="badge">
-            <span class="badge-dot" style="background:${style.dot};box-shadow:0 0 6px ${style.dot}55"></span>
-            <span style="color:${style.name}">${rt.toUpperCase()}</span>
-          </span>
-        </td>
-        ${cell(runs,      'runs')}
-        ${cell(exfils,    'exfils')}
-        <td class="${isBest('exfPct', exfPct) ? 'best' : isWorst('exfPct', exfPct) ? 'worst' : exfPct === null ? 'nil' : ''}">
-          <div class="rate-cell-wrap">
-            <div class="inline-bar">
-              <div class="inline-bar-fill" style="width:${exfPct !== null ? Math.min(exfPct, 100) : 0}%"></div>
-            </div>
-            <span>${fmtP(exfPct)}</span>
-          </div>
-        </td>
-        ${cell(contracts, 'contracts')}
-        ${cell(kills,     'kills')}
-        <td class="${isBest('kpr', kpr) ? 'best' : isWorst('kpr', kpr) ? 'worst' : kpr === null ? 'nil' : ''}">${fmtF(kpr)}</td>
-      </tr>`;
-    }).join('');
+    /* Tables */
+    buildBreakdownTable('typeTableBody', byType);
+    buildBreakdownTable('mapTableBody',  byMap);
+    buildRecentTable(validRows);
 
     /* Timestamp */
     const now = new Date();
-    const ts  = now.toLocaleTimeString('en-US', { hour12: false });
-    const ds  = now.toLocaleDateString('en-CA');  /* YYYY-MM-DD */
-    document.getElementById('lastUpdated').textContent = `UPDATED ${ds} ${ts}`;
+    document.getElementById('lastUpdated').textContent =
+      `UPDATED ${now.toLocaleDateString('en-CA')} ${now.toLocaleTimeString('en-US', { hour12: false })}`;
     document.getElementById('alertBanner').classList.remove('show');
   }
 
@@ -864,14 +951,13 @@
     } catch (err) {
       console.error('[Marathon Tracker] fetch failed:', err);
       document.getElementById('alertBanner').classList.add('show');
-      const ts = document.getElementById('lastUpdated');
-      ts.textContent = 'FETCH FAILED — ' + new Date().toLocaleTimeString('en-US', { hour12: false });
+      document.getElementById('lastUpdated').textContent =
+        'FETCH FAILED — ' + new Date().toLocaleTimeString('en-US', { hour12: false });
     } finally {
       btn.classList.remove('loading');
     }
   }
 
-  /* Boot */
   loadData();
   setInterval(loadData, 60_000);
 </script>
