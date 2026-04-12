@@ -419,6 +419,13 @@
     }
     td.best .rate-cell-wrap span { color: var(--accent); }
 
+    /* worst-in-column highlight */
+    td.worst {
+      color: #ff3b30 !important;
+    }
+    td.worst .rate-cell-wrap span { color: #ff3b30; }
+    td.worst .inline-bar-fill { background: #ff3b30; }
+
     /* ── FOOTER ── */
     footer {
       display: flex;
@@ -783,6 +790,7 @@
       return { r, runs, exfils, contracts, kills, exfPct, kpr };
     });
     const maxOf = key => Math.max(...derived.map(d => d[key] ?? -Infinity));
+    const minOf = key => Math.min(...derived.filter(d => d[key] !== null && d[key] !== undefined).map(d => d[key]));
     const bests = {
       runs:      maxOf('runs'),
       exfils:    maxOf('exfils'),
@@ -791,7 +799,16 @@
       exfPct:    maxOf('exfPct'),
       kpr:       maxOf('kpr'),
     };
-    const isBest = (key, val) => val !== null && val === bests[key];
+    const worsts = {
+      runs:      minOf('runs'),
+      exfils:    minOf('exfils'),
+      contracts: minOf('contracts'),
+      kills:     minOf('kills'),
+      exfPct:    minOf('exfPct'),
+      kpr:       minOf('kpr'),
+    };
+    const isBest  = (key, val) => val !== null && val === bests[key];
+    const isWorst = (key, val) => val !== null && val === worsts[key] && !isBest(key, val);
 
     tbody.innerHTML = derived.filter(({ runs, exfils, contracts, kills, kpr }) =>
       runs !== null || exfils !== null || contracts !== null || kills !== null || kpr !== null
@@ -801,8 +818,8 @@
 
       const cell = (v, key, decimals) => {
         if (v === null) return `<td class="nil">—</td>`;
-        const best = isBest(key, v) ? ' best' : '';
-        return `<td class="${best.trim()}">${decimals !== undefined ? v.toFixed(decimals) : Math.round(v)}</td>`;
+        const cls = isBest(key, v) ? 'best' : isWorst(key, v) ? 'worst' : '';
+        return `<td class="${cls}">${decimals !== undefined ? v.toFixed(decimals) : Math.round(v)}</td>`;
       };
 
       return `<tr>
@@ -814,7 +831,7 @@
         </td>
         ${cell(runs,      'runs')}
         ${cell(exfils,    'exfils')}
-        <td class="${isBest('exfPct', exfPct) ? 'best' : exfPct === null ? 'nil' : ''}">
+        <td class="${isBest('exfPct', exfPct) ? 'best' : isWorst('exfPct', exfPct) ? 'worst' : exfPct === null ? 'nil' : ''}">
           <div class="rate-cell-wrap">
             <div class="inline-bar">
               <div class="inline-bar-fill" style="width:${exfPct !== null ? Math.min(exfPct, 100) : 0}%"></div>
@@ -824,7 +841,7 @@
         </td>
         ${cell(contracts, 'contracts')}
         ${cell(kills,     'kills')}
-        <td class="${isBest('kpr', kpr) ? 'best' : kpr === null ? 'nil' : ''}">${fmtF(kpr)}</td>
+        <td class="${isBest('kpr', kpr) ? 'best' : isWorst('kpr', kpr) ? 'worst' : kpr === null ? 'nil' : ''}">${fmtF(kpr)}</td>
       </tr>`;
     }).join('');
 
