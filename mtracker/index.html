@@ -775,7 +775,8 @@
     const byMap  = {};
 
     rows.forEach(r => {
-      const rt       = (r['Run Type'] || 'Unknown').trim();
+      const rtRaw    = (r['Run Type'] || 'Unknown').trim();
+      const rt       = rtRaw === 'Rook Solo' ? 'Rook' : rtRaw;
       const map      = (r['Map']      || 'Unknown').trim();
       const kills    = Number(r['PvP Kills']) || 0;
       const exfil    = r['Successful Exfil']    === true;
