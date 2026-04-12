@@ -803,7 +803,7 @@
       players:   [...d.players].sort().join(', ') || '—',
       runs:      d.runs,
       exfils:    d.exfils,
-      contracts: d.contracts,
+      contracts: label === 'Rook' ? null : d.contracts, // Rook can't do contracts
       kills:     d.kills,
       exfPct:    d.runs ? (d.exfils / d.runs) * 100 : null,
       kpr:       d.runs ? (d.kills  / d.runs)       : null,
@@ -898,15 +898,22 @@
       const exfil    = r['Successful Exfil']   === true;
       const color    = badgeColor(rt);
 
-      // gviz returns dates as Date objects with a string representation
+      // gviz returns datetimes as "Date(year,month,day,h,m,s)" — month is 0-indexed
       let ts = '—';
       if (r['Timestamp']) {
         try {
-          const d = new Date(r['Timestamp']);
+          const raw = String(r['Timestamp']);
+          let d;
+          const m = raw.match(/^Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)$/);
+          if (m) {
+            d = new Date(+m[1], +m[2], +m[3], +(m[4]||0), +(m[5]||0), +(m[6]||0));
+          } else {
+            d = new Date(raw);
+          }
           if (!isNaN(d)) {
             ts = d.toLocaleDateString('en-CA') + ' ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
           }
-        } catch(e) { ts = String(r['Timestamp']).slice(0, 16); }
+        } catch(e) { /* leave ts as '—' */ }
       }
 
       return `<tr>
@@ -920,7 +927,7 @@
         <td style="font-family:var(--mono);font-size:12px;text-align:left;color:var(--text-sec);text-transform:none;letter-spacing:0.04em;">${players}</td>
         <td style="text-align:right;">${map.toUpperCase()}</td>
         <td style="text-align:right;">${kills}</td>
-        <td style="text-align:right;"><span class="${contract ? 'pill-yes' : 'pill-no'}">${contract ? 'YES' : 'NO'}</span></td>
+        <td style="text-align:right;">${rt === 'Rook' ? '<span style="color:var(--text-dim);font-family:var(--mono);font-size:11px;">—</span>' : `<span class="${contract ? 'pill-yes' : 'pill-no'}">${contract ? 'YES' : 'NO'}</span>`}</td>
         <td style="text-align:right;"><span class="${exfil ? 'pill-yes' : 'pill-no'}">${exfil ? 'YES' : 'NO'}</span></td>
       </tr>`;
     }).join('');
@@ -932,16 +939,20 @@
     const validRows = rows.filter(r => r['Run Type']);
 
     // Totals
-    let totRuns = 0, totExfils = 0, totContracts = 0, totKills = 0;
+    let totRuns = 0, totExfils = 0, totContracts = 0, totKills = 0, contractEligibleRuns = 0;
     validRows.forEach(r => {
+      const isRook = (r['Run Type'] || '').trim() === 'Rook';
       totRuns++;
       if (r['Successful Exfil']   === true) totExfils++;
-      if (r['Contract Completed'] === true) totContracts++;
+      if (!isRook) {
+        contractEligibleRuns++;
+        if (r['Contract Completed'] === true) totContracts++;
+      }
       totKills += Number(r['PvP Kills']) || 0;
     });
 
     const exfilRate    = pct(totExfils,    totRuns);
-    const contractRate = pct(totContracts, totRuns);
+    const contractRate = pct(totContracts, contractEligibleRuns);
     const kpr          = totRuns ? totKills / totRuns : null;
 
     /* Stat cards */
