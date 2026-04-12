@@ -626,7 +626,7 @@
       <thead>
         <tr>
           <th>Squad Type</th>
-          <th>Players</th>
+          <th>Runners</th>
           <th>Runs</th>
           <th>Exfils</th>
           <th>Exfil %</th>
@@ -664,6 +664,29 @@
     </table>
   </div>
 
+  <!-- ═══════════════ RUNNER BREAKDOWN ═══════════════ -->
+  <div class="section-head">
+    <span class="section-head-title">Runner Breakdown</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Runner</th>
+          <th>Runs</th>
+          <th>Exfils</th>
+          <th>Exfil %</th>
+          <th>Contracts</th>
+          <th>PvP Kills</th>
+          <th>Kills / Run</th>
+        </tr>
+      </thead>
+      <tbody id="runnerTableBody">
+        <tr><td colspan="7" style="text-align:center;padding:32px;font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:0.2em;">LOADING OPERATIONS DATA…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
   <!-- ═══════════════ RECENT RUNS ═══════════════ -->
   <div class="section-head">
     <span class="section-head-title">Recent Operations</span>
@@ -675,7 +698,7 @@
         <tr>
           <th>Date / Time</th>
           <th>Squad Type</th>
-          <th>Players</th>
+          <th>Runners</th>
           <th>Map</th>
           <th>Kills</th>
           <th>Contract</th>
@@ -819,13 +842,44 @@
       kpr:       d.runs ? (d.kills  / d.runs)       : null,
     }));
 
-    return { byType: toTypeRows(byType), byMap: toMapRows(byMap) };
+    // Per-runner aggregation — each runner in a run gets credited
+    const byRunner = {};
+    rows.forEach(r => {
+      const isRook   = (r['Run Type'] || '').trim() === 'Rook';
+      const kills    = Number(r['PvP Kills']) || 0;
+      const exfil    = r['Successful Exfil']   === true;
+      const contract = r['Contract Completed'] === true;
+      const names    = (r['Players'] || '').toString().trim()
+                         .split(',').map(p => p.trim()).filter(Boolean);
+      names.forEach(name => {
+        if (!byRunner[name]) byRunner[name] = { runs: 0, exfils: 0, contracts: 0, contractRuns: 0, kills: 0 };
+        byRunner[name].runs++;
+        if (exfil) byRunner[name].exfils++;
+        if (!isRook) {
+          byRunner[name].contractRuns++;
+          if (contract) byRunner[name].contracts++;
+        }
+        byRunner[name].kills += kills;
+      });
+    });
+
+    const toRunnerRows = obj => Object.entries(obj).map(([label, d]) => ({
+      label,
+      runs:      d.runs,
+      exfils:    d.exfils,
+      contracts: d.contractRuns > 0 ? d.contracts : null,
+      kills:     d.kills,
+      exfPct:    d.runs ? (d.exfils / d.runs) * 100 : null,
+      kpr:       d.runs ? (d.kills  / d.runs)       : null,
+    }));
+
+    return { byType: toTypeRows(byType), byMap: toMapRows(byMap), byRunner: toRunnerRows(byRunner) };
   }
 
   /* ── Build a breakdown table ── */
-  function buildBreakdownTable(tbodyId, aggRows, showPlayers = false) {
+  function buildBreakdownTable(tbodyId, aggRows, showRunners = false) {
     const tbody = document.getElementById(tbodyId);
-    const cols  = showPlayers ? 8 : 7;
+    const cols  = showRunners ? 8 : 7;
 
     if (!aggRows.length) {
       tbody.innerHTML = `<tr><td colspan="${cols}" style="text-align:center;padding:32px;font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:0.2em;">NO OPERATIONS DATA FOUND</td></tr>`;
@@ -853,7 +907,7 @@
       const color = badgeColor(d.label);
       const exfCls = isBest('exfPct', d.exfPct) ? 'best' : isWorst('exfPct', d.exfPct) ? 'worst' : d.exfPct === null ? 'nil' : '';
       const kprCls = isBest('kpr', d.kpr) ? 'best' : isWorst('kpr', d.kpr) ? 'worst' : d.kpr === null ? 'nil' : '';
-      const playersCell = showPlayers
+      const runnersCell = showRunners
         ? `<td style="font-family:var(--mono);font-size:11px;text-align:left;color:var(--text-sec);text-transform:none;letter-spacing:0.04em;white-space:normal;max-width:180px;">${d.players || '—'}</td>`
         : '';
       return `<tr>
@@ -863,7 +917,7 @@
             <span style="color:${color}">${d.label.toUpperCase()}</span>
           </span>
         </td>
-        ${playersCell}
+        ${runnersCell}
         ${cell(d.runs,      'runs')}
         ${cell(d.exfils,    'exfils')}
         <td class="${exfCls}">
@@ -979,8 +1033,9 @@
     document.getElementById('activeTypes').textContent  = byType.length || '—';
 
     /* Tables */
-    buildBreakdownTable('typeTableBody', byType, true);
-    buildBreakdownTable('mapTableBody',  byMap);
+    buildBreakdownTable('typeTableBody',    byType, true);
+    buildBreakdownTable('mapTableBody',    byMap);
+    buildBreakdownTable('runnerTableBody', byRunner);
     buildRecentTable(validRows);
 
     /* Timestamp */
