@@ -1026,7 +1026,7 @@
     }, 150);
 
     /* Rates strip */
-    const { byType, byMap } = aggregate(validRows);
+    const { byType, byMap, byRunner } = aggregate(validRows);
     document.getElementById('exfilRate').textContent    = fmtP(exfilRate);
     document.getElementById('contractRate').textContent = fmtP(contractRate);
     document.getElementById('kprRate').textContent      = fmtF(kpr);
