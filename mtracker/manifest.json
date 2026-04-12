@@ -2,7 +2,7 @@
   "name": "Dead Drop",
   "short_name": "Dead Drop",
   "description": "Marathon run tracker — Tau Ceti IV ops log",
-  "start_url": "/index.html",
+  "start_url": "https://dftporter.github.io/mtracker/index.html",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#c8f400",
