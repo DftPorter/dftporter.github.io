@@ -51,7 +51,8 @@ function parseEvent(ev, teamId){
   const getRecord = c=>(c.record?.find(r=>r.type==='total')||c.record?.find(r=>r.type==='ytd')||c.record?.[0])?.displayValue||null;
   const phiRecord = getRecord(us);
   const oppRecord = getRecord(them);
-  const venue     = comp.venue ? comp.venue.fullName+', '+comp.venue.address?.city : null;
+  const gameNote  = comp.notes?.[0]?.headline||null;
+  const isPlayoff = gameNote ? /playoff|play.?in|postseason|round|series/i.test(gameNote) : false;
   const featuredStatus =
     state==='in'                              ? 'live'     :
     completed                                 ? 'final'    :
@@ -63,7 +64,7 @@ function parseEvent(ev, teamId){
     featuredStatus==='starting' ? 'Starting now…' :
     state==='pre'               ? fmtFull(dateMs) :
                                   detail||'Final';
-  return { featuredStatus, isHome, oppAbbr, oppId, phiScore, oppScore, phiRecord, oppRecord, venue, dateMs, note, completed };
+  return { featuredStatus, isHome, oppAbbr, oppId, phiScore, oppScore, phiRecord, oppRecord, venue, dateMs, note, completed, gameNote, isPlayoff };
 }
 
 function nextSeasonNote(path){
@@ -219,6 +220,7 @@ async function fetchTeamData(key){
     !featured?'offseason':
     activeLive?'live':
     (nextIsClose||!lastCompleted)&&nextGame?'upcoming':
+    nextGame&&featured===nextGame?'upcoming':
     featured.featuredStatus;
 
   const showRecords=fs!=='offseason';
@@ -255,7 +257,8 @@ async function fetchTeamData(key){
       oppScore:  featured.oppScore,
       note:      featured.note,
       venue:     featured.venue||null,
-      phiRecord: showRecords?(soccerPhiRecord||featured.phiRecord||phiRecordFallback||null):null,
+      gameNote:  featured.gameNote||null,
+      isPlayoff: featured.isPlayoff||false,
       oppRecord: showRecords?(soccerOppRecord||featured.oppRecord||oppRecordFallback||null):null,
     }:null,
     recentGames:recentFiltered.map(g=>({opp:g.oppAbbr,home:g.isHome,phiScore:g.phiScore,oppScore:g.oppScore,date:fmtShort(g.dateMs)})),
@@ -422,7 +425,11 @@ function renderCard(key,data){
     const oppSide='<div class="team-side"><div class="team-abv">'+f.oppAbbr+'</div>'+oppImg+scoreHtml(f.oppScore,oppWins,upcoming,false)+(f.oppRecord?'<div class="team-record">'+f.oppRecord+'</div>':'')+'</div>';
     const div='<div class="vs-divider"><div class="vs-line"></div><div class="vs-text">VS</div><div class="vs-line"></div></div>';
     const matchup=f.isHome?oppSide+div+phiSide:phiSide+div+oppSide;
-    featuredHtml='<div class="featured-game">'+(f.label?'<div class="game-label">'+f.label+'</div>':'')+'<div class="matchup">'+matchup+'</div><div class="game-info-row">'+f.note+(f.venue?' · '+f.venue:'')+'</div></div>';
+    const playoffBadge = f.isPlayoff ? '<div class="playoff-badge">'+f.gameNote+'</div>' : '';
+    featuredHtml='<div class="featured-game">'
+      +playoffBadge
+      +(f.label?'<div class="game-label">'+f.label+'</div>':'')
+      +'<div class="matchup">'+matchup+'</div><div class="game-info-row">'+f.note+(f.venue?' · '+f.venue:'')+'</div></div>';
   } else {
     featuredHtml='<div class="featured-game" style="text-align:center;padding:24px 20px"><div style="font-size:36px;margin-bottom:8px">🏆</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:18px;color:#4b5563;letter-spacing:.08em">Season Complete</div>'+(data.offseasonNote?'<div style="font-size:11px;color:#6b7280;margin-top:6px;font-family:\'DM Mono\',monospace">'+data.offseasonNote+'</div>':'')+'</div>';
   }
