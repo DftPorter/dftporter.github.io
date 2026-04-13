@@ -76,7 +76,12 @@ function nextSeasonNote(path){
     ft.setDate(1+(4-sep1.getDay()+7)%7);
     return 'Next season starts ~'+ft.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   }
-  if(path.startsWith('baseball/mlb')) return 'Spring Training underway · Regular season starts late March';
+  if(path.startsWith('baseball/mlb')){
+    const m=new Date().getMonth(); // 0=Jan
+    if(m>=2&&m<=9) return 'Regular season underway';
+    if(m>=10) return 'Season complete · Spring Training starts February';
+    return 'Spring Training underway · Regular season starts late March';
+  }
   return 'Season has ended';
 }
 
@@ -181,12 +186,13 @@ async function fetchTeamData(key){
   const {path,teamId}=TEAMS[key];
   const base='https://site.api.espn.com/apis/site/v2/sports/'+path;
   const isSoccer=path.startsWith('soccer');
+  let liveGame=null;
   // Fetch schedule (cached for 1 hour)
   let schRes = getCachedSchedule(key);
   if(!schRes){
     if(isSoccer){
       const [sbBoard, teamInfo] = await Promise.all([
-        espnFetch(base+'/scoreboard?dates=20260101-20261231&limit=300').catch(()=>null),
+        espnFetch(base+'/scoreboard?dates='+(new Date().getFullYear())+'0101-'+(new Date().getFullYear())+'1231&limit=300').catch(()=>null),
         espnFetch(base+'/teams/'+teamId+'/schedule').catch(()=>null),
       ]);
       if(sbBoard?.events){
@@ -311,6 +317,8 @@ const RSS_PROXY='https://api.rss2json.com/v1/api.json?rss_url=';
 let newsCache={items:[],fetchedAt:0};
 const NEWS_TTL=5*60*1000;
 function parseRssDate(str){ if(!str) return 0; return new Date(str.replace(' ','T')+'Z').getTime()||0; }
+function escHtml(s){ const d=document.createElement('div'); d.textContent=String(s||''); return d.innerHTML; }
+function safeUrl(s){ try{ const u=new URL(s); return (u.protocol==='https:'||u.protocol==='http:') ? s : '#'; }catch(e){ return '#'; } }
 function timeAgo(dateStr){
   const diff=Date.now()-parseRssDate(dateStr);
   if(diff<0||diff<60000) return 'just now';
@@ -334,7 +342,7 @@ async function fetchNews(){
 }
 function renderNewsCard(items){
   const content=items.length
-    ?items.map(item=>'<a class="news-item" href="'+item.link+'" target="_blank" rel="noopener"><div class="news-item-title">'+item.title+'</div><div class="news-item-meta"><span class="news-team-tag" style="background:'+item.color+'22;color:'+item.color+';border:1px solid '+item.color+'44">'+item.team+'</span><span class="news-time">'+timeAgo(item.pubDate)+'</span></div></a>').join('')
+    ?items.map(item=>'<a class="news-item" href="'+safeUrl(item.link)+'" target="_blank" rel="noopener"><div class="news-item-title">'+escHtml(item.title)+'</div><div class="news-item-meta"><span class="news-team-tag" style="background:'+item.color+'22;color:'+item.color+';border:1px solid '+item.color+'44">'+escHtml(item.team)+'</span><span class="news-time">'+timeAgo(item.pubDate)+'</span></div></a>').join('')
     :'<div class="news-loading">Loading headlines…</div>';
   return '<div class="news-card"><div class="news-header"><span class="news-header-icon">📰</span><span class="news-header-title">Philly Sports News</span></div>'+content+'</div>';
 }
@@ -468,24 +476,24 @@ function renderCard(key,data){
   }
   const recentHtml=data.recentGames?.length?data.recentGames.map(g=>{ const r=g.phiScore>g.oppScore?{c:'win',l:'W'}:g.phiScore<g.oppScore?{c:'loss',l:'L'}:{c:'draw',l:'D'}; return '<div class="result-row"><div class="result-matchup">'+(g.home?'vs':'@')+' <span>'+g.opp+'</span></div><div class="result-score">'+g.phiScore+'&ndash;'+g.oppScore+'</div><div class="result-wl '+r.c+'">'+r.l+'</div><div class="result-date">'+g.date+'</div></div>'; }).join(''):'<div class="no-recent">No recent games</div>';
   const nextHtml=data.nextGame?'<div class="next-game-row'+(data.nextGameToday?' today':'')+'"><div class="next-game-label">Next &#9654;</div><div class="next-game-info">'+data.nextGame+(data.nextGameToday?'<span class="today-badge">TODAY</span>':'')+'</div></div>':'';
-  return '<div class="team-card'+(isLive?' is-live':'')+'" style="--team-color:'+color+'"'+clickAttr+'><div class="card-header"><div class="team-icon">'+icon+'</div><div class="team-meta"><div class="team-name">'+name+'</div><div class="team-sport">'+sport+'</div>'+(data.standing?'<div class="team-sport" style="margin-top:2px">'+data.standing+'</div>':'')+'</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px"><span class="card-status '+statusCls+'">'+statusLabel+'</span>'+(data.streak?'<span class="streak '+streakCls+'">'+data.streak+'</span>':'')+'</div></div>'+featuredHtml+'<div class="recent-results"><div class="results-label">Recent Games</div>'+recentHtml+nextHtml+'</div>'+(isLive?'<div class="live-expand-hint">⛶ Click to expand</div>':'')+'</div>';
+  return '<div class="team-card'+(isLive?' is-live':'')+'" data-team="'+key+'" style="--team-color:'+color+'"'+clickAttr+'><div class="card-header"><div class="team-icon">'+icon+'</div><div class="team-meta"><div class="team-name">'+name+'</div><div class="team-sport">'+sport+'</div>'+(data.standing?'<div class="team-sport" style="margin-top:2px">'+data.standing+'</div>':'')+'</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px"><span class="card-status '+statusCls+'">'+statusLabel+'</span>'+(data.streak?'<span class="streak '+streakCls+'">'+data.streak+'</span>':'')+'</div></div>'+featuredHtml+'<div class="recent-results"><div class="results-label">Recent Games</div>'+recentHtml+nextHtml+'</div>'+(isLive?'<div class="live-expand-hint">⛶ Click to expand</div>':'')+'</div>';
 }
 
 // ── Theme ──
 const THEMES=['device','light','dark'];
 const THEME_ICONS={device:'🖥️',light:'☀️',dark:'🌙'};
+const _darkMQ=window.matchMedia('(prefers-color-scheme:dark)');
 function cycleTheme(){
   const cur=localStorage.getItem('colorScheme')||'device';
   applyTheme(THEMES[(THEMES.indexOf(cur)+1)%THEMES.length]);
 }
 function applyTheme(theme){
   localStorage.setItem('colorScheme',theme);
-  const root=document.documentElement;
-  if(theme==='dark') root.setAttribute('data-theme','dark');
-  else if(theme==='light') root.setAttribute('data-theme','light');
-  else root.removeAttribute('data-theme');
+  const effective=theme==='device'?(_darkMQ.matches?'dark':'light'):theme;
+  document.documentElement.setAttribute('data-theme',effective);
   document.getElementById('theme-icon').textContent=THEME_ICONS[theme];
 }
+_darkMQ.addEventListener('change',()=>{ if((localStorage.getItem('colorScheme')||'device')==='device') applyTheme('device'); });
 applyTheme(localStorage.getItem('colorScheme')||'device');
 
 // ── Countdown & refresh ──
@@ -552,13 +560,8 @@ async function fetchScores(){
     TEAM_ORDER.forEach(k=>{
       const curr=scores[k]?.featured, prev=prevScores[k]?.featured;
       if(curr&&prev&&(curr.phiScore!==prev.phiScore||curr.oppScore!==prev.oppScore)){
-        document.querySelectorAll('.team-card').forEach(card=>{
-          if(card.querySelector('.team-name')?.textContent===TEAMS[k].name){
-            card.classList.remove('score-changed');
-            void card.offsetWidth;
-            card.classList.add('score-changed');
-          }
-        });
+        const card=document.querySelector('.team-card[data-team="'+k+'"]');
+        if(card){ card.classList.remove('score-changed'); void card.offsetWidth; card.classList.add('score-changed'); }
       }
     });
     if(modalOpenKey){
