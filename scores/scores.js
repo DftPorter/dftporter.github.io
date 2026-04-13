@@ -80,7 +80,34 @@ function nextSeasonNote(path){
   return 'Season has ended';
 }
 
-// Opponent logo URL cache — localStorage with 30-day TTL
+// Schedule cache — sessionStorage with 1-hour TTL
+const SCHEDULE_TTL = 60 * 60 * 1000;
+function getCachedSchedule(key){
+  try{
+    const raw = sessionStorage.getItem('sched:'+key);
+    if(!raw) return null;
+    const {ts, data} = JSON.parse(raw);
+    if(Date.now() - ts > SCHEDULE_TTL) return null;
+    return data;
+  } catch(e){ return null; }
+}
+function setCachedSchedule(key, data){
+  try{ sessionStorage.setItem('sched:'+key, JSON.stringify({ts:Date.now(), data})); } catch(e){}
+}
+
+// Next game cache — sessionStorage, invalidated once game date passes
+function getCachedNextGame(key){
+  try{
+    const raw = sessionStorage.getItem('nextgame:'+key);
+    if(!raw) return null;
+    const {dateMs, data} = JSON.parse(raw);
+    if(Date.now() > dateMs) return null; // game date passed, invalidate
+    return data;
+  } catch(e){ return null; }
+}
+function setCachedNextGame(key, eventData, dateMs){
+  try{ sessionStorage.setItem('nextgame:'+key, JSON.stringify({dateMs, data:eventData})); } catch(e){}
+}
 const OPP_LOGO_TTL = 30*24*60*60*1000;
 const oppLogoCache = {};
 (()=>{
@@ -154,21 +181,25 @@ async function fetchTeamData(key){
   const {path,teamId}=TEAMS[key];
   const base='https://site.api.espn.com/apis/site/v2/sports/'+path;
   const isSoccer=path.startsWith('soccer');
-  let schRes=null;
-  if(isSoccer){
-    const [sbBoard,teamInfo]=await Promise.all([
-      espnFetch(base+'/scoreboard?dates=20260101-20261231&limit=300').catch(()=>null),
-      espnFetch(base+'/teams/'+teamId+'/schedule').catch(()=>null),
-    ]);
-    if(sbBoard?.events){
-      schRes={
-        season:teamInfo?.season||sbBoard.leagues?.[0]?.season||{type:2},
-        team:teamInfo?.team||{id:teamId},
-        events:sbBoard.events.filter(e=>e.competitions?.[0]?.competitors?.some(c=>String(c.team?.id)===String(teamId))),
-      };
+  // Fetch schedule (cached for 1 hour)
+  let schRes = getCachedSchedule(key);
+  if(!schRes){
+    if(isSoccer){
+      const [sbBoard, teamInfo] = await Promise.all([
+        espnFetch(base+'/scoreboard?dates=20260101-20261231&limit=300').catch(()=>null),
+        espnFetch(base+'/teams/'+teamId+'/schedule').catch(()=>null),
+      ]);
+      if(sbBoard?.events){
+        schRes = {
+          season: teamInfo?.season||sbBoard.leagues?.[0]?.season||{type:2},
+          team:   teamInfo?.team||{id:teamId},
+          events: sbBoard.events.filter(e=>e.competitions?.[0]?.competitors?.some(c=>String(c.team?.id)===String(teamId))),
+        };
+      }
+    } else {
+      schRes = await espnFetch(base+'/teams/'+teamId+'/schedule').catch(()=>null);
     }
-  } else {
-    schRes=await espnFetch(base+'/teams/'+teamId+'/schedule').catch(()=>null);
+    if(schRes) setCachedSchedule(key, schRes);
   }
   const sbRes=await espnFetch(base+'/scoreboard').catch(()=>null);
   const now=Date.now();
