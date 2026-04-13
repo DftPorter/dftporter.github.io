@@ -184,7 +184,23 @@ async function fetchTeamData(key){
     else if(!nextGame&&!p.completed){ if(p.dateMs>now-30*60*1000) nextGame=p; }
   }
 
-  let liveGame=null;
+  // If no next game found from schedule, scan upcoming scoreboards (catches playoffs)
+  if(!nextGame && !isOffseason){
+    for(let daysAhead = 1; daysAhead <= 7; daysAhead++){
+      const dt = new Date(now + daysAhead*24*60*60*1000);
+      const dateStr = dt.toISOString().slice(0,10).replace(/-/g,'');
+      const sb = await espnFetch(base+'/scoreboard?dates='+dateStr).catch(()=>null);
+      if(!sb?.events) continue;
+      for(const ev of sb.events){
+        const p = parseEvent(ev, teamId);
+        if(p && !p.completed && p.dateMs > now - 30*60*1000){
+          nextGame = p;
+          break;
+        }
+      }
+      if(nextGame) break;
+    }
+  }
   if(sbRes?.events){
     for(const ev of sbRes.events){
       const p=parseEvent(ev,teamId);
