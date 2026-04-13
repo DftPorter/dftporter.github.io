@@ -51,6 +51,7 @@ function parseEvent(ev, teamId){
   const getRecord = c=>(c.record?.find(r=>r.type==='total')||c.record?.find(r=>r.type==='ytd')||c.record?.[0])?.displayValue||null;
   const phiRecord = getRecord(us);
   const oppRecord = getRecord(them);
+  const venue     = comp.venue ? comp.venue.fullName+', '+comp.venue.address?.city : null;
   const gameNote  = comp.notes?.[0]?.headline||null;
   const isPlayoff = gameNote ? /playoff|play.?in|postseason|round|series/i.test(gameNote) : false;
   const featuredStatus =
