@@ -291,6 +291,7 @@ async function fetchTeamData(key){
       venue:     featured.venue||null,
       gameNote:  featured.gameNote||null,
       isPlayoff: featured.isPlayoff||false,
+      phiRecord: showRecords?(soccerPhiRecord||featured.phiRecord||phiRecordFallback||null):null,
       oppRecord: showRecords?(soccerOppRecord||featured.oppRecord||oppRecordFallback||null):null,
     }:null,
     recentGames:recentFiltered.map(g=>({opp:g.oppAbbr,home:g.isHome,phiScore:g.phiScore,oppScore:g.oppScore,date:fmtShort(g.dateMs)})),
