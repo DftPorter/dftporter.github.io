@@ -1,283 +1,783 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tim's Game Lab 🧪</title>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --bg: #0d0d0d;
-      --grid: #1a1a1a;
-      --yellow: #f9e900;
-      --cyan: #00f0e0;
-      --pink: #ff3e8a;
-      --orange: #ff7a1a;
-      --green: #39ff14;
-      --white: #f0f0f0;
-      --card-bg: #141414;
-      --border: #2a2a2a;
-    }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tim Allen — Art Director</title>
 
+  <!-- Open Graph / Social sharing -->
+  <meta name="description" content="Art Director and Graphic Designer with 20+ years of experience in e-learning, brand identity, motion graphics, and corporate creative.">
+  <meta property="og:type"        content="website">
+  <meta property="og:title"       content="Tim Allen — Art Director">
+  <meta property="og:description" content="Art Director and Graphic Designer with 20+ years of experience in e-learning, brand identity, motion graphics, and corporate creative.">
+  <meta property="og:image"       content="images/og-preview.jpg">
+  <meta name="twitter:card"       content="summary_large_image">
+  <meta name="twitter:title"      content="Tim Allen — Art Director">
+  <meta name="twitter:description" content="Art Director and Graphic Designer with 20+ years of experience in e-learning, brand identity, motion graphics, and corporate creative.">
+  <meta name="twitter:image"      content="images/og-preview.jpg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      background-color: var(--bg);
-      color: var(--white);
-      font-family: 'DM Mono', monospace;
-      min-height: 100vh;
-      overflow-x: hidden;
+    :root {
+      --bg:      #f3ede2;
+      --fg:      #1a1714;
+      --muted:   #8a7f74;
+      --accent:  #b85c38;
+      --border:  #ddd7cc;
+      --surface: #ede7dc;
     }
 
-    /* Dot grid background */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: radial-gradient(circle, #2a2a2a 1px, transparent 1px);
-      background-size: 28px 28px;
-      pointer-events: none;
-      z-index: 0;
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
     }
 
     .container {
-      position: relative;
-      z-index: 1;
-      max-width: 860px;
+      max-width: 760px;
       margin: 0 auto;
-      padding: 60px 24px 80px;
+      padding: 0 2.5rem;
     }
 
-    /* Header */
+    /* ── Hero ─────────────────────────────── */
     header {
-      text-align: center;
-      margin-bottom: 64px;
+      padding: 6.5rem 0 3.5rem;
     }
 
-    .label {
-      display: inline-block;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 9px;
-      letter-spacing: 0.15em;
-      color: var(--cyan);
-      border: 1px solid var(--cyan);
-      padding: 6px 14px;
-      margin-bottom: 24px;
-      animation: blink 1.4s step-end infinite;
+    .avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      margin-bottom: 2.25rem;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.5625rem;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      text-transform: uppercase;
     }
 
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    .hero-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.875rem;
+      margin-bottom: 1rem;
+    }
+
+    .hero-tag {
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .hero-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
     }
 
     h1 {
-      font-family: 'Press Start 2P', monospace;
-      font-size: clamp(22px, 5vw, 42px);
-      line-height: 1.4;
-      color: var(--yellow);
-      text-shadow: 4px 4px 0px #7a7000, 0 0 40px rgba(249,233,0,0.3);
-      margin-bottom: 20px;
-      animation: fadeDown 0.6s ease both;
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(3.25rem, 10vw, 6rem);
+      font-weight: 400;
+      letter-spacing: -0.03em;
+      line-height: 1.0;
+      margin-bottom: 0.875rem;
     }
 
-    .subtitle {
-      font-size: 13px;
-      color: #888;
-      letter-spacing: 0.05em;
-      animation: fadeDown 0.6s 0.1s ease both;
+    .hero-title {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-style: italic;
+      font-size: clamp(1.125rem, 3vw, 1.625rem);
+      color: var(--muted);
+      letter-spacing: -0.01em;
     }
 
-    @keyframes fadeDown {
-      from { opacity: 0; transform: translateY(-16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Divider */
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 40px;
-    }
-    .divider::before, .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--border), transparent);
-    }
-    .divider span {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 10px;
-      color: var(--pink);
-    }
-
-    /* Cards grid */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      padding: 28px 24px;
-      text-decoration: none;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      position: relative;
+    /* ── Marquee ──────────────────────────── */
+    .marquee-wrap {
       overflow: hidden;
-      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
-      animation: fadeUp 0.5s ease both;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 0.9375rem 0;
+      margin: 3.5rem 0 4.5rem;
+      margin-left: -2.5rem;
+      margin-right: -2.5rem;
     }
 
-    .card:nth-child(1) { animation-delay: 0.10s; --accent: var(--yellow); }
-    .card:nth-child(2) { animation-delay: 0.18s; --accent: var(--cyan); }
-    .card:nth-child(3) { animation-delay: 0.26s; --accent: var(--pink); }
-    .card:nth-child(4) { animation-delay: 0.34s; --accent: var(--orange); }
-    .card:nth-child(5) { animation-delay: 0.42s; --accent: var(--green); }
-    .card:nth-child(6) { animation-delay: 0.50s; --accent: #bf80ff; }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      animation: marquee 28s linear infinite;
     }
 
-    .card::before {
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .marquee-track { animation: none; }
+    }
+
+    .marquee-track span {
+      display: inline-flex;
+      align-items: center;
+      gap: 1.25rem;
+      padding: 0 1.25rem;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .marquee-track span::after {
       content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
+      display: inline-block;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
       background: var(--accent);
-      box-shadow: 0 0 14px var(--accent);
+      flex-shrink: 0;
     }
 
-    .card:hover {
-      transform: translateY(-4px);
-      border-color: var(--accent);
-      box-shadow: 0 0 24px rgba(0,0,0,0.6), 0 0 0 1px var(--accent), inset 0 0 40px rgba(255,255,255,0.02);
+    /* ── Section headers ──────────────────── */
+    section { margin-bottom: 5rem; }
+
+    .sec-head {
+      display: flex;
+      align-items: baseline;
+      gap: 0.875rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
     }
 
-    .card-icon {
-      font-size: 28px;
+    .sec-num {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-style: italic;
+      font-size: 0.9375rem;
+      color: var(--accent);
+      line-height: 1;
+      opacity: 0.85;
+    }
+
+    .sec-label {
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── About ────────────────────────────── */
+    .about-body p {
+      font-size: 1.0625rem;
+      line-height: 1.85;
+      font-weight: 300;
+      max-width: 580px;
+    }
+
+    .about-body p + p { margin-top: 1.125rem; }
+
+    /* ── Skills ───────────────────────────── */
+    .skills-list { list-style: none; }
+
+    .skill-item {
+      display: grid;
+      grid-template-columns: 2.75rem 1fr;
+      gap: 0 1.5rem;
+      align-items: start;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .skill-num {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--accent);
+      opacity: 0.75;
+      padding-top: 0.1rem;
       line-height: 1;
     }
 
-    .card-title {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 11px;
+    .skill-body h3 {
+      font-size: 0.9375rem;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.3rem;
+    }
+
+    .skill-body p {
+      font-size: 0.8125rem;
+      color: var(--muted);
+      line-height: 1.65;
+      font-weight: 300;
+    }
+
+    /* ── Work ─────────────────────────────── */
+    .work-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.625rem;
+    }
+
+    .work-tile {
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.5625rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--border);
+      overflow: hidden;
+      aspect-ratio: 4 / 3;
+    }
+
+    .work-tile img { width: 100%; height: 100%; object-fit: cover; display: block; object-position: center; }
+    .work-tile--top img  { object-position: top center; }
+    .work-tile--right img { object-position: center center; }
+
+    .work-tile:first-child {
+      grid-column: span 2;
+      aspect-ratio: 16 / 9;
+    }
+
+    .work-tile:first-child img {
+      object-fit: contain;
+      background: #fff;
+    }
+
+    /* ── Work caption ────────────────────── */
+    .work-more {
+      margin-top: 1rem;
+      font-size: 0.8125rem;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    .work-more a {
+      color: var(--fg);
+      text-underline-offset: 3px;
+      text-decoration-color: var(--border);
+      transition: text-decoration-color 0.15s;
+    }
+
+    .work-more a:hover {
+      text-decoration-color: var(--accent);
       color: var(--accent);
-      line-height: 1.6;
     }
 
-    .card-url {
-      font-size: 10px;
-      color: #555;
-      letter-spacing: 0.03em;
-      margin-top: auto;
+    /* ── Experience ───────────────────────── */
+    .exp-list { list-style: none; }
+
+    .exp-item {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0 1.375rem;
+      align-items: start;
+      padding: 1.375rem 0;
+      border-bottom: 1px solid var(--border);
     }
 
-    .card-arrow {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      font-size: 16px;
-      color: var(--accent);
-      opacity: 0;
-      transform: translate(-4px, 4px);
-      transition: opacity 0.18s, transform 0.18s;
+    .exp-pip {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      border: 1.5px solid var(--accent);
+      margin-top: 0.45rem;
+      flex-shrink: 0;
     }
 
-    .card:hover .card-arrow {
-      opacity: 1;
-      transform: translate(0, 0);
+    .exp-role {
+      font-size: 0.9375rem;
+      font-weight: 500;
+      letter-spacing: -0.01em;
     }
 
-    /* Footer */
-    footer {
+    .exp-place {
+      font-size: 0.875rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+      font-weight: 300;
+    }
+
+    .exp-date {
+      font-size: 0.75rem;
+      color: var(--border);
+      margin-top: 0.3rem;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Links ────────────────────────────── */
+    .links { display: flex; flex-wrap: wrap; gap: 0.625rem; }
+
+    .link-pill {
+      display: inline-block;
+      padding: 0.5625rem 1.25rem;
+      border: 1px solid var(--border);
+      color: var(--fg);
+      font-size: 0.875rem;
+      font-weight: 400;
+      text-decoration: none;
+      letter-spacing: 0.01em;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
       text-align: center;
-      margin-top: 64px;
-      font-size: 11px;
-      color: #444;
-      letter-spacing: 0.06em;
     }
 
-    /* Scanline overlay */
-    body::after {
-      content: '';
+    .link-pill:not(.link-cta) {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .link-pill:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .link-cta {
+      margin-top: 0.75rem;
+      flex-basis: 100%;
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      letter-spacing: 0.02em;
+    }
+
+    .link-cta:hover {
+      background: var(--fg);
+      border-color: var(--fg);
+    }
+
+    /* ── Footer ───────────────────────────── */
+    footer {
+      padding: 2.5rem 0 4rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8125rem;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    footer .footer-name {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--fg);
+      letter-spacing: -0.01em;
+    }
+
+    /* ── Work tile interaction ────────────── */
+    .work-tile {
+      cursor: zoom-in;
+      position: relative;
+    }
+
+    .work-tile img {
+      transition: opacity 0.25s;
+    }
+
+    .work-tile:hover img {
+      opacity: 0.15;
+    }
+
+    .work-caption {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+      opacity: 0;
+      transition: opacity 0.25s;
+      pointer-events: none;
+      text-align: center;
+      background: rgba(243, 237, 226, 0.88);
+    }
+
+    .work-tile:hover .work-caption {
+      opacity: 1;
+    }
+
+    .work-caption-title {
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: var(--fg);
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+    }
+
+    .work-caption-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.3rem;
+      font-weight: 300;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Lightbox ─────────────────────────── */
+    .lightbox {
+      display: none;
       position: fixed;
       inset: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,0,0,0.07) 2px,
-        rgba(0,0,0,0.07) 4px
-      );
-      pointer-events: none;
-      z-index: 999;
+      background: rgba(26, 23, 20, 0.93);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+      padding: 2rem;
+    }
+
+    .lightbox.is-open {
+      display: flex;
+      animation: lb-in 0.2s ease;
+    }
+
+    @keyframes lb-in {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .lightbox img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      box-shadow: 0 8px 60px rgba(0,0,0,0.6);
+      animation: lb-scale 0.2s ease;
+      cursor: default;
+    }
+
+    @keyframes lb-scale {
+      from { transform: scale(0.96); }
+      to   { transform: scale(1); }
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.5rem;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.6);
+      font-size: 1.75rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0.25rem 0.5rem;
+      transition: color 0.15s;
+      font-family: inherit;
+    }
+
+    .lightbox-close:hover {
+      color: #fff;
+    }
+
+    /* ── Responsive ───────────────────────── */
+    @media (max-width: 540px) {
+      header { padding: 4.5rem 0 3rem; }
+      .container { padding: 0 1.5rem; }
+      .marquee-wrap { margin-left: -1.5rem; margin-right: -1.5rem; }
+
+      /* Hero title wraps gracefully */
+      .hero-title { font-size: 1.125rem; }
+
+      /* Work grid: single column on very small screens */
+      .work-grid { grid-template-columns: 1fr; }
+      .work-tile { aspect-ratio: 16 / 9; }
+      .work-tile:first-child { aspect-ratio: 16 / 9; grid-column: span 1; }
+
+      /* Skills: tighten up number column */
+      .skill-item { grid-template-columns: 2rem 1fr; gap: 0 1rem; }
+
+      /* Social links: let them wrap naturally rather than squish into one row */
+      .link-pill:not(.link-cta) { flex: 0 1 auto; }
+
+      footer { flex-direction: column; align-items: flex-start; gap: 0.375rem; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="label">INSERT COIN</div>
-      <h1>TIM'S GAME LAB</h1>
-      <p class="subtitle">a collection of silly experiments in game-making</p>
-    </header>
 
-    <div class="divider"><span>GAMES</span></div>
+<div class="container">
 
-    <div class="grid">
-
-      <a class="card" href="https://dftporter.github.io/attask/" target="_blank" rel="noopener">
-        <div class="card-icon">⚔️</div>
-        <div class="card-title">ATTASK</div>
-        <div class="card-url">dftporter.github.io/attask</div>
-        <span class="card-arrow">→</span>
-      </a>
-
-      <a class="card" href="https://dftporter.github.io/JD_NoLearn/" target="_blank" rel="noopener">
-        <div class="card-icon">💸</div>
-        <div class="card-title">JUMPY DOLLAR</div>
-        <div class="card-url">dftporter.github.io/JD_NoLearn</div>
-        <span class="card-arrow">→</span>
-      </a>
-
-      <a class="card" href="https://dftporter.github.io/rightnwrong/" target="_blank" rel="noopener">
-        <div class="card-icon">✅</div>
-        <div class="card-title">RIGHT N WRONG</div>
-        <div class="card-url">dftporter.github.io/rightnwrong</div>
-        <span class="card-arrow">→</span>
-      </a>
-
-      <a class="card" href="https://dftporter.github.io/DayInTheLife-1.0-web/" target="_blank" rel="noopener">
-        <div class="card-icon">☀️</div>
-        <div class="card-title">DAY IN THE LIFE</div>
-        <div class="card-url">dftporter.github.io/DayInTheLife</div>
-        <span class="card-arrow">→</span>
-      </a>
-
-      <a class="card" href="https://dftporter.github.io/life_of_project/The%20Life%20of%20a%20Project.html" target="_blank" rel="noopener">
-        <div class="card-icon">📋</div>
-        <div class="card-title">LIFE OF A PROJECT</div>
-        <div class="card-url">dftporter.github.io/life_of_project</div>
-        <span class="card-arrow">→</span>
-      </a>
-
-      <a class="card" href="https://youtu.be/Lubcmk-3rSM" target="_blank" rel="noopener">
-        <div class="card-icon">🃏</div>
-        <div class="card-title">WHERE'S THAT CARD</div>
-        <div class="card-url">youtu.be/Lubcmk-3rSM</div>
-        <span class="card-arrow">→</span>
-      </a>
-
+  <!-- Hero -->
+  <header>
+    <div class="avatar">
+      <img src="images/photo.jpg" alt="Tim Allen">
     </div>
+    <div class="hero-meta">
+      <span class="hero-tag">Since 2005</span>
+    </div>
+    <h1>Tim Allen</h1>
+    <p class="hero-title">Art Director, Creative, &amp; Problem Solver</p>
+  </header>
 
-    <footer>© dftporter &nbsp;·&nbsp; all games made for fun</footer>
+</div>
+
+<!-- Full-bleed marquee -->
+<div class="marquee-wrap">
+  <div class="marquee-track" aria-hidden="true">
+    <span>Graphic Design</span><span>Art Direction</span><span>Video Editing</span>
+    <span>Motion Graphics</span><span>Digital Illustration</span><span>Brand Identity</span>
+    <span>Logo Design</span><span>Figma</span><span>Adobe Creative Suite</span>
+    <span>Corporate Creative</span><span>Print &amp; Digital</span><span>Animation</span>
+    <span>Graphic Design</span><span>Art Direction</span><span>Video Editing</span>
+    <span>Motion Graphics</span><span>Digital Illustration</span><span>Brand Identity</span>
+    <span>Logo Design</span><span>Figma</span><span>Adobe Creative Suite</span>
+    <span>Corporate Creative</span><span>Print &amp; Digital</span><span>Animation</span>
   </div>
+</div>
+
+<div class="container">
+
+  <!-- About -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">01</span>
+      <span class="sec-label">About</span>
+    </div>
+    <div class="about-body">
+      <p>Art Director and Graphic Designer with 20 years of experience leading creative across e-learning, product launches, corporate communications, and digital campaigns. I work at the intersection of illustration, animation, and design — building visual systems that are as strategic as they are considered.</p>
+      <p>My background spans the life sciences industry where I developed training content, technical illustrations, product launch materials, and corporate event identities. Since 2011 I've been at Performance Development Group in Malvern, PA, where I moved from Senior Graphic Designer into my current role as Art Director.</p>
+      <p>Outside work: dad, sports fan, gamer, occasional aerial photographer, and a firm advocate for ginger representation.</p>
+    </div>
+  </section>
+
+  <!-- What I Do -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">02</span>
+      <span class="sec-label">What I Do</span>
+    </div>
+    <ul class="skills-list">
+      <li class="skill-item">
+        <span class="skill-num">01</span>
+        <div class="skill-body">
+          <h3>Graphic Design</h3>
+          <p>Print, digital, identity, and collateral. Two decades of making things look exactly right.</p>
+        </div>
+      </li>
+      <li class="skill-item">
+        <span class="skill-num">02</span>
+        <div class="skill-body">
+          <h3>Art Direction</h3>
+          <p>Defining and guiding the visual voice of a project, from first concept through final delivery.</p>
+        </div>
+      </li>
+      <li class="skill-item">
+        <span class="skill-num">03</span>
+        <div class="skill-body">
+          <h3>Video &amp; Motion</h3>
+          <p>Editing, animation, and motion graphics for training, product launches, and internal comms.</p>
+        </div>
+      </li>
+      <li class="skill-item">
+        <span class="skill-num">04</span>
+        <div class="skill-body">
+          <h3>Digital Illustration</h3>
+          <p>Digital illustration and icon work across the full Adobe suite.</p>
+        </div>
+      </li>
+      <li class="skill-item">
+        <span class="skill-num">05</span>
+        <div class="skill-body">
+          <h3>Modern Toolset</h3>
+          <p>Figma for UI and collaborative design. Adobe Creative Suite across the board. And actively working with Claude AI to accelerate ideation, sharpen copy, and push creative problem-solving further.</p>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- Selected Work -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">03</span>
+      <span class="sec-label">Selected Work</span>
+    </div>
+    <div class="work-grid">
+      <div class="work-tile">
+        <img src="images/4.png" alt="KAM Summit — brand identity" loading="lazy">
+        <div class="work-caption">
+          <span class="work-caption-title">KAM Summit</span>
+          <span class="work-caption-sub">Brand Identity</span>
+        </div>
+      </div>
+      <div class="work-tile">
+        <img src="images/2.png" alt="Joel Embiid — digital portrait illustration" loading="lazy">
+        <div class="work-caption">
+          <span class="work-caption-title">Basketball Portrait</span>
+          <span class="work-caption-sub">Digital Illustration</span>
+        </div>
+      </div>
+      <div class="work-tile">
+        <img src="images/1.jpg" alt="Identity Theft — motion graphics" loading="lazy">
+        <div class="work-caption">
+          <span class="work-caption-title">Identity Theft</span>
+          <span class="work-caption-sub">Motion Graphics</span>
+        </div>
+      </div>
+      <div class="work-tile work-tile--right">
+        <img src="images/3.jpg" alt="Women's Health Elite — logo identity" loading="lazy">
+        <div class="work-caption">
+          <span class="work-caption-title">Women's Health Elite</span>
+          <span class="work-caption-sub">Logo &amp; Identity</span>
+        </div>
+      </div>
+      <div class="work-tile work-tile--top">
+        <img src="images/5.png" alt="A Tale of Three Patients — publication design" loading="lazy">
+        <div class="work-caption">
+          <span class="work-caption-title">Patient Stories</span>
+          <span class="work-caption-sub">Digital Publication</span>
+        </div>
+      </div>
+    </div>
+    <p class="work-more">A larger selection of work is available on <a href="https://www.behance.net/redartist" target="_blank" rel="noopener">Behance</a>.</p>
+  </section>
+
+  <!-- Experience -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">04</span>
+      <span class="sec-label">Experience</span>
+    </div>
+    <ul class="exp-list">
+      <li class="exp-item">
+        <span class="exp-pip"></span>
+        <div>
+          <div class="exp-role">Art Director</div>
+          <div class="exp-place">Performance Development Group — Malvern, PA</div>
+          <div class="exp-date">2023 — Present</div>
+        </div>
+      </li>
+      <li class="exp-item">
+        <span class="exp-pip"></span>
+        <div>
+          <div class="exp-role">Senior Graphic Designer</div>
+          <div class="exp-place">Performance Development Group — Malvern, PA</div>
+          <div class="exp-date">2011 — 2023</div>
+        </div>
+      </li>
+      <li class="exp-item">
+        <span class="exp-pip"></span>
+        <div>
+          <div class="exp-role">Multimedia Designer / Artist</div>
+          <div class="exp-place">Pfizer — Collegeville, PA</div>
+          <div class="exp-date">2009 — 2011</div>
+        </div>
+      </li>
+      <li class="exp-item">
+        <span class="exp-pip"></span>
+        <div>
+          <div class="exp-role">Multimedia Designer / Artist</div>
+          <div class="exp-place">Wyeth — Collegeville, PA</div>
+          <div class="exp-date">2005 — 2009</div>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- Find Me -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">05</span>
+      <span class="sec-label">Find Me</span>
+    </div>
+    <div class="links">
+      <a class="link-pill" href="https://www.behance.net/redartist" target="_blank" rel="noopener">Behance</a>
+      <a class="link-pill" href="https://www.linkedin.com/in/redartist/" target="_blank" rel="noopener">LinkedIn</a>
+      <a class="link-pill" href="https://www.instagram.com/daftporter/" target="_blank" rel="noopener">Instagram</a>
+      <a class="link-pill" href="https://bsky.app/profile/daftporter.bsky.social" target="_blank" rel="noopener">Bluesky</a>
+      <a class="link-pill" href="https://www.youtube.com/@daftporter" target="_blank" rel="noopener">YouTube</a>
+      <a class="link-pill link-cta" id="contact-link" href="#">Let's work together &rarr;</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <span class="footer-name">Tim Allen</span>
+  </footer>
+
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+  <button class="lightbox-close" id="lightbox-close" aria-label="Close">&times;</button>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<script>
+  // ── Email (spam-safe) ──
+  (function() {
+    var a = 'porter.allen', b = 'gmail', c = 'com';
+    var el = document.getElementById('contact-link');
+    el.href = 'mailto:' + a + '\x40' + b + '.' + c;
+  })();
+
+  // ── Lightbox ──
+  (function() {
+    var lb     = document.getElementById('lightbox');
+    var lbImg  = document.getElementById('lightbox-img');
+    var lbClose = document.getElementById('lightbox-close');
+
+    function open(src, alt) {
+      lbImg.src = src;
+      lbImg.alt = alt;
+      lb.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function close() {
+      lb.classList.remove('is-open');
+      document.body.style.overflow = '';
+      lbImg.src = '';
+    }
+
+    // Attach click to each work tile image
+    document.querySelectorAll('.work-tile img').forEach(function(img) {
+      img.addEventListener('click', function() {
+        open(img.src, img.alt);
+      });
+    });
+
+    // Close on overlay click (not on image itself)
+    lb.addEventListener('click', function(e) {
+      if (e.target !== lbImg) close();
+    });
+
+    // Close button
+    lbClose.addEventListener('click', close);
+
+    // Close on Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') close();
+    });
+  })();
+</script>
+
 </body>
 </html>
