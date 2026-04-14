@@ -252,12 +252,13 @@
       margin-bottom: 12px;
     }
     .card-value {
-      font-size: 150px;
+      font-size: clamp(40px, 6.5vw, 150px);
       font-weight: 900;
       line-height: 0.9;
       letter-spacing: .05em;
       color: var(--text);
       font-family: var(--display);
+      white-space: nowrap;
     }
     .card.primary .card-value { color: var(--accent); }
 
@@ -281,6 +282,73 @@
       background: var(--accent);
       width: 0%;
       transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ── SEASON TIMELINE ── */
+    .season-bar {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      outline: 1px solid var(--border-mid);
+      background: var(--bg-card);
+      padding: 16px 22px 18px;
+      margin-bottom: 1px;
+      position: relative;
+    }
+    .season-bar.visible { display: flex; }
+    .season-bar-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .season-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .season-title strong {
+      color: var(--accent);
+      font-weight: normal;
+    }
+    .season-pct {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      color: var(--text-dim);
+    }
+    .season-track {
+      position: relative;
+      height: 6px;
+      background: var(--border);
+    }
+    .season-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0%;
+      background: var(--accent);
+      transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+    }
+    .season-marker {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent-glow);
+      pointer-events: none;
+    }
+    .season-dates {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      color: var(--text-dim);
     }
 
     /* ── RATES STRIP ── */
@@ -503,7 +571,7 @@
       .card { border-bottom: 1px solid var(--border-mid); }
       .rates { grid-template-columns: repeat(2, 1fr); }
       .rate { border-bottom: 1px solid var(--border-mid); }
-      .card-value { font-size: 130px; }
+      .card-value { font-size: clamp(40px, 13vw, 130px); }
       .header-right { gap: 8px; }
     }
     @media (max-width: 700px) {
@@ -515,7 +583,7 @@
       header { flex-direction: column; align-items: flex-start; gap: 12px; }
       .cards { grid-template-columns: 1fr 1fr; }
       .rates { grid-template-columns: 1fr 1fr; }
-      .card-value { font-size: 120px; }
+      .card-value { font-size: clamp(24px, 11vw, 120px); letter-spacing: 0.02em; }
       .card { padding: 18px 14px 14px; }
       .rate { padding: 10px 14px; }
       .title-block h1 { font-size: 24px; }
@@ -575,6 +643,22 @@
     UNABLE TO REACH OPERATIONS DATABASE — CHECK SPREADSHEET PERMISSIONS OR NETWORK CONNECTION
   </div>
 
+  <!-- ═══════════════ SEASON TIMELINE ═══════════════ -->
+  <div class="season-bar" id="seasonBar">
+    <div class="season-bar-top">
+      <span class="season-title" id="seasonTitle">SEASON — &nbsp;<strong>—</strong></span>
+      <span class="season-pct" id="seasonPct">—% COMPLETE</span>
+    </div>
+    <div class="season-track">
+      <div class="season-fill" id="seasonFill"></div>
+      <div class="season-marker" id="seasonMarker" style="left:0%"></div>
+    </div>
+    <div class="season-dates">
+      <span id="seasonStart">—</span>
+      <span id="seasonEnd">—</span>
+    </div>
+  </div>
+
   <!-- ═══════════════ STAT CARDS ═══════════════ -->
   <div class="cards">
     <div class="card primary">
@@ -583,21 +667,21 @@
       <div class="card-sub">Lifetime operations</div>
     </div>
     <div class="card">
-      <div class="card-label">Successful Exfils</div>
+      <div class="card-label">Exfil Rate</div>
       <div class="card-value" id="totalExfils">—</div>
-      <div class="card-sub" id="exfilSub">—% exfil rate</div>
+      <div class="card-sub" id="exfilSub">— successful exfils</div>
       <div class="card-bar"><div class="card-bar-fill" id="exfilBarFill"></div></div>
     </div>
     <div class="card">
-      <div class="card-label">Contracts Completed</div>
+      <div class="card-label">Contract Rate</div>
       <div class="card-value" id="totalContracts">—</div>
-      <div class="card-sub" id="contractSub">—% completion rate</div>
+      <div class="card-sub" id="contractSub">— contracts completed</div>
       <div class="card-bar"><div class="card-bar-fill" id="contractBarFill"></div></div>
     </div>
     <div class="card">
-      <div class="card-label">PvP Kills</div>
+      <div class="card-label">Kills / Run</div>
       <div class="card-value" id="totalKills">—</div>
-      <div class="card-sub" id="killsSub">— kills / run</div>
+      <div class="card-sub" id="killsSub">— total kills</div>
       <div class="card-bar"><div class="card-bar-fill" id="killsBarFill"></div></div>
     </div>
   </div>
@@ -605,15 +689,15 @@
   <!-- ═══════════════ RATES STRIP ═══════════════ -->
   <div class="rates">
     <div class="rate">
-      <span class="rate-label">Exfil Rate</span>
+      <span class="rate-label">Failed Exfil</span>
       <span class="rate-value" id="exfilRate">—</span>
     </div>
     <div class="rate">
-      <span class="rate-label">Contract Rate</span>
+      <span class="rate-label">Contract Runs</span>
       <span class="rate-value" id="contractRate">—</span>
     </div>
     <div class="rate">
-      <span class="rate-label">Kills / Run</span>
+      <span class="rate-label">Total Kills</span>
       <span class="rate-value" id="kprRate">—</span>
     </div>
     <div class="rate">
@@ -729,29 +813,26 @@
      DATA LOGIC
 ═══════════════════════════════════════════ -->
 <script>
-  const SHEET_ID = '13aaNxGAUPJ0eKmTBhuDjuqesVhNfl54TSSgdqWSIKpc';
-  const LOG_TAB  = 'Log';
+  const SHEET_ID  = '13aaNxGAUPJ0eKmTBhuDjuqesVhNfl54TSSgdqWSIKpc';
+  const LOG_TAB   = 'Log';
+  const CONFIG_TAB = 'Config';
 
-  /* ── Fetch via JSONP targeting the Log tab ── */
-  function fetchSheet() {
+  /* ── Generic JSONP fetch for any tab ── */
+  function fetchTab(tab, headers = 1) {
     return new Promise((resolve, reject) => {
-      const cb = '_gviz_' + Date.now();
+      const cb = '_gviz_' + Date.now() + '_' + Math.random().toString(36).slice(2);
       const s  = document.createElement('script');
-
       const timer = setTimeout(() => { cleanup(); reject(new Error('timeout')); }, 12000);
-
-      function cleanup() {
-        clearTimeout(timer);
-        delete window[cb];
-        if (s.parentNode) s.parentNode.removeChild(s);
-      }
-
+      function cleanup() { clearTimeout(timer); delete window[cb]; if (s.parentNode) s.parentNode.removeChild(s); }
       window[cb] = function(data) { cleanup(); resolve(data); };
       s.onerror  = () => { cleanup(); reject(new Error('script error')); };
-      s.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${cb}&sheet=${encodeURIComponent(LOG_TAB)}`;
+      s.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${cb}&sheet=${encodeURIComponent(tab)}&headers=${headers}`;
       document.head.appendChild(s);
     });
   }
+
+  /* ── Fetch via JSONP targeting the Log tab ── */
+  function fetchSheet() { return fetchTab(LOG_TAB); }
 
   /* ── Parse gviz table into plain objects ── */
   function parseSheet(data) {
@@ -763,6 +844,61 @@
       });
       return obj;
     });
+  }
+
+  /* ── Parse Config tab (header row = keys, first data row = values) ── */
+  function parseConfig(data) {
+    const cfg = {};
+    const cols    = data.table.cols.map(c => c.label);
+    const firstRow = data.table.rows && data.table.rows[0];
+    if (!firstRow) return cfg;
+    cols.forEach((col, i) => {
+      if (!col) return;
+      const cell = firstRow.c && firstRow.c[i];
+      const v    = cell ? (cell.v !== null && cell.v !== undefined ? cell.v : (cell.f || null)) : null;
+      cfg[col.trim()] = v !== null && v !== undefined ? String(v).trim() : '';
+    });
+    return cfg;
+  }
+
+  /* ── Render season timeline ── */
+  /* gviz returns date cells as "Date(2026,2,5)" — month is 0-indexed */
+  function parseGvizDate(v) {
+    if (!v) return null;
+    const m = String(v).match(/^Date\((\d+),(\d+),(\d+)/);
+    if (m) return new Date(+m[1], +m[2], +m[3]);
+    const d = new Date(v);
+    return isNaN(d) ? null : d;
+  }
+
+  function renderSeason(cfg) {
+    const num   = cfg['Season Number'];
+    const title = cfg['Season Title'];
+    const start = parseGvizDate(cfg['Season Start']);
+    const end   = parseGvizDate(cfg['Season End']);
+
+    if (!start || !end) return;
+
+    const now     = new Date();
+    const total   = end - start;
+    const elapsed = Math.max(0, Math.min(now - start, total));
+    const pct     = total > 0 ? (elapsed / total) * 100 : 0;
+
+    const fmt = d => d.toLocaleDateString('en-CA'); // YYYY-MM-DD
+
+    const prefix = num ? `SEASON ${num}` : 'SEASON';
+    document.getElementById('seasonTitle').innerHTML =
+      title ? `<strong>${prefix}</strong> — ${title}` : `<strong>${prefix}</strong>`;
+    document.getElementById('seasonPct').textContent  = `${pct.toFixed(1)}% COMPLETE`;
+    document.getElementById('seasonStart').textContent = fmt(start);
+    document.getElementById('seasonEnd').textContent   = fmt(end);
+
+    setTimeout(() => {
+      document.getElementById('seasonFill').style.width     = `${pct}%`;
+      document.getElementById('seasonMarker').style.left    = `${pct}%`;
+    }, 150);
+
+    document.getElementById('seasonBar').classList.add('visible');
   }
 
   /* ── Helpers ── */
@@ -1016,14 +1152,14 @@
     const kpr          = totRuns ? totKills / totRuns : null;
 
     /* Stat cards */
-    countUp(document.getElementById('totalRuns'),      totRuns      || null);
-    countUp(document.getElementById('totalExfils'),    totExfils    || null);
-    countUp(document.getElementById('totalContracts'), totContracts || null);
-    countUp(document.getElementById('totalKills'),     totKills     || null);
+    countUp(document.getElementById('totalRuns'), totRuns || null);
+    document.getElementById('totalExfils').textContent    = fmtP(exfilRate);
+    document.getElementById('totalContracts').textContent = fmtP(contractRate);
+    document.getElementById('totalKills').textContent     = fmtF(kpr);
 
-    document.getElementById('exfilSub').textContent    = exfilRate    !== null ? `${exfilRate.toFixed(0)}% exfil rate`        : '—% exfil rate';
-    document.getElementById('contractSub').textContent = contractRate !== null ? `${contractRate.toFixed(0)}% completion rate` : '—% completion rate';
-    document.getElementById('killsSub').textContent    = kpr          !== null ? `${kpr.toFixed(2)} kills per run`             : '— kills per run';
+    document.getElementById('exfilSub').textContent    = totExfils    ? `${totExfils} successful exfils`    : '— successful exfils';
+    document.getElementById('contractSub').textContent = totContracts ? `${totContracts} contracts completed` : '— contracts completed';
+    document.getElementById('killsSub').textContent    = totKills     ? `${totKills} total kills`            : '— total kills';
 
     setTimeout(() => {
       document.getElementById('exfilBarFill').style.width    = exfilRate    !== null ? `${Math.min(exfilRate,    100)}%` : '0%';
@@ -1033,9 +1169,9 @@
 
     /* Rates strip */
     const { byType, byMap, byRunner } = aggregate(validRows);
-    document.getElementById('exfilRate').textContent    = fmtP(exfilRate);
-    document.getElementById('contractRate').textContent = fmtP(contractRate);
-    document.getElementById('kprRate').textContent      = fmtF(kpr);
+    document.getElementById('exfilRate').textContent    = totRuns - totExfils || '—';
+    document.getElementById('contractRate').textContent = contractEligibleRuns || '—';
+    document.getElementById('kprRate').textContent      = totKills || '—';
     document.getElementById('activeTypes').textContent  = byType.length || '—';
 
     /* Tables */
@@ -1056,9 +1192,22 @@
     const btn = document.getElementById('refreshBtn');
     btn.classList.add('loading');
     try {
-      const raw  = await fetchSheet();
-      const rows = parseSheet(raw);
-      render(rows);
+      const [logResult, cfgResult] = await Promise.allSettled([
+        fetchSheet(),
+        fetchTab(CONFIG_TAB),
+      ]);
+
+      if (logResult.status === 'fulfilled') {
+        render(parseSheet(logResult.value));
+      } else {
+        throw logResult.reason;
+      }
+
+      if (cfgResult.status === 'fulfilled') {
+        renderSeason(parseConfig(cfgResult.value));
+      } else {
+        console.warn('[Dead Drop] Config fetch failed:', cfgResult.reason);
+      }
     } catch (err) {
       console.error('[Dead Drop] fetch failed:', err);
       document.getElementById('alertBanner').classList.add('show');
