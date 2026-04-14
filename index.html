@@ -506,6 +506,16 @@
       color: #fff;
     }
 
+    #lightbox-video {
+      display: none;
+      width: min(900px, 100%);
+      aspect-ratio: 16/9;
+      box-shadow: 0 8px 60px rgba(0,0,0,0.6);
+    }
+
+    .lightbox.is-video #lightbox-img   { display: none; }
+    .lightbox.is-video #lightbox-video { display: block; }
+
     /* ── Responsive ───────────────────────── */
     @media (max-width: 540px) {
       header { padding: 4.5rem 0 3rem; }
@@ -683,7 +693,7 @@
     <div class="work-grid">
       <!-- 1: Hero — full width -->
       <div class="work-tile">
-        <img src="images/1.jpg" alt="Identity Theft — motion graphics" loading="lazy">
+        <img src="images/1.jpg" alt="Identity Theft — motion graphics" loading="lazy" data-video="https://www.youtube.com/embed/b_bQ8HuHYG4?autoplay=1">
         <div class="work-caption">
           <span class="work-caption-title">Identity Theft</span>
           <span class="work-caption-sub">Motion Graphics</span>
@@ -796,6 +806,7 @@
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
   <button class="lightbox-close" id="lightbox-close" aria-label="Close">&times;</button>
   <img id="lightbox-img" src="" alt="">
+  <iframe id="lightbox-video" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 </div>
 
 <script>
@@ -808,33 +819,47 @@
 
   // ── Lightbox ──
   (function() {
-    var lb     = document.getElementById('lightbox');
-    var lbImg  = document.getElementById('lightbox-img');
+    var lb      = document.getElementById('lightbox');
+    var lbImg   = document.getElementById('lightbox-img');
+    var lbVideo = document.getElementById('lightbox-video');
     var lbClose = document.getElementById('lightbox-close');
 
-    function open(src, alt) {
+    function openImage(src, alt) {
+      lb.classList.remove('is-video');
       lbImg.src = src;
       lbImg.alt = alt;
       lb.classList.add('is-open');
       document.body.style.overflow = 'hidden';
     }
 
+    function openVideo(embedUrl) {
+      lb.classList.add('is-video');
+      lbVideo.src = embedUrl;
+      lb.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    }
+
     function close() {
-      lb.classList.remove('is-open');
+      lb.classList.remove('is-open', 'is-video');
       document.body.style.overflow = '';
       lbImg.src = '';
+      lbVideo.src = '';
     }
 
     // Attach click to each work tile image
     document.querySelectorAll('.work-tile img').forEach(function(img) {
       img.addEventListener('click', function() {
-        open(img.src, img.alt);
+        if (img.dataset.video) {
+          openVideo(img.dataset.video);
+        } else {
+          openImage(img.src, img.alt);
+        }
       });
     });
 
-    // Close on overlay click (not on image itself)
+    // Close on overlay click (not on image/video itself)
     lb.addEventListener('click', function(e) {
-      if (e.target !== lbImg) close();
+      if (e.target !== lbImg && e.target !== lbVideo) close();
     });
 
     // Close button
