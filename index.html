@@ -58,8 +58,8 @@
     }
 
     .avatar {
-      width: 60px;
-      height: 60px;
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
       background: var(--surface);
       border: 1px solid var(--border);
@@ -270,8 +270,12 @@
     }
 
     .work-tile:first-child img {
-      object-fit: contain;
-      background: #fff;
+      object-fit: cover;
+    }
+
+    .work-tile--wide {
+      grid-column: span 2;
+      aspect-ratio: 16 / 9;
     }
 
     /* ── Work caption ────────────────────── */
@@ -515,6 +519,7 @@
       .work-grid { grid-template-columns: 1fr; }
       .work-tile { aspect-ratio: 16 / 9; }
       .work-tile:first-child { aspect-ratio: 16 / 9; grid-column: span 1; }
+      .work-tile--wide { grid-column: span 1; }
 
       /* Skills: tighten up number column */
       .skill-item { grid-template-columns: 2rem 1fr; gap: 0 1rem; }
@@ -676,6 +681,15 @@
       <span class="sec-label">Selected Work</span>
     </div>
     <div class="work-grid">
+      <!-- 1: Hero — full width -->
+      <div class="work-tile">
+        <img src="images/1.jpg" alt="Identity Theft — motion graphics" loading="lazy">
+        <div class="work-caption">
+          <span class="work-caption-title">Identity Theft</span>
+          <span class="work-caption-sub">Motion Graphics</span>
+        </div>
+      </div>
+      <!-- Row 2: brand identity + dramatic presentation -->
       <div class="work-tile">
         <img src="images/4.png" alt="KAM Summit — brand identity" loading="lazy">
         <div class="work-caption">
@@ -684,16 +698,17 @@
         </div>
       </div>
       <div class="work-tile">
-        <img src="images/2.png" alt="Joel Embiid — digital portrait illustration" loading="lazy">
+        <img src="images/6.jpg" alt="Leadership Base Camp — presentation design" loading="lazy">
         <div class="work-caption">
-          <span class="work-caption-title">Basketball Portrait</span>
-          <span class="work-caption-sub">Digital Illustration</span>
+          <span class="work-caption-title">Leadership Base Camp</span>
+          <span class="work-caption-sub">Presentation Design</span>
         </div>
       </div>
+      <!-- Row 3: cinematic motion + clean identity -->
       <div class="work-tile">
-        <img src="images/1.jpg" alt="Identity Theft — motion graphics" loading="lazy">
+        <img src="images/7.jpg" alt="SWAGGER — motion graphics" loading="lazy">
         <div class="work-caption">
-          <span class="work-caption-title">Identity Theft</span>
+          <span class="work-caption-title">SWAGGER</span>
           <span class="work-caption-sub">Motion Graphics</span>
         </div>
       </div>
@@ -704,11 +719,49 @@
           <span class="work-caption-sub">Logo &amp; Identity</span>
         </div>
       </div>
+      <!-- Row 4: retro presentation + eLearning -->
+      <div class="work-tile">
+        <img src="images/8.jpg" alt="KAM Summit 2025 — presentation design" loading="lazy">
+        <div class="work-caption">
+          <span class="work-caption-title">KAM Summit 2025</span>
+          <span class="work-caption-sub">Presentation Design</span>
+        </div>
+      </div>
+      <div class="work-tile">
+        <img src="images/9.jpg" alt="The Migraine Journey — eLearning design" loading="lazy">
+        <div class="work-caption">
+          <span class="work-caption-title">The Migraine Journey</span>
+          <span class="work-caption-sub">eLearning Design</span>
+        </div>
+      </div>
+      <!-- Row 5: editorial publication + reference design -->
       <div class="work-tile work-tile--top">
         <img src="images/5.png" alt="A Tale of Three Patients — publication design" loading="lazy">
         <div class="work-caption">
           <span class="work-caption-title">Patient Stories</span>
           <span class="work-caption-sub">Digital Publication</span>
+        </div>
+      </div>
+      <div class="work-tile">
+        <img src="images/10.jpg" alt="Migraine Treatment Drug Classes — reference design" loading="lazy">
+        <div class="work-caption">
+          <span class="work-caption-title">Migraine Treatment</span>
+          <span class="work-caption-sub">Reference Design</span>
+        </div>
+      </div>
+      <!-- Row 6: illustrations last — artistic range -->
+      <div class="work-tile">
+        <img src="images/2.png" alt="Joel Embiid — digital portrait illustration" loading="lazy">
+        <div class="work-caption">
+          <span class="work-caption-title">Basketball Portrait</span>
+          <span class="work-caption-sub">Digital Illustration</span>
+        </div>
+      </div>
+      <div class="work-tile">
+        <img src="images/11.png" alt="Portrait illustration" loading="lazy">
+        <div class="work-caption">
+          <span class="work-caption-title">Portrait Study</span>
+          <span class="work-caption-sub">Digital Illustration</span>
         </div>
       </div>
     </div>
@@ -734,7 +787,7 @@
   <!-- Footer -->
   <footer>
     <span class="footer-name">Tim Allen</span>
-    <span>&copy; 2025</span>
+    <span>&copy; 2026</span>
   </footer>
 
 </div>
