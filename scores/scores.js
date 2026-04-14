@@ -240,6 +240,26 @@ async function fetchTeamData(key){
       if(nextGame) break;
     }
   }
+  // If schedule has no completed games, scan recent scoreboards (catches season transitions)
+  if(!lastCompleted && !isOffseason){
+    const backGames=[];
+    for(let daysBack=1; daysBack<=7; daysBack++){
+      const dt=new Date(now-daysBack*24*60*60*1000);
+      const dateStr=dt.toISOString().slice(0,10).replace(/-/g,'');
+      const sb=await espnFetch(base+'/scoreboard?dates='+dateStr).catch(()=>null);
+      if(!sb?.events) continue;
+      for(const ev of sb.events){
+        const p=parseEvent(ev,teamId);
+        if(p&&p.completed) backGames.push(p);
+      }
+      if(backGames.length>=4) break;
+    }
+    if(backGames.length){
+      backGames.sort((a,b)=>a.dateMs-b.dateMs);
+      recentGames.push(...backGames);
+      lastCompleted=backGames[backGames.length-1];
+    }
+  }
   if(sbRes?.events){
     for(const ev of sbRes.events){
       const p=parseEvent(ev,teamId);
@@ -257,9 +277,10 @@ async function fetchTeamData(key){
   const fs=isOffseason?'offseason':
     !featured?'offseason':
     activeLive?'live':
-    (nextIsClose||!lastCompleted)&&nextGame?'upcoming':
-    nextGame&&featured===nextGame?'upcoming':
-    featured.featuredStatus;
+    nextIsClose&&nextGame?'upcoming':
+    lastCompleted?featured.featuredStatus:
+    nextGame?'upcoming':
+    'offseason';
 
   const showRecords=fs!=='offseason';
   const phiRecordFallback=lastCompleted?.phiRecord||null;
@@ -303,6 +324,7 @@ async function fetchTeamData(key){
     recentGames:recentFiltered.map(g=>({opp:g.oppAbbr,home:g.isHome,phiScore:g.phiScore,oppScore:g.oppScore,date:fmtShort(g.dateMs)})),
     nextGame:nextGame&&fs!=='starting'&&fs!=='live'&&!nextIsClose
       ?(nextGame.isHome?'vs':'@')+' '+nextGame.oppAbbr+' · '+fmtFull(nextGame.dateMs):null,
+    nextGameIsPlayoff:!!(nextGame?.isPlayoff),
     nextGameToday:nextGame?new Date(nextGame.dateMs).toDateString()===new Date().toDateString():false,
     featuredDateMs:featured?.dateMs||0,
     nextGameDateMs:nextGame?.dateMs||0,
@@ -475,7 +497,7 @@ function renderCard(key,data){
     featuredHtml='<div class="featured-game" style="text-align:center;padding:24px 20px"><div style="font-size:36px;margin-bottom:8px">🏆</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:18px;color:#4b5563;letter-spacing:.08em">Season Complete</div>'+(data.offseasonNote?'<div style="font-size:11px;color:#6b7280;margin-top:6px;font-family:\'DM Mono\',monospace">'+data.offseasonNote+'</div>':'')+'</div>';
   }
   const recentHtml=data.recentGames?.length?data.recentGames.map(g=>{ const r=g.phiScore>g.oppScore?{c:'win',l:'W'}:g.phiScore<g.oppScore?{c:'loss',l:'L'}:{c:'draw',l:'D'}; return '<div class="result-row"><div class="result-matchup">'+(g.home?'vs':'@')+' <span>'+g.opp+'</span></div><div class="result-score">'+g.phiScore+'&ndash;'+g.oppScore+'</div><div class="result-wl '+r.c+'">'+r.l+'</div><div class="result-date">'+g.date+'</div></div>'; }).join(''):'<div class="no-recent">No recent games</div>';
-  const nextHtml=data.nextGame?'<div class="next-game-row'+(data.nextGameToday?' today':'')+'"><div class="next-game-label">Next &#9654;</div><div class="next-game-info">'+data.nextGame+(data.nextGameToday?'<span class="today-badge">TODAY</span>':'')+'</div></div>':'';
+  const nextHtml=data.nextGame?'<div class="next-game-row'+(data.nextGameToday?' today':'')+(data.nextGameIsPlayoff?' playoffs':'')+'"><div class="next-game-label">'+(data.nextGameIsPlayoff?'Playoffs &#9654;':'Next &#9654;')+'</div><div class="next-game-info">'+data.nextGame+(data.nextGameToday?'<span class="today-badge">TODAY</span>':'')+'</div></div>':'';
   return '<div class="team-card'+(isLive?' is-live':'')+'" data-team="'+key+'" style="--team-color:'+color+'"'+clickAttr+'><div class="card-header"><div class="team-icon">'+icon+'</div><div class="team-meta"><div class="team-name">'+name+'</div><div class="team-sport">'+sport+'</div>'+(data.standing?'<div class="team-sport" style="margin-top:2px">'+data.standing+'</div>':'')+'</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px"><span class="card-status '+statusCls+'">'+statusLabel+'</span>'+(data.streak?'<span class="streak '+streakCls+'">'+data.streak+'</span>':'')+'</div></div>'+featuredHtml+'<div class="recent-results"><div class="results-label">Recent Games</div>'+recentHtml+nextHtml+'</div>'+(isLive?'<div class="live-expand-hint">⛶ Click to expand</div>':'')+'</div>';
 }
 
