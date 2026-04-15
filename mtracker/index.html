@@ -216,7 +216,13 @@
     }
 
     .card {
-      background: var(--bg-card);
+      background-color: var(--bg-card);
+      background-image:
+        linear-gradient(var(--border-bright), var(--border-bright)),
+        linear-gradient(var(--border-bright), var(--border-bright));
+      background-size: 1px 14px, 14px 1px;
+      background-position: 9px 9px, 9px 9px;
+      background-repeat: no-repeat;
       padding: 26px 22px 20px;
       border-right: 1px solid var(--border-mid);
       position: relative;
@@ -233,6 +239,16 @@
       transition: background 0.3s;
     }
     .card.primary::before { background: var(--accent); }
+    .card.primary {
+      background-color: var(--bg-card);
+      background-image:
+        linear-gradient(var(--accent), var(--accent)),
+        linear-gradient(var(--accent), var(--accent)),
+        repeating-linear-gradient(-45deg, transparent, transparent 8px, rgba(200,244,0,0.028) 8px, rgba(200,244,0,0.028) 9px);
+      background-size: 1px 14px, 14px 1px, 100% 100%;
+      background-position: 9px 9px, 9px 9px, 0 0;
+      background-repeat: no-repeat, no-repeat, repeat;
+    }
 
     .card::after {
       content: '';
@@ -261,6 +277,7 @@
       white-space: nowrap;
     }
     .card.primary .card-value { color: var(--accent); }
+    .card-value sup { font-size: 0.4em; vertical-align: super; font-weight: 900; letter-spacing: 0; }
 
     .card-sub {
       font-family: var(--mono);
@@ -358,6 +375,27 @@
       outline: 1px solid var(--border-mid);
       margin-bottom: 32px;
       background: var(--bg-card-alt);
+      position: relative;
+    }
+    .rates::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 10px; height: 10px;
+      border-top: 1px solid var(--accent);
+      border-left: 1px solid var(--accent);
+      pointer-events: none;
+      z-index: 2;
+    }
+    .rates::after {
+      content: '';
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 10px; height: 10px;
+      border-bottom: 1px solid var(--accent);
+      border-right: 1px solid var(--accent);
+      pointer-events: none;
+      z-index: 2;
     }
     .rate {
       display: flex;
@@ -389,7 +427,33 @@
       border: 1px solid var(--border-mid);
       border-bottom: none;
       padding: 12px 22px;
-      background: var(--bg-card-alt);
+      background-color: var(--bg-card-alt);
+      background-image: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 6px,
+        rgba(255,255,255,0.012) 6px,
+        rgba(255,255,255,0.012) 7px
+      );
+      position: relative;
+    }
+    .section-head::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 10px; height: 10px;
+      border-top: 1px solid var(--accent);
+      border-left: 1px solid var(--accent);
+      pointer-events: none;
+    }
+    .section-head::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 10px; height: 10px;
+      border-top: 1px solid var(--accent);
+      border-right: 1px solid var(--accent);
+      pointer-events: none;
     }
     .section-head-title {
       font-size: 14px;
@@ -662,11 +726,6 @@
   <!-- ═══════════════ STAT CARDS ═══════════════ -->
   <div class="cards">
     <div class="card primary">
-      <div class="card-label">Total Runs</div>
-      <div class="card-value" id="totalRuns">—</div>
-      <div class="card-sub">Lifetime operations</div>
-    </div>
-    <div class="card">
       <div class="card-label">Exfil Rate</div>
       <div class="card-value" id="totalExfils">—</div>
       <div class="card-sub" id="exfilSub">— successful exfils</div>
@@ -683,6 +742,11 @@
       <div class="card-value" id="totalKills">—</div>
       <div class="card-sub" id="killsSub">— total kills</div>
       <div class="card-bar"><div class="card-bar-fill" id="killsBarFill"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Total Runs</div>
+      <div class="card-value" id="totalRuns">—</div>
+      <div class="card-sub">Lifetime operations</div>
     </div>
   </div>
 
@@ -907,14 +971,15 @@
   const fmtP = v  => v !== null ? v.toFixed(1) + '%' : '—';
   const fmtF = v  => v !== null ? v.toFixed(2) : '—';
 
-  function countUp(el, target) {
-    if (target === null || target === 0) { el.textContent = target === 0 ? '0' : '—'; return; }
+  function countUp(el, target, fmt) {
+    const format = fmt || (v => String(Math.round(v)));
+    if (target === null || target === 0) { el.innerHTML = target === 0 ? format(0) : '—'; return; }
     const duration = 900;
     const t0 = performance.now();
     (function step(now) {
       const p    = Math.min((now - t0) / duration, 1);
       const ease = 1 - Math.pow(1 - p, 3);
-      el.textContent = Math.round(target * ease);
+      el.innerHTML = format(target * ease);
       if (p < 1) requestAnimationFrame(step);
     })(t0);
   }
@@ -1152,10 +1217,10 @@
     const kpr          = totRuns ? totKills / totRuns : null;
 
     /* Stat cards */
-    countUp(document.getElementById('totalRuns'), totRuns || null);
-    document.getElementById('totalExfils').textContent    = fmtP(exfilRate);
-    document.getElementById('totalContracts').textContent = fmtP(contractRate);
-    document.getElementById('totalKills').textContent     = fmtF(kpr);
+    countUp(document.getElementById('totalExfils'),    exfilRate,    v => v.toFixed(1) + '<sup>%</sup>');
+    countUp(document.getElementById('totalContracts'), contractRate, v => v.toFixed(1) + '<sup>%</sup>');
+    countUp(document.getElementById('totalKills'),     kpr,          v => v.toFixed(2));
+    countUp(document.getElementById('totalRuns'),      totRuns || null);
 
     document.getElementById('exfilSub').textContent    = totExfils    ? `${totExfils} successful exfils`    : '— successful exfils';
     document.getElementById('contractSub').textContent = totContracts ? `${totContracts} contracts completed` : '— contracts completed';
