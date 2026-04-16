@@ -300,14 +300,14 @@ async function fetchTeamData(key){
 
   const completedDateMs=lastCompleted?.dateMs||0;
   const recentFiltered=isOffseason?[]:recentGames
-    .filter(g=>g.dateMs!==(featured?.dateMs||-1))
+    .slice(-4).filter(g=>g.dateMs!==(featured?.dateMs||-1))
     .slice(-3).reverse();
 
   return {
     featuredStatus:fs,
     completedDateMs,
     featured:featured?{
-      label:     fs==='live'?'LIVE NOW':fs==='starting'?'STARTING NOW':fs==='upcoming'?'NEXT GAME':null,
+      label:     fs==='starting'?'STARTING NOW':fs==='upcoming'?'NEXT GAME':null,
       isHome:    featured.isHome||false,
       oppAbbr:   featured.oppAbbr||'OPP',
       oppId:     featured.oppId||null,
@@ -340,6 +340,13 @@ let newsCache={items:[],fetchedAt:0};
 const NEWS_TTL=5*60*1000;
 function parseRssDate(str){ if(!str) return 0; return new Date(str.replace(' ','T')+'Z').getTime()||0; }
 function escHtml(s){ const d=document.createElement('div'); d.textContent=String(s||''); return d.innerHTML; }
+function fmtPlayoffNote(note){
+  if(!note) return 'Playoffs';
+  return note
+    .replace(/^\s*(NBA|NFL|NHL|MLB|MLS|WNBA)\s+/i,'')
+    .replace(/\s*-\s*/g,' · ')
+    .trim();
+}
 function safeUrl(s){ try{ const u=new URL(s); return (u.protocol==='https:'||u.protocol==='http:') ? s : '#'; }catch(e){ return '#'; } }
 function timeAgo(dateStr){
   const diff=Date.now()-parseRssDate(dateStr);
@@ -488,7 +495,7 @@ function renderCard(key,data){
     const oppSide='<div class="team-side"><div class="team-abv">'+f.oppAbbr+'</div>'+oppImg+scoreHtml(f.oppScore,oppWins,upcoming,false)+(f.oppRecord?'<div class="team-record">'+f.oppRecord+'</div>':'')+'</div>';
     const div='<div class="vs-divider"><div class="vs-line"></div><div class="vs-text">VS</div><div class="vs-line"></div></div>';
     const matchup=f.isHome?oppSide+div+phiSide:phiSide+div+oppSide;
-    const playoffBadge = f.isPlayoff ? '<div class="playoff-badge">'+f.gameNote+'</div>' : '';
+    const playoffBadge = f.isPlayoff ? '<div class="playoff-badge">'+fmtPlayoffNote(f.gameNote)+'</div>' : '';
     featuredHtml='<div class="featured-game">'
       +playoffBadge
       +(f.label?'<div class="game-label">'+f.label+'</div>':'')
