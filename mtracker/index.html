@@ -538,6 +538,82 @@
     td.worst .rate-cell-wrap span { color: #ff3b30; }
     td.worst .inline-bar-fill { background: #ff3b30; }
 
+    /* ── FILTER BAR ── */
+    .rates { margin-bottom: 1px; }
+    .rates.no-filter { margin-bottom: 32px; }
+    .filter-bar {
+      display: none;
+      outline: 1px solid var(--border-mid);
+      background: var(--bg-card-alt);
+      padding: 12px 22px;
+      margin-bottom: 32px;
+    }
+    .filter-bar.visible { display: block; }
+    .filter-bar-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 20px;
+    }
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+    .filter-group-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .filter-chip {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border: 1px solid var(--border-mid);
+      background: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: border-color 0.12s, color 0.12s, background 0.12s;
+      white-space: nowrap;
+    }
+    .filter-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-chip.active { border-color: var(--accent); color: #000; background: var(--accent); }
+    .filter-divider {
+      width: 1px;
+      height: 16px;
+      background: var(--border-mid);
+      flex-shrink: 0;
+    }
+    .filter-clear {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border: 1px solid rgba(255,59,48,0.35);
+      background: none;
+      color: var(--danger);
+      cursor: pointer;
+      transition: background 0.12s;
+      white-space: nowrap;
+    }
+    .filter-clear:hover { background: var(--danger-dim); }
+    .filter-count {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      color: var(--text-dim);
+      white-space: nowrap;
+      margin-left: auto;
+    }
+    .filter-count em { color: var(--accent); font-style: normal; }
+
     /* ── RECENT RUNS TABLE ── */
     .recent-timestamp {
       font-family: var(--mono);
@@ -770,6 +846,9 @@
     </div>
   </div>
 
+  <!-- ═══════════════ FILTER BAR ═══════════════ -->
+  <div class="filter-bar" id="filterBar"></div>
+
   <!-- ═══════════════ SQUAD TYPE BREAKDOWN ═══════════════ -->
   <div class="section-head">
     <span class="section-head-title">Squad Type Breakdown</span>
@@ -868,7 +947,7 @@
   <!-- ═══════════════ FOOTER ═══════════════ -->
   <footer>
     <div class="footer-l">DATA SOURCE: GOOGLE SHEETS &nbsp;// &nbsp;AUTO-REFRESH: 60S</div>
-    <div class="footer-r">DEAD DROP v2.1 &nbsp;// &nbsp;TAU CETI IV</div>
+    <div class="footer-r">DEAD DROP v2.2 &nbsp;// &nbsp;TAU CETI IV</div>
   </footer>
 
 </div><!-- .page -->
@@ -963,6 +1042,111 @@
     }, 150);
 
     document.getElementById('seasonBar').classList.add('visible');
+  }
+
+  /* ── Filter state ── */
+  let allRows = [];
+  const activeFilters = { maps: new Set(), runners: new Set(), types: new Set() };
+
+  function applyFilters(rows) {
+    const { maps, runners, types } = activeFilters;
+    return rows.filter(r => {
+      if (maps.size > 0 && !maps.has((r['Map'] || '').trim())) return false;
+      if (types.size > 0) {
+        const rt = (r['Run Type'] || '').trim();
+        if (!types.has(rt === 'Rook Solo' ? 'Rook' : rt)) return false;
+      }
+      if (runners.size > 0) {
+        const names = (r['Players'] || '').toString().trim()
+          .split(',').map(p => p.trim()).filter(Boolean);
+        if (!names.some(n => runners.has(n))) return false;
+      }
+      return true;
+    });
+  }
+
+  function buildFilterBar(rows) {
+    const validRows = rows.filter(r => r['Run Type']);
+    const maps    = [...new Set(validRows.map(r => (r['Map'] || '').trim()).filter(Boolean))].sort();
+    const runners = [...new Set(validRows.flatMap(r =>
+      (r['Players'] || '').toString().trim().split(',').map(p => p.trim()).filter(Boolean)
+    ))].sort();
+    const types   = [...new Set(validRows.map(r => {
+      const rt = (r['Run Type'] || '').trim();
+      return rt === 'Rook Solo' ? 'Rook' : rt;
+    }).filter(Boolean))].sort();
+
+    const bar = document.getElementById('filterBar');
+    const ratesEl = document.querySelector('.rates');
+
+    if (!maps.length && !runners.length && !types.length) {
+      bar.classList.remove('visible');
+      ratesEl.classList.add('no-filter');
+      return;
+    }
+
+    const hasActive = activeFilters.maps.size > 0 || activeFilters.runners.size > 0 || activeFilters.types.size > 0;
+    ratesEl.classList.toggle('no-filter', !hasActive && false); // rates always 1px gap when bar visible
+
+    const makeChips = (items, group) => items.map(label => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-chip' + (activeFilters[group].has(label) ? ' active' : '');
+      btn.textContent = label;
+      btn.onclick = () => {
+        if (activeFilters[group].has(label)) activeFilters[group].delete(label);
+        else activeFilters[group].add(label);
+        buildFilterBar(allRows);
+        render(applyFilters(allRows));
+      };
+      return btn;
+    });
+
+    const inner = document.createElement('div');
+    inner.className = 'filter-bar-inner';
+
+    const groups = [
+      { label: 'Map',    key: 'maps',    items: maps    },
+      { label: 'Runner', key: 'runners', items: runners },
+      { label: 'Squad',  key: 'types',   items: types   },
+    ];
+
+    let first = true;
+    groups.forEach(({ label, key, items }) => {
+      if (!items.length) return;
+      if (!first) { const d = document.createElement('div'); d.className = 'filter-divider'; inner.appendChild(d); }
+      first = false;
+      const grp = document.createElement('div');
+      grp.className = 'filter-group';
+      const lbl = document.createElement('span');
+      lbl.className = 'filter-group-label';
+      lbl.textContent = label;
+      grp.appendChild(lbl);
+      makeChips(items, key).forEach(c => grp.appendChild(c));
+      inner.appendChild(grp);
+    });
+
+    if (hasActive) {
+      const d = document.createElement('div'); d.className = 'filter-divider'; inner.appendChild(d);
+      const clearBtn = document.createElement('button');
+      clearBtn.className = 'filter-clear';
+      clearBtn.textContent = '× CLEAR';
+      clearBtn.onclick = () => {
+        activeFilters.maps.clear(); activeFilters.runners.clear(); activeFilters.types.clear();
+        buildFilterBar(allRows);
+        render(applyFilters(allRows));
+      };
+      inner.appendChild(clearBtn);
+
+      const filtered = applyFilters(validRows);
+      const countEl = document.createElement('span');
+      countEl.className = 'filter-count';
+      countEl.innerHTML = `<em>${filtered.length}</em> of ${validRows.length} runs`;
+      inner.appendChild(countEl);
+    }
+
+    bar.innerHTML = '';
+    bar.appendChild(inner);
+    bar.classList.add('visible');
   }
 
   /* ── Helpers ── */
@@ -1263,7 +1447,9 @@
       ]);
 
       if (logResult.status === 'fulfilled') {
-        render(parseSheet(logResult.value));
+        allRows = parseSheet(logResult.value);
+        buildFilterBar(allRows);
+        render(applyFilters(allRows));
       } else {
         throw logResult.reason;
       }
