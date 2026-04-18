@@ -117,9 +117,9 @@ const OPP_LOGO_TTL = 30*24*60*60*1000;
 const oppLogoCache = {};
 (()=>{
   try{
-    // v3: fix cache key collision between sports — clear old cache
+    // v4: cache key now includes sport prefix to prevent cross-sport ID collisions
     const ver = localStorage.getItem('oppLogosVer');
-    if(ver !== '3') { localStorage.removeItem('oppLogos'); localStorage.setItem('oppLogosVer','3'); }
+    if(ver !== '4') { localStorage.removeItem('oppLogos'); localStorage.setItem('oppLogosVer','4'); }
     const stored = JSON.parse(localStorage.getItem('oppLogos')||'{}');
     const now = Date.now();
     Object.entries(stored).forEach(([id,entry])=>{
@@ -136,13 +136,13 @@ function saveOppLogos(){
 }
 function oppLogoUrl(path, oppId, oppAbbr){
   if(!oppId) return null;
-  const cacheKey = oppId;
-  if(oppLogoCache[cacheKey]!==undefined) return oppLogoCache[cacheKey];
   const sport = path.startsWith('football')  ? 'nfl'
     : path.startsWith('basketball') ? 'nba'
     : path.startsWith('hockey')     ? 'nhl'
     : path.startsWith('baseball')   ? 'mlb'
     : 'soccer';
+  const cacheKey = sport + ':' + oppId;
+  if(oppLogoCache[cacheKey]!==undefined) return oppLogoCache[cacheKey];
   const isSoccerLogo = sport === 'soccer';
   // Soccer uses ID-based URLs; other sports use scoreboard/abbr format
   const slug = (!isSoccerLogo && oppAbbr) ? oppAbbr.toLowerCase() : oppId;
