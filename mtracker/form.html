@@ -516,11 +516,7 @@
           <label class="field-label" for="map">Map <span class="required">*</span></label>
           <div class="select-wrap">
             <select id="map" name="map" required>
-              <option value="">— Select Map —</option>
-              <option value="Perimeter">Perimeter</option>
-              <option value="Dire Marsh">Dire Marsh</option>
-              <option value="Outpost">Outpost</option>
-              <option value="Cryo Archive">Cryo Archive</option>
+              <option value="">— Loading Maps… —</option>
             </select>
           </div>
           <div class="field-error" id="mapError">MAP IS REQUIRED</div>
@@ -836,9 +832,36 @@
   });
 
   // ════════════════════════════════════════════════════════════════
+  //  MAP OPTIONS — fetched from the "Maps" tab in the spreadsheet
+  // ════════════════════════════════════════════════════════════════
+
+  const FALLBACK_MAPS = ['Perimeter', 'Dire Marsh', 'Outpost', 'Cryo Archive'];
+
+  function populateMaps(maps) {
+    const sel = document.getElementById('map');
+    sel.innerHTML = '<option value="">— Select Map —</option>' +
+      maps.map(m => `<option value="${m}">${m}</option>`).join('');
+  }
+
+  async function loadMaps() {
+    try {
+      const res  = await fetch(APPS_SCRIPT_URL);
+      const data = await res.json();
+      if (data.status === 'ok' && Array.isArray(data.maps) && data.maps.length > 0) {
+        populateMaps(data.maps);
+      } else {
+        populateMaps(FALLBACK_MAPS);
+      }
+    } catch {
+      populateMaps(FALLBACK_MAPS);
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════════
   //  INIT
   // ════════════════════════════════════════════════════════════════
   populateSelects();
+  loadMaps();
 </script>
 </body>
 </html>
