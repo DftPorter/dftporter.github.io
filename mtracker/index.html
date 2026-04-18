@@ -584,8 +584,6 @@
     }
     .filter-chip:hover { border-color: var(--accent); color: var(--accent); }
     .filter-chip.active { border-color: var(--accent); color: #000; background: var(--accent); }
-    .filter-chip.excluded { border-color: rgba(255,59,48,0.3); color: var(--text-dim); text-decoration: line-through; }
-    .filter-chip.excluded:hover { border-color: var(--danger); color: var(--danger); }
     .filter-footer {
       display: flex;
       align-items: center;
@@ -1050,19 +1048,21 @@
 
   /* ── Filter state ── */
   let allRows = [];
-  const activeFilters = { maps: new Set(), runners: new Set(), types: new Set(), showRandomFill: false };
+  const activeFilters = { maps: new Set(), runners: new Set(), types: new Set() };
 
   function applyFilters(rows) {
-    const { maps, runners, types, showRandomFill } = activeFilters;
+    const { maps, runners, types } = activeFilters;
     return rows.filter(r => {
-      const names = (r['Players'] || '').toString().trim().split(',').map(p => p.trim()).filter(Boolean);
-      if (!showRandomFill && names.includes('Random Fill')) return false;
       if (maps.size > 0 && !maps.has((r['Map'] || '').trim())) return false;
       if (types.size > 0) {
         const rt = (r['Run Type'] || '').trim();
         if (!types.has(rt === 'Rook Solo' ? 'Rook' : rt)) return false;
       }
-      if (runners.size > 0 && !names.some(n => runners.has(n))) return false;
+      if (runners.size > 0) {
+        const names = (r['Players'] || '').toString().trim()
+          .split(',').map(p => p.trim()).filter(Boolean);
+        if (!names.some(n => runners.has(n))) return false;
+      }
       return true;
     });
   }
@@ -1092,24 +1092,14 @@
 
     const makeChips = (items, group) => items.map(label => {
       const btn = document.createElement('button');
-      if (label === 'Random Fill') {
-        btn.className = 'filter-chip' + (activeFilters.showRandomFill ? ' active' : ' excluded');
-        btn.textContent = label;
-        btn.onclick = () => {
-          activeFilters.showRandomFill = !activeFilters.showRandomFill;
-          buildFilterBar(allRows);
-          render(applyFilters(allRows));
-        };
-      } else {
-        btn.className = 'filter-chip' + (activeFilters[group].has(label) ? ' active' : '');
-        btn.textContent = label;
-        btn.onclick = () => {
-          if (activeFilters[group].has(label)) activeFilters[group].delete(label);
-          else activeFilters[group].add(label);
-          buildFilterBar(allRows);
-          render(applyFilters(allRows));
-        };
-      }
+      btn.className = 'filter-chip' + (activeFilters[group].has(label) ? ' active' : '');
+      btn.textContent = label;
+      btn.onclick = () => {
+        if (activeFilters[group].has(label)) activeFilters[group].delete(label);
+        else activeFilters[group].add(label);
+        buildFilterBar(allRows);
+        render(applyFilters(allRows));
+      };
       return btn;
     });
 
@@ -1143,7 +1133,6 @@
       clearBtn.textContent = '× CLEAR';
       clearBtn.onclick = () => {
         activeFilters.maps.clear(); activeFilters.runners.clear(); activeFilters.types.clear();
-        activeFilters.showRandomFill = false;
         buildFilterBar(allRows);
         render(applyFilters(allRows));
       };

@@ -473,7 +473,9 @@
               <option value="Solo">Solo</option>
               <option value="Rook">Rook</option>
               <option value="Duo">Duo</option>
+              <option value="Duo Fill">Duo Fill</option>
               <option value="Trio">Trio</option>
+              <option value="Trio Fill">Trio Fill</option>
             </select>
           </div>
           <div class="field-error" id="runTypeError">SQUAD TYPE IS REQUIRED</div>
@@ -524,11 +526,11 @@
 
         <hr class="field-divider">
 
-        <!-- PVP KILLS -->
+        <!-- PVP ELIMS -->
         <div class="field">
-          <label class="field-label" for="pvpKills">PvP Kills <span class="required">*</span></label>
+          <label class="field-label" for="pvpKills">PvP Elims <span class="required">*</span></label>
           <input type="number" id="pvpKills" name="pvp_kills" min="0" max="99" placeholder="0" required>
-          <div class="field-error" id="pvpError">ENTER A VALID KILL COUNT (0 OR MORE)</div>
+          <div class="field-error" id="pvpError">ENTER A VALID ELIM COUNT (0 OR MORE)</div>
         </div>
 
         <!-- CONTRACT COMPLETED -->
@@ -616,10 +618,24 @@
   }
 
   function getVisibleSlotCount(runType) {
-    if (runType === 'Duo')   return 2;
-    if (runType === 'Trio')  return 3;
+    if (runType === 'Duo'  || runType === 'Duo Fill')  return 2;
+    if (runType === 'Trio' || runType === 'Trio Fill') return 3;
     if (runType === 'Solo' || runType === 'Rook') return 1;
     return 0;
+  }
+
+  function autoSetFillType() {
+    const rtSel  = document.getElementById('runType');
+    const rt     = rtSel.value;
+    const count  = getVisibleSlotCount(rt);
+    const hasFill = Array.from({ length: count }, (_, i) =>
+      document.getElementById(`player${i}`).value
+    ).includes(RANDOM_FILL);
+
+    if (hasFill && rt === 'Duo')       rtSel.value = 'Duo Fill';
+    if (hasFill && rt === 'Trio')      rtSel.value = 'Trio Fill';
+    if (!hasFill && rt === 'Duo Fill') rtSel.value = 'Duo';
+    if (!hasFill && rt === 'Trio Fill') rtSel.value = 'Trio';
   }
 
   function updateRunnerSlots() {
@@ -654,6 +670,11 @@
   }
 
   document.getElementById('runType').addEventListener('change', updateRunnerSlots);
+  [0, 1, 2].forEach(i => {
+    document.getElementById(`player${i}`).addEventListener('change', () => {
+      autoSetFillType();
+    });
+  });
 
   // ════════════════════════════════════════════════════════════════
   //  TOGGLE BUTTONS (Yes / No)
@@ -796,7 +817,7 @@
       ['Squad Type',       payload.run_type],
       ['Runners',          players.join(', ')],
       ['Map',              payload.map],
-      ['PvP Kills',        payload.pvp_kills],
+      ['PvP Elims',        payload.pvp_kills],
       ...(payload.run_type !== 'Rook' ? [['Contract Completed', yesNo(payload.contract_completed)]] : []),
       ['Successful Exfil', yesNo(payload.successful_exfil)],
     ];
