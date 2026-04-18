@@ -473,9 +473,9 @@
               <option value="Solo">Solo</option>
               <option value="Rook">Rook</option>
               <option value="Duo">Duo</option>
-              <option value="Duo Fill">Duo Fill</option>
+              <option value="Duo Fill" hidden>Duo Fill</option>
               <option value="Trio">Trio</option>
-              <option value="Trio Fill">Trio Fill</option>
+              <option value="Trio Fill" hidden>Trio Fill</option>
             </select>
           </div>
           <div class="field-error" id="runTypeError">SQUAD TYPE IS REQUIRED</div>
@@ -529,7 +529,7 @@
         <!-- PVP ELIMS -->
         <div class="field">
           <label class="field-label" for="pvpKills">PvP Elims <span class="required">*</span></label>
-          <input type="number" id="pvpKills" name="pvp_kills" min="0" max="99" placeholder="0" required>
+          <input type="number" id="pvpKills" name="pvp_kills" min="0" max="99" value="0" required>
           <div class="field-error" id="pvpError">ENTER A VALID ELIM COUNT (0 OR MORE)</div>
         </div>
 
