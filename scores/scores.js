@@ -48,7 +48,7 @@ function parseEvent(ev, teamId){
   const oppId     = String(them.team?.id||'');
   const phiScore  = (completed||state==='in') ? parseScore(us.score)   : null;
   const oppScore  = (completed||state==='in') ? parseScore(them.score) : null;
-  const getRecord = c=>(c.record?.find(r=>r.type==='total')||c.record?.find(r=>r.type==='ytd')||c.record?.[0])?.displayValue||null;
+  const getRecord = c=>{ if(!c?.record) return null; if(typeof c.record==='string') return c.record||null; return (c.record.find(r=>r.type==='total')||c.record.find(r=>r.type==='ytd')||c.record[0])?.displayValue||null; };
   const phiRecord = getRecord(us);
   const oppRecord = getRecord(them);
   const venue     = comp.venue ? comp.venue.fullName+', '+comp.venue.address?.city : null;
@@ -58,7 +58,7 @@ function parseEvent(ev, teamId){
     state==='in'                              ? 'live'     :
     completed                                 ? 'final'    :
     state==='pre' && dateMs<=now              ? 'starting' :
-    state==='pre' && dateMs<=now+4*60*60*1000 ? 'upcoming' :
+    state==='pre' && dateMs<=now+2*60*60*1000 ? 'upcoming' :
     state==='pre'                             ? 'final'    : 'offseason';
   const note =
     state==='in'                ? detail :
@@ -164,7 +164,7 @@ async function fetchOppRecord(path, oppId){
     const last=[...events].reverse().find(e=>e.competitions?.[0]?.status?.type?.completed);
     const comp=last?.competitions?.[0];
     const them=comp?.competitors?.find(c=>String(c.team?.id)===String(oppId));
-    const getRecord=c=>(c?.record?.find(r=>r.type==='total')||c?.record?.find(r=>r.type==='ytd')||c?.record?.[0])?.displayValue||null;
+    const getRecord=c=>{ if(!c?.record) return null; if(typeof c.record==='string') return c.record||null; return (c.record.find(r=>r.type==='total')||c.record.find(r=>r.type==='ytd')||c.record[0])?.displayValue||null; };
     oppRecordCache[oppId]=getRecord(them);
   } catch(e){ oppRecordCache[oppId]=null; }
   return oppRecordCache[oppId]||null;
@@ -268,7 +268,7 @@ async function fetchTeamData(key){
   }
 
   const activeLive=liveGame?.featuredStatus==='live'?liveGame:null;
-  const nextIsClose=nextGame&&(nextGame.dateMs-now)<=4*60*60*1000;
+  const nextIsClose=nextGame&&(nextGame.dateMs-now)<=2*60*60*1000;
   const featured=isOffseason?null:
     activeLive?activeLive:
     nextIsClose?nextGame:
