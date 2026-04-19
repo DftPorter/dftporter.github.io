@@ -23,6 +23,7 @@
 <style>
   :root{--bg:#060810;--surface:#0d1117;--border:rgba(255,255,255,0.06);--text:#e8eaf0;--muted:#6b7280;}
   *{margin:0;padding:0;box-sizing:border-box;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
   body{background:var(--bg);color:var(--text);font-family:'Barlow Condensed',sans-serif;min-height:100vh;overflow-x:hidden;}
   body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");opacity:.035;pointer-events:none;z-index:0;}
   header{position:relative;z-index:10;padding:28px 32px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
@@ -75,6 +76,7 @@
   .streak-d{background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.3);}
   .featured-game{padding:20px;border-bottom:1px solid var(--border);}
   .playoff-badge{display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.08em;color:#fbbf24;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);border-radius:8px;padding:4px 10px;margin-bottom:10px;}
+  .game-label{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:#fbbf24;text-align:center;margin-bottom:8px;}
   .matchup{display:flex;align-items:center;justify-content:space-between;gap:8px;}
   .team-side{flex:1;text-align:center;}
   .team-abv{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.08em;color:#d1d5db;}
@@ -210,27 +212,28 @@
   </div>
   <div class="header-right">
     <div class="live-badge">
-      <span class="pulse-dot" id="status-dot"></span>
+      <span class="pulse-dot" id="status-dot" aria-hidden="true"></span>
       <span id="update-time">Fetching scores…</span>
     </div>
     <div class="live-badge">
       <span style="color:#9ca3af">Next refresh in</span>
       <span id="countdown">5:00</span>
     </div>
-    <button class="refresh-btn" id="refresh-btn" onclick="fetchScores()">
-      <span class="spin">&#8635;</span> Refresh
+    <button class="refresh-btn" id="refresh-btn" onclick="fetchScores()" aria-label="Refresh scores">
+      <span class="spin" aria-hidden="true">&#8635;</span> Refresh
     </button>
-    <button class="refresh-btn" id="theme-btn" onclick="cycleTheme()" title="Toggle color scheme">
-      <span id="theme-icon">🖥️</span>
+    <button class="refresh-btn" id="theme-btn" onclick="cycleTheme()" aria-label="Color scheme: device">
+      <span id="theme-icon" aria-hidden="true">🖥️</span>
     </button>
   </div>
 </header>
 
 <div id="error-banner"><div id="error-banner-inner"></div></div>
+<div id="a11y-status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
 <main id="cards-container"></main>
 
 <footer>
-  <div id="footer-text">Live data via ESPN &nbsp;&bull;&nbsp; <a href="https://linktr.ee/daftporter" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:3px">linktr.ee/daftporter</a> &nbsp;&bull;&nbsp; Built with Claude.ai</div>
+  <div id="footer-text">Live data via ESPN &nbsp;&bull;&nbsp; <a href="https://linktr.ee/daftporter" target="_blank" rel="noopener" aria-label="daftporter on Linktree (opens in new tab)" style="color:inherit;text-decoration:underline;text-underline-offset:3px">linktr.ee/daftporter</a> &nbsp;&bull;&nbsp; Built with Claude.ai</div>
 </footer>
 
 <!-- Live Score Modal -->
@@ -239,7 +242,7 @@
     <button id="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
     <div id="modal-content">
       <div id="modal-sport-badge">
-        <span class="modal-pulse"></span>
+        <span class="modal-pulse" aria-hidden="true"></span>
         <span id="modal-sport-text">LIVE NOW</span>
       </div>
       <div id="modal-teams">
@@ -262,7 +265,7 @@
       <div id="modal-game-note"></div>
       <div id="modal-status-bar">
         <div style="display:flex;align-items:center;gap:8px;">
-          <span class="pulse-dot" id="modal-status-dot"></span>
+          <span class="pulse-dot" id="modal-status-dot" aria-hidden="true"></span>
           <span id="modal-update-time"></span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">

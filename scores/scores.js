@@ -22,7 +22,7 @@ function fmtFull(ms){
 }
 function parseScore(s){
   if(s==null) return 0;
-  if(typeof s==='object') return s.value??parseInt(s.displayValue)??0;
+  if(typeof s==='object') return s.value??(parseInt(s.displayValue)||0);
   return parseInt(s)||0;
 }
 async function espnFetch(url){
@@ -290,9 +290,9 @@ async function fetchTeamData(key){
   const soccerOppRecord=isSoccer?(mlsRecords[featured?.oppId||'']||null):null;
 
   let streak=null;
-  const allCompleted=[...schedEvents].reverse().filter(ev=>parseEvent(ev,teamId)?.completed);
-  if(allCompleted.length){
-    const outcomes=allCompleted.map(ev=>{ const p=parseEvent(ev,teamId); return p.phiScore>p.oppScore?'W':p.phiScore<p.oppScore?'L':'D'; });
+  const allParsed=[...schedEvents].reverse().map(ev=>parseEvent(ev,teamId)).filter(p=>p?.completed);
+  if(allParsed.length){
+    const outcomes=allParsed.map(p=>p.phiScore>p.oppScore?'W':p.phiScore<p.oppScore?'L':'D');
     let count=1;
     for(let i=1;i<outcomes.length;i++){ if(outcomes[i]===outcomes[0]) count++; else break; }
     streak=outcomes[0]+count;
@@ -440,10 +440,27 @@ function openModal(key,data){
   const modal=document.getElementById('live-modal');
   modal.classList.add('open');
   document.body.style.overflow='hidden';
+  // Save focus origin and move focus into modal
+  modal._previousFocus=document.activeElement;
+  const closeBtn=document.getElementById('modal-close');
+  if(closeBtn) closeBtn.focus();
+  // Keyboard: Escape closes
   modal._onKeyDown=e=>{ if(e.key==='Escape') closeModal(); };
   document.addEventListener('keydown',modal._onKeyDown);
+  // Click outside closes
   modal._onBgClick=e=>{ if(e.target===modal) closeModal(); };
   modal.addEventListener('click',modal._onBgClick);
+  // Focus trap: keep Tab cycling within modal
+  const focusable=modal.querySelectorAll('button,[href],[tabindex]:not([tabindex="-1"])');
+  if(focusable.length>1){
+    const first=focusable[0], last=focusable[focusable.length-1];
+    modal._trapFocus=e=>{
+      if(e.key!=='Tab') return;
+      if(e.shiftKey){ if(document.activeElement===first){ e.preventDefault(); last.focus(); } }
+      else { if(document.activeElement===last){ e.preventDefault(); first.focus(); } }
+    };
+    modal.addEventListener('keydown',modal._trapFocus);
+  }
 }
 
 function closeModal(){
@@ -453,6 +470,8 @@ function closeModal(){
   document.body.style.overflow='';
   if(modal._onKeyDown) document.removeEventListener('keydown',modal._onKeyDown);
   if(modal._onBgClick) modal.removeEventListener('click',modal._onBgClick);
+  if(modal._trapFocus){ modal.removeEventListener('keydown',modal._trapFocus); modal._trapFocus=null; }
+  if(modal._previousFocus){ modal._previousFocus.focus(); modal._previousFocus=null; }
 }
 
 // ── Rendering ──
@@ -464,15 +483,18 @@ function showSkeletons(){
 function setStatus(state,text){
   document.getElementById('status-dot').className='pulse-dot'+(state!=='ok'?' '+state:'');
   document.getElementById('update-time').textContent=text;
+  const a11y=document.getElementById('a11y-status');
+  if(a11y&&state==='ok') a11y.textContent=text;
 }
 function showError(msg){ document.getElementById('error-banner').style.display='block'; document.getElementById('error-banner-inner').textContent='⚠ '+msg; }
 function hideError(){ document.getElementById('error-banner').style.display='none'; }
 
-function scoreHtml(score,winner,upcoming,isPhi){
-  if(upcoming||score===null) return '<div class="team-score no-score">&ndash;</div>';
-  if(winner&&isPhi)  return '<div class="team-score winner">'+score+'</div>';
-  if(winner&&!isPhi) return '<div class="team-score opp-winning">'+score+'</div>';
-  return '<div class="team-score">'+score+'</div>';
+function scoreHtml(score,winner,upcoming,isPhi,abbr){
+  const label=abbr||(isPhi?'PHI':'OPP');
+  if(upcoming||score===null) return '<div class="team-score no-score" aria-label="'+label+' score not yet available">&ndash;</div>';
+  if(winner&&isPhi)  return '<div class="team-score winner" aria-label="'+label+' '+score+', winning">'+score+'</div>';
+  if(winner&&!isPhi) return '<div class="team-score opp-winning" aria-label="'+label+' '+score+', winning">'+score+'</div>';
+  return '<div class="team-score" aria-label="'+label+' '+score+'">'+score+'</div>';
 }
 
 function renderCard(key,data){
@@ -483,7 +505,9 @@ function renderCard(key,data){
   const statusCls={live:'status-live',starting:'status-starting',final:'status-final',upcoming:'status-upcoming',offseason:'status-offseason'}[fs]||'status-offseason';
   const streakCls=data.streak?.startsWith('W')?'streak-w':data.streak?.startsWith('L')?'streak-l':'streak-d';
   const isLive=fs==='live'||fs==='starting';
-  const clickAttr=isLive?' onclick="openModal(\''+key+'\',_cardData[\''+key+'\'])"':'';
+  const clickAttr=isLive
+    ?' role="button" tabindex="0" aria-label="'+name+' live game — click to expand" onclick="openModal(\''+key+'\',_cardData[\''+key+'\'])" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openModal(\''+key+'\',_cardData[\''+key+'\'])}"'
+    :'';
   let featuredHtml='';
   if(data.featured&&fs!=='offseason'){
     const f=data.featured, upcoming=fs==='upcoming';
@@ -491,8 +515,8 @@ function renderCard(key,data){
     const oppWins=!upcoming&&f.oppScore>f.phiScore;
     const phiImg='<img class="team-logo" src="'+TEAMS[key].logo+'" alt="PHI" onerror="this.style.display=\'none\'">';
     const oppImg=f.oppLogo?'<img class="team-logo" src="'+f.oppLogo+'" alt="'+f.oppAbbr+'" onerror="this.style.display=\'none\'">':'';
-    const phiSide='<div class="team-side"><div class="team-abv">PHI</div>'+phiImg+scoreHtml(f.phiScore,phiWins,upcoming,true)+(f.phiRecord?'<div class="team-record">'+f.phiRecord+'</div>':'')+'</div>';
-    const oppSide='<div class="team-side"><div class="team-abv">'+f.oppAbbr+'</div>'+oppImg+scoreHtml(f.oppScore,oppWins,upcoming,false)+(f.oppRecord?'<div class="team-record">'+f.oppRecord+'</div>':'')+'</div>';
+    const phiSide='<div class="team-side"><div class="team-abv">PHI</div>'+phiImg+scoreHtml(f.phiScore,phiWins,upcoming,true,'PHI')+(f.phiRecord?'<div class="team-record">'+f.phiRecord+'</div>':'')+'</div>';
+    const oppSide='<div class="team-side"><div class="team-abv">'+f.oppAbbr+'</div>'+oppImg+scoreHtml(f.oppScore,oppWins,upcoming,false,f.oppAbbr)+(f.oppRecord?'<div class="team-record">'+f.oppRecord+'</div>':'')+'</div>';
     const div='<div class="vs-divider"><div class="vs-line"></div><div class="vs-text">VS</div><div class="vs-line"></div></div>';
     const matchup=f.isHome?oppSide+div+phiSide:phiSide+div+oppSide;
     const playoffBadge = f.isPlayoff ? '<div class="playoff-badge">'+fmtPlayoffNote(f.gameNote)+'</div>' : '';
@@ -521,6 +545,8 @@ function applyTheme(theme){
   const effective=theme==='device'?(_darkMQ.matches?'dark':'light'):theme;
   document.documentElement.setAttribute('data-theme',effective);
   document.getElementById('theme-icon').textContent=THEME_ICONS[theme];
+  const btn=document.getElementById('theme-btn');
+  if(btn) btn.setAttribute('aria-label','Color scheme: '+theme);
 }
 _darkMQ.addEventListener('change',()=>{ if((localStorage.getItem('colorScheme')||'device')==='device') applyTheme('device'); });
 applyTheme(localStorage.getItem('colorScheme')||'device');
