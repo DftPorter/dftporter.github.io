@@ -432,13 +432,24 @@
       .form-body { padding: 20px 16px; }
       .btn-back { padding: 10px 14px; }
     }
+
+    /* ── ACCESSIBILITY ── */
+    :focus { outline: none; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    /* Generous touch targets on phones/tablets */
+    @media (pointer: coarse) {
+      .toggle-btn { min-height: 52px; }
+      .btn-submit, .btn-another, .btn-dashboard { min-height: 52px; }
+      .btn-back { min-height: 44px; }
+      select, input[type="number"] { min-height: 48px; }
+    }
   </style>
 </head>
 <body>
 
 <div class="bg-grid"></div>
 
-<div class="page">
+<main class="page">
 
   <header>
     <div class="header-left">
@@ -468,7 +479,7 @@
         <div class="field">
           <label class="field-label" for="runType">Squad Type <span class="required">*</span></label>
           <div class="select-wrap">
-            <select id="runType" name="run_type" required>
+            <select id="runType" name="run_type" required aria-describedby="runTypeError">
               <option value="">— Select —</option>
               <option value="Solo">Solo</option>
               <option value="Rook">Rook</option>
@@ -478,7 +489,7 @@
               <option value="Trio Fill" hidden>Trio Fill</option>
             </select>
           </div>
-          <div class="field-error" id="runTypeError">SQUAD TYPE IS REQUIRED</div>
+          <div class="field-error" id="runTypeError" role="alert">SQUAD TYPE IS REQUIRED</div>
         </div>
 
         <!-- PLAYER SLOTS -->
@@ -510,18 +521,19 @@
               </div>
             </div>
           </div>
-          <div class="field-error" id="playerError">ALL VISIBLE RUNNER SLOTS MUST BE FILLED</div>
+          <div class="field-error" id="playerError" role="alert">ALL VISIBLE RUNNER SLOTS MUST BE FILLED</div>
+          <div class="field-error" id="playerDupError" role="alert">DUPLICATE RUNNERS DETECTED</div>
         </div>
 
         <!-- MAP -->
         <div class="field">
           <label class="field-label" for="map">Map <span class="required">*</span></label>
           <div class="select-wrap">
-            <select id="map" name="map" required>
+            <select id="map" name="map" required aria-describedby="mapError">
               <option value="">— Loading Maps… —</option>
             </select>
           </div>
-          <div class="field-error" id="mapError">MAP IS REQUIRED</div>
+          <div class="field-error" id="mapError" role="alert">MAP IS REQUIRED</div>
         </div>
 
         <hr class="field-divider">
@@ -529,30 +541,30 @@
         <!-- PVP ELIMS -->
         <div class="field">
           <label class="field-label" for="pvpKills">PvP Elims <span class="required">*</span></label>
-          <input type="number" id="pvpKills" name="pvp_kills" min="0" max="99" value="0" required>
-          <div class="field-error" id="pvpError">ENTER A VALID ELIM COUNT (0 OR MORE)</div>
+          <input type="number" id="pvpKills" name="pvp_kills" min="0" max="99" value="0" required aria-describedby="pvpError">
+          <div class="field-error" id="pvpError" role="alert">ENTER A VALID ELIM COUNT (0 OR MORE)</div>
         </div>
 
         <!-- CONTRACT COMPLETED -->
         <div class="field" id="contractField">
-          <label class="field-label">Contract Completed <span class="required">*</span></label>
-          <div class="toggle-group" id="contractGroup">
-            <button type="button" class="toggle-btn" data-field="contract" data-value="true">YES</button>
-            <button type="button" class="toggle-btn" data-field="contract" data-value="false">NO</button>
+          <label class="field-label" id="contractLabel">Contract Completed <span class="required">*</span></label>
+          <div class="toggle-group" id="contractGroup" role="group" aria-labelledby="contractLabel">
+            <button type="button" class="toggle-btn" data-field="contract" data-value="true" aria-pressed="false">YES</button>
+            <button type="button" class="toggle-btn" data-field="contract" data-value="false" aria-pressed="false">NO</button>
           </div>
           <input type="hidden" id="contractCompleted" name="contract_completed" value="">
-          <div class="field-error" id="contractError">SELECT YES OR NO</div>
+          <div class="field-error" id="contractError" role="alert">SELECT YES OR NO</div>
         </div>
 
         <!-- SUCCESSFUL EXFIL -->
         <div class="field">
-          <label class="field-label">Successful Exfil <span class="required">*</span></label>
-          <div class="toggle-group" id="exfilGroup">
-            <button type="button" class="toggle-btn" data-field="exfil" data-value="true">YES</button>
-            <button type="button" class="toggle-btn" data-field="exfil" data-value="false">NO</button>
+          <label class="field-label" id="exfilLabel">Successful Exfil <span class="required">*</span></label>
+          <div class="toggle-group" id="exfilGroup" role="group" aria-labelledby="exfilLabel">
+            <button type="button" class="toggle-btn" data-field="exfil" data-value="true" aria-pressed="false">YES</button>
+            <button type="button" class="toggle-btn" data-field="exfil" data-value="false" aria-pressed="false">NO</button>
           </div>
           <input type="hidden" id="successfulExfil" name="successful_exfil" value="">
-          <div class="field-error" id="exfilError">SELECT YES OR NO</div>
+          <div class="field-error" id="exfilError" role="alert">SELECT YES OR NO</div>
         </div>
 
         <button type="submit" class="btn-submit" id="submitBtn">SUBMIT RUN</button>
@@ -561,7 +573,7 @@
     </div><!-- /form-body -->
 
     <!-- ── SUCCESS SCREEN ── -->
-    <div class="success-screen" id="successScreen">
+    <div class="success-screen" id="successScreen" aria-live="polite" aria-atomic="true">
       <div class="success-icon">✓</div>
       <div class="success-title">Run Logged</div>
       <div class="success-sub">Operation recorded to the database</div>
@@ -577,11 +589,11 @@
   </div><!-- /form-card -->
 
   <footer>
-    <span>DEAD DROP v2.0</span>
+    <span>DEAD DROP v2.2</span>
     <span>TAU CETI IV // ROOK DIVISION</span>
   </footer>
 
-</div><!-- /page -->
+</main><!-- /page -->
 
 <script>
   // ════════════════════════════════════════════════════════════════
@@ -689,6 +701,7 @@
 
       group.querySelectorAll('.toggle-btn').forEach(b => {
         b.classList.remove('active-yes', 'active-no');
+        b.setAttribute('aria-pressed', 'false');
       });
 
       if (val === 'true') {
@@ -696,6 +709,7 @@
       } else {
         btn.classList.add('active-no');
       }
+      btn.setAttribute('aria-pressed', 'true');
 
       hidden.value = val;
     });
@@ -727,17 +741,19 @@
       }
     }
     // Check for duplicate non-random players
+    let hasDupe = false;
     if (playerOk && count > 1) {
       const selected = [];
       for (let i = 0; i < count; i++) {
         const v = document.getElementById(`player${i}`).value;
         if (v !== RANDOM_FILL) {
-          if (selected.includes(v)) { playerOk = false; break; }
+          if (selected.includes(v)) { playerOk = false; hasDupe = true; break; }
           selected.push(v);
         }
       }
     }
-    showError('playerError', count > 0 && !playerOk);
+    showError('playerError',    count > 0 && !playerOk && !hasDupe);
+    showError('playerDupError', count > 0 && hasDupe);
     if (count > 0 && !playerOk) ok = false;
 
     // Map
@@ -795,7 +811,7 @@
 
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>TRANSMITTING…';
+    btn.innerHTML = '<span class="spinner" role="status" aria-label="Submitting run"></span>TRANSMITTING…';
 
     try {
       await fetch(APPS_SCRIPT_URL, {
@@ -841,7 +857,7 @@
     document.getElementById('contractCompleted').value = '';
     document.getElementById('successfulExfil').value = '';
     document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active-yes', 'active-no'));
-    document.querySelectorAll('.field-error').forEach(e => e.classList.remove('show'));
+    document.querySelectorAll('.field-error').forEach(el => el.classList.remove('show'));
     updateRunnerSlots();
 
     const btn = document.getElementById('submitBtn');

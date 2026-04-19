@@ -582,8 +582,45 @@
       transition: border-color 0.12s, color 0.12s, background 0.12s;
       white-space: nowrap;
     }
-    .filter-chip:hover { border-color: var(--accent); color: var(--accent); }
-    .filter-chip.active { border-color: var(--accent); color: #000; background: var(--accent); }
+    .filter-chip:hover { border-color: var(--border-bright); color: var(--text-sec); }
+    .filter-chip.include { border-color: var(--accent); color: #000; background: var(--accent); }
+    .filter-chip.exclude { border-color: var(--danger); color: var(--danger); background: var(--danger-dim); }
+    .filter-bar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-mid);
+      margin-bottom: 8px;
+    }
+    .filter-bar-title {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.24em;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+    .filter-bar-title::before { content: '// '; }
+    .filter-legend {
+      display: flex;
+      gap: 14px;
+    }
+    .legend-item {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .legend-include { color: var(--accent); }
+    .legend-exclude { color: var(--danger); }
+    .legend-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
     .filter-footer {
       display: flex;
       align-items: center;
@@ -615,6 +652,100 @@
       margin-left: auto;
     }
     .filter-count em { color: var(--accent); font-style: normal; }
+
+    /* ── DONUT CHARTS ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      outline: 1px solid var(--border-mid);
+      margin-bottom: 32px;
+    }
+    .chart-card {
+      background: var(--bg-card);
+      border-right: 1px solid var(--border-mid);
+      position: relative;
+      overflow: hidden;
+    }
+    .chart-card:last-child { border-right: none; }
+    .chart-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--border-mid);
+    }
+    .chart-card-header {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      padding: 12px 22px;
+      border-bottom: 1px solid var(--border-mid);
+      background: var(--bg-card-alt);
+    }
+    .chart-card-header::before { content: '// '; color: var(--accent); }
+    .chart-content {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 20px 22px;
+    }
+    .donut-wrap {
+      flex-shrink: 0;
+      width: 140px;
+      height: 140px;
+    }
+    .donut-svg {
+      width: 140px;
+      height: 140px;
+      overflow: visible;
+    }
+    .donut-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      flex: 1;
+      min-width: 0;
+    }
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .legend-dot-sm {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .legend-lbl {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-sec);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .legend-val {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      flex-shrink: 0;
+      padding-left: 8px;
+    }
+    @media (max-width: 700px) {
+      .charts-grid { grid-template-columns: 1fr; }
+      .chart-card { border-right: none; border-bottom: 1px solid var(--border-mid); }
+      .chart-card:last-child { border-bottom: none; }
+    }
+    @media (max-width: 560px) {
+      .chart-content { flex-direction: column; align-items: center; gap: 16px; }
+      .donut-legend { width: 100%; }
+    }
 
     /* ── RECENT RUNS TABLE ── */
     .recent-timestamp {
@@ -705,8 +836,50 @@
     }
     .glitch { animation: glitch 8s infinite; }
 
+    /* ── ACCESSIBILITY ── */
+    /* Screen-reader-only utility */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+    /* Reveal skip link on keyboard focus */
+    .skip-link:focus {
+      position: fixed; top: 10px; left: 10px; z-index: 10000;
+      width: auto; height: auto; clip: auto; overflow: visible;
+      background: var(--accent); color: #000;
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em;
+      padding: 8px 16px; text-decoration: none; text-transform: uppercase;
+    }
+    /* Themed keyboard focus ring — replaces browser default */
+    :focus { outline: none; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
     /* ── RESPONSIVE ── */
     .table-wrap { -webkit-overflow-scrolling: touch; }
+    /* Subtle edge shadow hints that tables scroll horizontally on small screens */
+    @media (max-width: 700px) {
+      .table-wrap {
+        background:
+          linear-gradient(to right,  var(--bg-card) 0%, transparent 100%),
+          linear-gradient(to left,   var(--bg-card) 0%, transparent 100%) right,
+          radial-gradient(farthest-side at 0 50%,    rgba(200,244,0,0.1), transparent),
+          radial-gradient(farthest-side at 100% 50%, rgba(200,244,0,0.1), transparent) right;
+        background-color: var(--bg-card);
+        background-repeat: no-repeat;
+        background-size: 28px 100%, 28px 100%, 14px 100%, 14px 100%;
+        background-attachment: local, local, scroll, scroll;
+      }
+    }
+    /* Comfortable tap targets on touch screens */
+    @media (pointer: coarse) {
+      .filter-chip {
+        min-height: 40px; padding: 0 12px;
+        display: inline-flex; align-items: center; justify-content: center;
+      }
+      .filter-group { gap: 8px; }
+      .btn-log, .btn-refresh { min-height: 44px; padding: 0 16px; }
+    }
 
     @media (max-width: 900px) {
       .cards { grid-template-columns: repeat(2, 1fr); }
@@ -741,10 +914,11 @@
 </head>
 <body>
 
+<a href="#main-content" class="sr-only skip-link">SKIP TO MAIN CONTENT</a>
 <div class="bg-grid"></div>
-<div class="side-label">DEAD DROP</div>
+<div class="side-label" aria-hidden="true">DEAD DROP</div>
 
-<div class="page">
+<main class="page" id="main-content">
 
   <!-- ═══════════════ HEADER ═══════════════ -->
   <header>
@@ -758,15 +932,15 @@
       </div>
     </div>
     <div class="header-right">
-      <div class="live-pill">
+      <div class="live-pill" aria-hidden="true">
         <div class="live-dot"></div>
         LIVE DATA
       </div>
-      <a href="form.html" class="btn-log">
-        + <span>LOG A RUN</span>
+      <a href="form.html" class="btn-log" aria-label="Log a run">
+        <span aria-hidden="true">+</span> <span>LOG A RUN</span>
       </a>
-      <button class="btn-refresh" id="refreshBtn" onclick="loadData()">
-        <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+      <button class="btn-refresh" id="refreshBtn" onclick="loadData()" aria-label="Refresh dashboard data">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true">
           <path d="M10 5.5A4.5 4.5 0 1 1 5.5 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           <polyline points="7.5,1 10,1 10,3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -776,8 +950,8 @@
   </header>
 
   <!-- ═══════════════ ERROR BANNER ═══════════════ -->
-  <div class="alert" id="alertBanner">
-    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+  <div class="alert" id="alertBanner" role="alert" aria-live="assertive">
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
       <path d="M6.5 1L12 12H1L6.5 1Z" stroke="currentColor" stroke-width="1.2"/>
       <line x1="6.5" y1="5" x2="6.5" y2="8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
       <circle cx="6.5" cy="10" r="0.6" fill="currentColor"/>
@@ -854,9 +1028,9 @@
   <!-- ═══════════════ SQUAD TYPE BREAKDOWN ═══════════════ -->
   <div class="section-head">
     <span class="section-head-title">Squad Type Breakdown</span>
-    <span class="section-meta" id="lastUpdated">LOADING…</span>
+    <span class="section-meta" id="lastUpdated" aria-live="polite" aria-atomic="true">LOADING…</span>
   </div>
-  <div class="table-wrap">
+  <div class="table-wrap" role="region" aria-label="Squad type breakdown" tabindex="0">
     <table>
       <thead>
         <tr>
@@ -880,7 +1054,7 @@
   <div class="section-head">
     <span class="section-head-title">Map Breakdown</span>
   </div>
-  <div class="table-wrap">
+  <div class="table-wrap" role="region" aria-label="Map breakdown" tabindex="0">
     <table>
       <thead>
         <tr>
@@ -903,7 +1077,7 @@
   <div class="section-head">
     <span class="section-head-title">Runner Breakdown</span>
   </div>
-  <div class="table-wrap">
+  <div class="table-wrap" role="region" aria-label="Runner breakdown" tabindex="0">
     <table>
       <thead>
         <tr>
@@ -922,12 +1096,36 @@
     </table>
   </div>
 
+  <!-- ═══════════════ DONUT CHARTS ═══════════════ -->
+  <div class="charts-grid" id="chartsGrid" style="display:none;">
+    <div class="chart-card">
+      <div class="chart-card-header">Squad Type</div>
+      <div class="chart-content">
+        <div class="donut-wrap">
+          <svg class="donut-svg" id="squadDonut" viewBox="0 0 160 160"
+               role="img" aria-label="Squad type distribution"></svg>
+        </div>
+        <div class="donut-legend" id="squadLegend"></div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-header">Map</div>
+      <div class="chart-content">
+        <div class="donut-wrap">
+          <svg class="donut-svg" id="mapDonut" viewBox="0 0 160 160"
+               role="img" aria-label="Map distribution"></svg>
+        </div>
+        <div class="donut-legend" id="mapLegend"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ═══════════════ RECENT RUNS ═══════════════ -->
   <div class="section-head">
     <span class="section-head-title">Recent Operations</span>
     <span class="section-meta">LAST 15 RUNS</span>
   </div>
-  <div class="table-wrap">
+  <div class="table-wrap" role="region" aria-label="Recent operations" tabindex="0">
     <table>
       <thead>
         <tr>
@@ -949,10 +1147,10 @@
   <!-- ═══════════════ FOOTER ═══════════════ -->
   <footer>
     <div class="footer-l">DATA SOURCE: GOOGLE SHEETS &nbsp;// &nbsp;AUTO-REFRESH: 60S</div>
-    <div class="footer-r">DEAD DROP v2.2 &nbsp;// &nbsp;TAU CETI IV</div>
+    <div class="footer-r">DEAD DROP v2.3 &nbsp;// &nbsp;TAU CETI IV</div>
   </footer>
 
-</div><!-- .page -->
+</main><!-- .page -->
 
 <!-- ═══════════════════════════════════════════
      DATA LOGIC
@@ -1048,20 +1246,36 @@
 
   /* ── Filter state ── */
   let allRows = [];
-  const activeFilters = { maps: new Set(), runners: new Set(), types: new Set() };
+  const activeFilters = { maps: new Map(), runners: new Map(), types: new Map() };
 
   function applyFilters(rows) {
     const { maps, runners, types } = activeFilters;
     return rows.filter(r => {
-      if (maps.size > 0 && !maps.has((r['Map'] || '').trim())) return false;
-      if (types.size > 0) {
-        const rt = (r['Run Type'] || '').trim();
-        if (!types.has(rt === 'Rook Solo' ? 'Rook' : rt)) return false;
+      // Maps
+      if (maps.size > 0) {
+        const val  = (r['Map'] || '').trim();
+        const incs = [...maps].filter(([,s]) => s === 'include').map(([k]) => k);
+        const excs = [...maps].filter(([,s]) => s === 'exclude').map(([k]) => k);
+        if (incs.length && !incs.includes(val)) return false;
+        if (excs.includes(val)) return false;
       }
+      // Squad types
+      if (types.size > 0) {
+        const rt  = (r['Run Type'] || '').trim();
+        const val = rt === 'Rook Solo' ? 'Rook' : rt;
+        const incs = [...types].filter(([,s]) => s === 'include').map(([k]) => k);
+        const excs = [...types].filter(([,s]) => s === 'exclude').map(([k]) => k);
+        if (incs.length && !incs.includes(val)) return false;
+        if (excs.includes(val)) return false;
+      }
+      // Runners
       if (runners.size > 0) {
         const names = (r['Players'] || '').toString().trim()
           .split(',').map(p => p.trim()).filter(Boolean);
-        if (!names.some(n => runners.has(n))) return false;
+        const incs = [...runners].filter(([,s]) => s === 'include').map(([k]) => k);
+        const excs = [...runners].filter(([,s]) => s === 'exclude').map(([k]) => k);
+        if (incs.length && !names.some(n => incs.includes(n))) return false;
+        if (excs.length &&  names.some(n => excs.includes(n))) return false;
       }
       return true;
     });
@@ -1088,15 +1302,22 @@
     }
 
     const hasActive = activeFilters.maps.size > 0 || activeFilters.runners.size > 0 || activeFilters.types.size > 0;
-    ratesEl.classList.toggle('no-filter', !hasActive && false); // rates always 1px gap when bar visible
+    ratesEl.classList.remove('no-filter'); // filter bar visible → use 1px gap
 
     const makeChips = (items, group) => items.map(label => {
+      const state = activeFilters[group].get(label); // 'include' | 'exclude' | undefined
       const btn = document.createElement('button');
-      btn.className = 'filter-chip' + (activeFilters[group].has(label) ? ' active' : '');
+      btn.className = 'filter-chip' + (state ? ' ' + state : '');
       btn.textContent = label;
+      // Communicate state to assistive technology
+      btn.setAttribute('aria-pressed', state === 'include' ? 'true' : 'false');
+      const stateHint = !state ? '' : state === 'include' ? ' — included' : ' — excluded';
+      btn.setAttribute('aria-label', `${label}${stateHint}. Press to cycle filter state.`);
       btn.onclick = () => {
-        if (activeFilters[group].has(label)) activeFilters[group].delete(label);
-        else activeFilters[group].add(label);
+        const cur = activeFilters[group].get(label);
+        if      (!cur)              activeFilters[group].set(label, 'include');
+        else if (cur === 'include') activeFilters[group].set(label, 'exclude');
+        else                        activeFilters[group].delete(label);
         buildFilterBar(allRows);
         render(applyFilters(allRows));
       };
@@ -1105,6 +1326,21 @@
 
     const inner = document.createElement('div');
     inner.className = 'filter-bar-inner';
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'filter-bar-header';
+    header.innerHTML = `
+      <span class="filter-bar-title">Filter</span>
+      <div class="filter-legend">
+        <span class="legend-item legend-include">
+          <span class="legend-dot" style="background:var(--accent)"></span>include
+        </span>
+        <span class="legend-item legend-exclude">
+          <span class="legend-dot" style="background:var(--danger)"></span>exclude
+        </span>
+      </div>`;
+    inner.appendChild(header);
 
     const groups = [
       { label: 'Map',    key: 'maps',    items: maps    },
@@ -1153,10 +1389,12 @@
   }
 
   /* ── Helpers ── */
-  const num  = v  => (v !== null && v !== undefined ? Number(v) : null);
-  const pct  = (n, d) => d ? (n / d) * 100 : null;
-  const fmtP = v  => v !== null ? v.toFixed(1) + '%' : '—';
-  const fmtF = v  => v !== null ? v.toFixed(2) : '—';
+  const num    = v => (v !== null && v !== undefined ? Number(v) : null);
+  const pct    = (n, d) => d ? (n / d) * 100 : null;
+  const fmtP   = v => v !== null ? v.toFixed(1) + '%' : '—';
+  const fmtF   = v => v !== null ? v.toFixed(2) : '—';
+  // Handles true, "true", "TRUE", 1, "1" — gviz returns real booleans but defensive is better
+  const toBool = v => v === true || v === 'true' || v === 'TRUE' || v === 1 || v === '1';
 
   function countUp(el, target, fmt) {
     const format = fmt || (v => String(Math.round(v)));
@@ -1196,8 +1434,8 @@
       const rt       = rtRaw === 'Rook Solo' ? 'Rook' : rtRaw;
       const map      = (r['Map']      || 'Unknown').trim();
       const kills    = Number(r['PvP Elims']) || 0;
-      const exfil    = r['Successful Exfil']    === true;
-      const contract = r['Contract Completed']  === true;
+      const exfil    = toBool(r['Successful Exfil']);
+      const contract = toBool(r['Contract Completed']);
 
       if (!byType[rt])  byType[rt]  = { runs: 0, exfils: 0, contracts: 0, kills: 0, players: new Set() };
       if (!byMap[map])  byMap[map]  = { runs: 0, exfils: 0, contracts: 0, kills: 0 };
@@ -1241,8 +1479,8 @@
     rows.forEach(r => {
       const isRook   = (r['Run Type'] || '').trim() === 'Rook';
       const kills    = Number(r['PvP Elims']) || 0;
-      const exfil    = r['Successful Exfil']   === true;
-      const contract = r['Contract Completed'] === true;
+      const exfil    = toBool(r['Successful Exfil']);
+      const contract = toBool(r['Contract Completed']);
       const names    = (r['Players'] || '').toString().trim()
                          .split(',').map(p => p.trim()).filter(Boolean);
       names.forEach(name => {
@@ -1342,8 +1580,8 @@
       const players = (r['Players']  || '—').toString().trim();
       const map     = (r['Map']      || '—').trim();
       const kills   = r['PvP Elims'] !== null ? Math.round(Number(r['PvP Elims'])) : '—';
-      const contract = r['Contract Completed'] === true;
-      const exfil    = r['Successful Exfil']   === true;
+      const contract = toBool(r['Contract Completed']);
+      const exfil    = toBool(r['Successful Exfil']);
       const color    = badgeColor(rt);
 
       // gviz returns datetimes as "Date(year,month,day,h,m,s)" — month is 0-indexed
@@ -1381,6 +1619,119 @@
     }).join('');
   }
 
+  /* ── Donut charts ── */
+  function buildDonut(svgEl, segments, total) {
+    svgEl.innerHTML = '';
+    const ns  = 'http://www.w3.org/2000/svg';
+    const r   = 52, cx = 80, cy = 80, SW = 22;
+    const C   = 2 * Math.PI * r;                  // circumference ≈ 326.7
+    const GAP = segments.length > 1 ? 2.5 : 0;    // px gap between slices
+
+    // Background track ring
+    const track = document.createElementNS(ns, 'circle');
+    track.setAttribute('cx', cx); track.setAttribute('cy', cy); track.setAttribute('r', r);
+    track.setAttribute('fill', 'none');
+    track.setAttribute('stroke', '#191919');
+    track.setAttribute('stroke-width', SW);
+    svgEl.appendChild(track);
+
+    // Rotate group so segments start at 12 o'clock
+    const g = document.createElementNS(ns, 'g');
+    g.setAttribute('transform', `rotate(-90, ${cx}, ${cy})`);
+
+    let acc = 0;
+    const circles = [];
+    segments.forEach(({ pct, color }) => {
+      if (pct < 0.5) return;
+      const arcFull = (pct / 100) * C;
+      const arcVis  = Math.max(arcFull - GAP, 0);
+      const c = document.createElementNS(ns, 'circle');
+      c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', r);
+      c.setAttribute('fill', 'none');
+      c.setAttribute('stroke', color);
+      c.setAttribute('stroke-width', SW);
+      c.setAttribute('stroke-linecap', 'butt');
+      c.setAttribute('stroke-dasharray', `0 ${C}`);            // start invisible
+      c.setAttribute('stroke-dashoffset', -(acc + GAP / 2));   // correct position
+      c.dataset.target = `${arcVis} ${C - arcVis}`;
+      g.appendChild(c);
+      circles.push(c);
+      acc += arcFull;
+    });
+    svgEl.appendChild(g);
+
+    // Center labels
+    const mkT = (txt, y, size, weight, fill, spacing) => {
+      const t = document.createElementNS(ns, 'text');
+      t.setAttribute('x', cx); t.setAttribute('y', y);
+      t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('fill', fill);
+      t.setAttribute('font-size', size);
+      t.setAttribute('font-weight', weight);
+      t.setAttribute('font-family', weight === '900'
+        ? "'Barlow Condensed', Impact, sans-serif"
+        : "'Share Tech Mono', 'Courier New', monospace");
+      t.setAttribute('letter-spacing', spacing);
+      t.textContent = txt;
+      return t;
+    };
+    svgEl.appendChild(mkT(String(total), 89, 32, '900', '#ffffff',  '0.05em'));
+    svgEl.appendChild(mkT('RUNS',       103,  9, '400', '#808080', '0.22em'));
+
+    // Animate arcs in (mirrors the bar-fill timing)
+    setTimeout(() => {
+      circles.forEach(c => {
+        c.style.transition = 'stroke-dasharray 1.2s cubic-bezier(0.4, 0, 0.2, 1)';
+        c.setAttribute('stroke-dasharray', c.dataset.target);
+      });
+    }, 150);
+  }
+
+  function buildLegend(el, segments) {
+    el.innerHTML = segments.map(({ label, count, pct, color }) => `
+      <div class="legend-row">
+        <span class="legend-dot-sm" style="background:${color};box-shadow:0 0 5px ${color}88"></span>
+        <span class="legend-lbl">${label.toUpperCase()}</span>
+        <span class="legend-val">${count} &nbsp;<span style="color:var(--text-dim)">${Math.round(pct)}%</span></span>
+      </div>`).join('');
+  }
+
+  function buildCharts(rows) {
+    const grid = document.getElementById('chartsGrid');
+    if (!rows.length) { grid.style.display = 'none'; return; }
+    grid.style.display = '';
+
+    const toSegs = (counts, total) =>
+      Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([label, count]) => ({
+          label, count,
+          pct:   (count / total) * 100,
+          color: badgeColor(label),
+        }));
+
+    // Squad type
+    const typeCounts = {};
+    rows.forEach(r => {
+      const rt  = (r['Run Type'] || '').trim();
+      const key = rt === 'Rook Solo' ? 'Rook' : rt;
+      typeCounts[key] = (typeCounts[key] || 0) + 1;
+    });
+    const typeSegs = toSegs(typeCounts, rows.length);
+    buildDonut(document.getElementById('squadDonut'), typeSegs, rows.length);
+    buildLegend(document.getElementById('squadLegend'), typeSegs);
+
+    // Map
+    const mapCounts = {};
+    rows.forEach(r => {
+      const map = (r['Map'] || 'Unknown').trim();
+      mapCounts[map] = (mapCounts[map] || 0) + 1;
+    });
+    const mapSegs = toSegs(mapCounts, rows.length);
+    buildDonut(document.getElementById('mapDonut'), mapSegs, rows.length);
+    buildLegend(document.getElementById('mapLegend'), mapSegs);
+  }
+
   /* ── Render full dashboard ── */
   function render(rows) {
     // Filter out empty rows
@@ -1391,10 +1742,10 @@
     validRows.forEach(r => {
       const isRook = (r['Run Type'] || '').trim() === 'Rook';
       totRuns++;
-      if (r['Successful Exfil']   === true) totExfils++;
+      if (toBool(r['Successful Exfil']))   totExfils++;
       if (!isRook) {
         contractEligibleRuns++;
-        if (r['Contract Completed'] === true) totContracts++;
+        if (toBool(r['Contract Completed'])) totContracts++;
       }
       totKills += Number(r['PvP Elims']) || 0;
     });
@@ -1421,15 +1772,17 @@
 
     /* Rates strip */
     const { byType, byMap, byRunner } = aggregate(validRows);
-    document.getElementById('exfilRate').textContent    = totRuns - totExfils || '—';
-    document.getElementById('contractRate').textContent = contractEligibleRuns || '—';
-    document.getElementById('kprRate').textContent      = totKills || '—';
-    document.getElementById('activeTypes').textContent  = byType.length || '—';
+    const hasData = validRows.length > 0;
+    document.getElementById('exfilRate').textContent    = hasData ? totRuns - totExfils : '—';
+    document.getElementById('contractRate').textContent = hasData ? contractEligibleRuns : '—';
+    document.getElementById('kprRate').textContent      = hasData ? totKills : '—';
+    document.getElementById('activeTypes').textContent  = hasData ? byType.length : '—';
 
     /* Tables */
     buildBreakdownTable('typeTableBody',    byType, true);
     buildBreakdownTable('mapTableBody',    byMap);
     buildBreakdownTable('runnerTableBody', byRunner);
+    buildCharts(validRows);
     buildRecentTable(validRows);
 
     /* Timestamp */
