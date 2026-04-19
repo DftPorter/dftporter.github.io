@@ -38,6 +38,27 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
 
+    /* ── CUSTOM CURSOR ── */
+    /* Default: small crosshair with accent-green centre dot */
+    html, body {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='2' fill='%23c8f400'/%3E%3Cline x1='12' y1='2' x2='12' y2='8' stroke='%23c8f400' stroke-width='1.5' stroke-linecap='square'/%3E%3Cline x1='12' y1='16' x2='12' y2='22' stroke='%23c8f400' stroke-width='1.5' stroke-linecap='square'/%3E%3Cline x1='2' y1='12' x2='8' y2='12' stroke='%23c8f400' stroke-width='1.5' stroke-linecap='square'/%3E%3Cline x1='16' y1='12' x2='22' y2='12' stroke='%23c8f400' stroke-width='1.5' stroke-linecap='square'/%3E%3C/svg%3E") 12 12, crosshair;
+    }
+    /* Interactive elements: filled crosshair to signal clickability */
+    a, button, select, input, [role="button"], label[for] {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='3' fill='%23c8f400'/%3E%3Ccircle cx='12' cy='12' r='6' fill='none' stroke='%23c8f400' stroke-width='1'/%3E%3Cline x1='12' y1='2' x2='12' y2='7' stroke='%23c8f400' stroke-width='1.5' stroke-linecap='square'/%3E%3Cline x1='12' y1='17' x2='12' y2='22' stroke='%23c8f400' stroke-width='1.5' stroke-linecap='square'/%3E%3Cline x1='2' y1='12' x2='7' y2='12' stroke='%23c8f400' stroke-width='1.5' stroke-linecap='square'/%3E%3Cline x1='17' y1='12' x2='22' y2='12' stroke='%23c8f400' stroke-width='1.5' stroke-linecap='square'/%3E%3C/svg%3E") 12 12, pointer;
+    }
+
+    /* ── SCROLLBAR ── */
+    /* WebKit — Chrome, Edge, Safari */
+    ::-webkit-scrollbar              { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track        { background: var(--bg); }
+    ::-webkit-scrollbar-thumb        { background: var(--border-mid); }
+    ::-webkit-scrollbar-thumb:hover  { background: var(--accent); }
+    ::-webkit-scrollbar-corner       { background: var(--bg); }
+    /* Firefox */
+    html         { scrollbar-width: thin; scrollbar-color: var(--border-mid) var(--bg); }
+    .table-wrap  { scrollbar-width: thin; scrollbar-color: var(--border-mid) var(--bg-card); }
+
     body {
       background: var(--bg);
       color: var(--text);
@@ -653,98 +674,51 @@
     }
     .filter-count em { color: var(--accent); font-style: normal; }
 
-    /* ── DONUT CHARTS ── */
-    .charts-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      outline: 1px solid var(--border-mid);
+    /* ── DONUT CHARTS (sidebar, flush with each table) ── */
+    .table-with-donut {
+      display: flex;
+      align-items: stretch;
       margin-bottom: 32px;
     }
-    .chart-card {
+    .table-donut-side {
+      width: 160px;
+      flex-shrink: 0;
       background: var(--bg-card);
-      border-right: 1px solid var(--border-mid);
+      border: 1px solid var(--border-mid);
+      border-right: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
       position: relative;
-      overflow: hidden;
     }
-    .chart-card:last-child { border-right: none; }
-    .chart-card::before {
+    /* Top-left accent corner bracket — mirrors the section-head treatment */
+    .table-donut-side::after {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: var(--border-mid);
+      top: 0; left: 0;
+      width: 10px; height: 10px;
+      border-top: 1px solid var(--accent);
+      border-left: 1px solid var(--accent);
+      pointer-events: none;
     }
-    .chart-card-header {
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      padding: 12px 22px;
-      border-bottom: 1px solid var(--border-mid);
-      background: var(--bg-card-alt);
-    }
-    .chart-card-header::before { content: '// '; color: var(--accent); }
-    .chart-content {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      padding: 20px 22px;
-    }
-    .donut-wrap {
-      flex-shrink: 0;
-      width: 140px;
-      height: 140px;
-    }
-    .donut-svg {
-      width: 140px;
-      height: 140px;
-      overflow: visible;
-    }
-    .donut-legend {
+    .table-main-side {
+      flex: 1;
+      min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: 7px;
-      flex: 1;
-      min-width: 0;
     }
-    .legend-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .legend-dot-sm {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .legend-lbl {
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--text-sec);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      flex: 1;
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .legend-val {
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--text-muted);
-      letter-spacing: 0.06em;
-      flex-shrink: 0;
-      padding-left: 8px;
-    }
+    /* Donut panel owns the left border — remove it from inner elements */
+    .table-with-donut .section-head { border-left: none; }
+    .table-with-donut .section-head::before { display: none; }
+    .table-with-donut .table-wrap { border-left: none; margin-bottom: 0; flex: 1; }
+    .donut-svg { width: 140px; height: 140px; overflow: visible; }
+    /* Collapse donut panel on small screens — table alone is sufficient */
     @media (max-width: 700px) {
-      .charts-grid { grid-template-columns: 1fr; }
-      .chart-card { border-right: none; border-bottom: 1px solid var(--border-mid); }
-      .chart-card:last-child { border-bottom: none; }
-    }
-    @media (max-width: 560px) {
-      .chart-content { flex-direction: column; align-items: center; gap: 16px; }
-      .donut-legend { width: 100%; }
+      .table-with-donut { display: block; }
+      .table-donut-side { display: none; }
+      .table-with-donut .section-head { border-left: 1px solid var(--border-mid); }
+      .table-with-donut .table-wrap   { border-left: 1px solid var(--border-mid); margin-bottom: 32px; }
     }
 
     /* ── RECENT RUNS TABLE ── */
@@ -1026,51 +1000,65 @@
   <div class="filter-bar" id="filterBar"></div>
 
   <!-- ═══════════════ SQUAD TYPE BREAKDOWN ═══════════════ -->
-  <div class="section-head">
-    <span class="section-head-title">Squad Type Breakdown</span>
-    <span class="section-meta" id="lastUpdated" aria-live="polite" aria-atomic="true">LOADING…</span>
-  </div>
-  <div class="table-wrap" role="region" aria-label="Squad type breakdown" tabindex="0">
-    <table>
-      <thead>
-        <tr>
-          <th>Squad Type</th>
-          <th>Runners</th>
-          <th>Runs</th>
-          <th>Exfils</th>
-          <th>Exfil %</th>
-          <th>Contracts</th>
-          <th>PvP Elims</th>
-          <th>Elims / Run</th>
-        </tr>
-      </thead>
-      <tbody id="typeTableBody">
-        <tr><td colspan="8" style="text-align:center;padding:32px;font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:0.2em;">LOADING OPERATIONS DATA…</td></tr>
-      </tbody>
-    </table>
+  <div class="table-with-donut">
+    <div class="table-donut-side" aria-hidden="true">
+      <svg class="donut-svg" id="squadDonut" viewBox="0 0 160 160"></svg>
+    </div>
+    <div class="table-main-side">
+      <div class="section-head">
+        <span class="section-head-title">Squad Type Breakdown</span>
+        <span class="section-meta" id="lastUpdated" aria-live="polite" aria-atomic="true">LOADING…</span>
+      </div>
+      <div class="table-wrap" role="region" aria-label="Squad type breakdown" tabindex="0">
+        <table>
+          <thead>
+            <tr>
+              <th>Squad Type</th>
+              <th>Runners</th>
+              <th>Runs</th>
+              <th>Exfils</th>
+              <th>Exfil %</th>
+              <th>Contracts</th>
+              <th>PvP Elims</th>
+              <th>Elims / Run</th>
+            </tr>
+          </thead>
+          <tbody id="typeTableBody">
+            <tr><td colspan="8" style="text-align:center;padding:32px;font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:0.2em;">LOADING OPERATIONS DATA…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <!-- ═══════════════ MAP BREAKDOWN ═══════════════ -->
-  <div class="section-head">
-    <span class="section-head-title">Map Breakdown</span>
-  </div>
-  <div class="table-wrap" role="region" aria-label="Map breakdown" tabindex="0">
-    <table>
-      <thead>
-        <tr>
-          <th>Map</th>
-          <th>Runs</th>
-          <th>Exfils</th>
-          <th>Exfil %</th>
-          <th>Contracts</th>
-          <th>PvP Elims</th>
-          <th>Elims / Run</th>
-        </tr>
-      </thead>
-      <tbody id="mapTableBody">
-        <tr><td colspan="7" style="text-align:center;padding:32px;font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:0.2em;">LOADING OPERATIONS DATA…</td></tr>
-      </tbody>
-    </table>
+  <div class="table-with-donut">
+    <div class="table-donut-side" aria-hidden="true">
+      <svg class="donut-svg" id="mapDonut" viewBox="0 0 160 160"></svg>
+    </div>
+    <div class="table-main-side">
+      <div class="section-head">
+        <span class="section-head-title">Map Breakdown</span>
+      </div>
+      <div class="table-wrap" role="region" aria-label="Map breakdown" tabindex="0">
+        <table>
+          <thead>
+            <tr>
+              <th>Map</th>
+              <th>Runs</th>
+              <th>Exfils</th>
+              <th>Exfil %</th>
+              <th>Contracts</th>
+              <th>PvP Elims</th>
+              <th>Elims / Run</th>
+            </tr>
+          </thead>
+          <tbody id="mapTableBody">
+            <tr><td colspan="7" style="text-align:center;padding:32px;font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:0.2em;">LOADING OPERATIONS DATA…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <!-- ═══════════════ RUNNER BREAKDOWN ═══════════════ -->
@@ -1094,30 +1082,6 @@
         <tr><td colspan="7" style="text-align:center;padding:32px;font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:0.2em;">LOADING OPERATIONS DATA…</td></tr>
       </tbody>
     </table>
-  </div>
-
-  <!-- ═══════════════ DONUT CHARTS ═══════════════ -->
-  <div class="charts-grid" id="chartsGrid" style="display:none;">
-    <div class="chart-card">
-      <div class="chart-card-header">Squad Type</div>
-      <div class="chart-content">
-        <div class="donut-wrap">
-          <svg class="donut-svg" id="squadDonut" viewBox="0 0 160 160"
-               role="img" aria-label="Squad type distribution"></svg>
-        </div>
-        <div class="donut-legend" id="squadLegend"></div>
-      </div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-card-header">Map</div>
-      <div class="chart-content">
-        <div class="donut-wrap">
-          <svg class="donut-svg" id="mapDonut" viewBox="0 0 160 160"
-               role="img" aria-label="Map distribution"></svg>
-        </div>
-        <div class="donut-legend" id="mapLegend"></div>
-      </div>
-    </div>
   </div>
 
   <!-- ═══════════════ RECENT RUNS ═══════════════ -->
@@ -1697,9 +1661,7 @@
   }
 
   function buildCharts(rows) {
-    const grid = document.getElementById('chartsGrid');
-    if (!rows.length) { grid.style.display = 'none'; return; }
-    grid.style.display = '';
+    if (!rows.length) return;
 
     const toSegs = (counts, total) =>
       Object.entries(counts)
@@ -1717,9 +1679,7 @@
       const key = rt === 'Rook Solo' ? 'Rook' : rt;
       typeCounts[key] = (typeCounts[key] || 0) + 1;
     });
-    const typeSegs = toSegs(typeCounts, rows.length);
-    buildDonut(document.getElementById('squadDonut'), typeSegs, rows.length);
-    buildLegend(document.getElementById('squadLegend'), typeSegs);
+    buildDonut(document.getElementById('squadDonut'), toSegs(typeCounts, rows.length), rows.length);
 
     // Map
     const mapCounts = {};
@@ -1727,9 +1687,7 @@
       const map = (r['Map'] || 'Unknown').trim();
       mapCounts[map] = (mapCounts[map] || 0) + 1;
     });
-    const mapSegs = toSegs(mapCounts, rows.length);
-    buildDonut(document.getElementById('mapDonut'), mapSegs, rows.length);
-    buildLegend(document.getElementById('mapLegend'), mapSegs);
+    buildDonut(document.getElementById('mapDonut'), toSegs(mapCounts, rows.length), rows.length);
   }
 
   /* ── Render full dashboard ── */
