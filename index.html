@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tim Allen — Art Director</title>
-
-  <!-- Open Graph / Social sharing -->
   <meta name="description" content="Art Director and Graphic Designer with 20+ years of experience in e-learning, brand identity, motion graphics, and corporate creative.">
   <meta property="og:type"        content="website">
   <meta property="og:title"       content="Tim Allen — Art Director">
@@ -15,27 +13,25 @@
   <meta name="twitter:title"      content="Tim Allen — Art Director">
   <meta name="twitter:description" content="Art Director and Graphic Designer with 20+ years of experience in e-learning, brand identity, motion graphics, and corporate creative.">
   <meta name="twitter:image"      content="images/og-preview.jpg">
-
   <link rel="icon" href="favicon.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
       --bg:      #f3ede2;
       --fg:      #1a1714;
-      --muted:   #8a7f74;
+      --muted:   #6e6560;   /* darkened from #8a7f74 — passes WCAG AA on --bg */
       --accent:  #b85c38;
       --border:  #ddd7cc;
       --surface: #ede7dc;
+      --dark:    #1a1714;
     }
 
-    html {
-      scroll-behavior: smooth;
-      overflow-x: hidden;
-    }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
 
     body {
       overflow-x: hidden;
@@ -46,85 +42,222 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    .container {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 0 2.5rem;
+    /* ── SKIP LINK ────────────────────────────── */
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 1rem;
+      padding: 0.5rem 1rem;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-decoration: none;
+      z-index: 999;
+      transition: top 0s;
     }
 
-    /* ── Hero ─────────────────────────────── */
-    header {
-      padding: 6.5rem 0 3.5rem;
+    .skip-link:focus {
+      top: 1rem;
     }
 
-    .avatar {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      margin-bottom: 2.25rem;
-      overflow: hidden;
+    /* ── FOCUS STYLES ─────────────────────────── */
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    /* ── STICKY NAV ───────────────────────────── */
+    .site-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 1rem 5vw;
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      justify-content: center;
-      font-size: 0.5625rem;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-      text-transform: uppercase;
+      background: rgba(26,23,20,0.9);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      transform: translateY(-100%);
+      transition: transform 0.45s cubic-bezier(0.16,1,0.3,1);
     }
 
-    .avatar img { width: 100%; height: 100%; object-fit: cover; }
-
-    .hero-meta {
-      display: flex;
-      align-items: center;
-      gap: 0.875rem;
-      margin-bottom: 1rem;
+    .site-nav.is-visible {
+      transform: translateY(0);
     }
 
-    .hero-tag {
+    .site-nav-name {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-style: italic;
+      font-size: 1rem;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+
+    .site-nav-cta {
       font-size: 0.6875rem;
       font-weight: 500;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--muted);
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .site-nav-cta:hover,
+    .site-nav-cta:focus-visible { color: var(--accent); }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      position: relative;
+      height: 100svh;
+      min-height: 600px;
+      background: var(--dark);
+      display: flex;
+      align-items: flex-end;
+      overflow: hidden;
+    }
+
+    /* Grain overlay */
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .hero-portrait-wrap {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 52%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .hero-portrait-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to right, var(--dark) 0%, transparent 45%);
+      z-index: 1;
+    }
+
+    .hero-portrait-wrap::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 30%;
+      background: linear-gradient(to top, var(--dark) 0%, transparent 100%);
+      z-index: 1;
+    }
+
+    .hero-portrait {
+      width: 100%;
+      height: 115%;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
+      will-change: transform;
+      filter: grayscale(20%) contrast(1.05);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 0 5vw 6vh;
+      width: 100%;
+    }
+
+    .hero-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-eyebrow span {
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
     }
 
     .hero-dot {
-      width: 5px;
-      height: 5px;
+      width: 4px;
+      height: 4px;
       border-radius: 50%;
       background: var(--accent);
       flex-shrink: 0;
     }
 
-    h1 {
+    .hero-name {
       font-family: 'DM Serif Display', Georgia, serif;
-      font-size: clamp(3.25rem, 10vw, 6rem);
       font-weight: 400;
-      letter-spacing: -0.03em;
-      line-height: 1.0;
-      margin-bottom: 0.875rem;
+      font-size: clamp(4.5rem, 16vw, 14rem);
+      line-height: 0.88;
+      letter-spacing: -0.035em;
+      color: #fff;
+      margin-bottom: 2rem;
     }
 
-    .hero-title {
+    .hero-name em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .hero-sub {
       font-family: 'DM Serif Display', Georgia, serif;
       font-style: italic;
-      font-size: clamp(1.125rem, 3vw, 1.625rem);
-      color: var(--muted);
+      font-size: clamp(1rem, 2.2vw, 1.5rem);
+      color: rgba(255,255,255,0.65); /* raised from 0.45 for contrast */
       letter-spacing: -0.01em;
+      line-height: 1.4;
     }
 
-    /* ── Marquee ──────────────────────────── */
+    .hero-scroll {
+      position: absolute;
+      bottom: 2.5rem;
+      right: 5vw;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      color: rgba(255,255,255,0.3);
+      font-size: 0.625rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .hero-scroll-line {
+      width: 1px;
+      height: 48px;
+      background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.3));
+      animation: scroll-line 2s ease-in-out infinite;
+    }
+
+    @keyframes scroll-line {
+      0%, 100% { transform: scaleY(1); opacity: 1; }
+      50%       { transform: scaleY(0.5); opacity: 0.4; }
+    }
+
+    /* ── MARQUEE ──────────────────────────────── */
     .marquee-wrap {
       overflow: hidden;
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
       padding: 0.9375rem 0;
-      margin: 3.5rem 0 4.5rem;
-      margin-left: -2.5rem;
-      margin-right: -2.5rem;
+      background: var(--bg);
     }
 
     .marquee-track {
@@ -139,7 +272,8 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .marquee-track { animation: none; }
+      .marquee-track    { animation: none; }
+      .hero-scroll-line { animation: none; }
     }
 
     .marquee-track span {
@@ -165,15 +299,19 @@
       flex-shrink: 0;
     }
 
-    /* ── Section headers ──────────────────── */
-    section { margin-bottom: 5rem; }
+    /* ── CONTENT SECTIONS ─────────────────────── */
+    .content-section {
+      padding: 7rem 5vw;
+      max-width: 800px;
+      margin: 0 auto;
+    }
 
     .sec-head {
       display: flex;
       align-items: baseline;
       gap: 0.875rem;
-      margin-bottom: 2rem;
-      padding-bottom: 1rem;
+      margin-bottom: 3rem;
+      padding-bottom: 1.25rem;
       border-bottom: 1px solid var(--border);
     }
 
@@ -186,35 +324,150 @@
       opacity: 0.85;
     }
 
+    /* h2 used for section labels — reset heading defaults */
     .sec-label {
       font-size: 0.6875rem;
       font-weight: 500;
       letter-spacing: 0.14em;
       text-transform: uppercase;
       color: var(--muted);
+      font-family: 'Inter', system-ui, sans-serif;
     }
 
-    /* ── About ────────────────────────────── */
+    /* ── ABOUT ────────────────────────────────── */
     .about-body p {
-      font-size: 1.0625rem;
+      font-size: 1.125rem;
       line-height: 1.85;
       font-weight: 300;
-      max-width: 580px;
     }
 
-    .about-body p + p { margin-top: 1.125rem; }
+    .about-body p + p { margin-top: 1.25rem; }
 
-    /* ── Skills ───────────────────────────── */
-    .skills-list { list-style: none; }
+    .about-body p strong {
+      font-weight: 500;
+      color: var(--fg);
+    }
+
+    /* ── BILLBOARD ────────────────────────────── */
+    .billboard {
+      position: relative;
+      height: 56vh;
+      min-height: 320px;
+      overflow: hidden;
+    }
+
+    .billboard-img {
+      position: absolute;
+      width: 100%;
+      height: 108%;
+      top: -4%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      will-change: transform;
+    }
+
+    .billboard-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to top,
+        rgba(26,23,20,0.72) 0%,
+        rgba(26,23,20,0.15) 55%,
+        transparent 100%
+      );
+      z-index: 1;
+    }
+
+    .billboard-label {
+      position: absolute;
+      bottom: 2.75rem;
+      left: 5vw;
+      z-index: 2;
+      color: #fff;
+      border-left: 2px solid var(--accent);
+      padding-left: 1rem;
+    }
+
+    .billboard-eyebrow {
+      display: block;
+      font-size: 0.625rem;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.4rem;
+    }
+
+    .billboard-label-title {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(1.25rem, 3.5vw, 2.5rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      display: block;
+    }
+
+    .billboard-label-sub {
+      display: block;
+      margin-top: 0.35rem;
+      font-size: 0.6875rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.65); /* raised for contrast */
+    }
+
+    .billboard-num {
+      position: absolute;
+      top: 3rem;
+      right: 5vw;
+      z-index: 2;
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-style: italic;
+      font-size: clamp(5rem, 15vw, 12rem);
+      color: rgba(255,255,255,0.05);
+      line-height: 1;
+      letter-spacing: -0.04em;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* ── DARK SECTION ─────────────────────────── */
+    .dark-section {
+      background: var(--dark);
+      color: #fff;
+      padding: 7rem 5vw;
+    }
+
+    .dark-section .sec-head {
+      border-bottom-color: rgba(255,255,255,0.1);
+    }
+
+    .dark-section .sec-num  { color: var(--accent); }
+    .dark-section .sec-label { color: rgba(255,255,255,0.45); }
+
+    /* ── SKILLS ───────────────────────────────── */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0;
+    }
 
     .skill-item {
       display: grid;
-      grid-template-columns: 2.75rem 1fr;
+      grid-template-columns: 3rem 1fr;
       gap: 0 1.5rem;
       align-items: start;
-      padding: 1.5rem 0;
-      border-bottom: 1px solid var(--border);
+      padding: 2rem 2rem 2rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
     }
+
+    .skills-grid .skill-item:nth-child(odd) {
+      border-right: 1px solid rgba(255,255,255,0.08);
+      padding-right: 2.5rem;
+    }
+
+    .skills-grid .skill-item:nth-child(even) { padding-left: 2.5rem; }
 
     .skill-num {
       font-family: 'DM Serif Display', Georgia, serif;
@@ -222,83 +475,60 @@
       font-size: 1rem;
       color: var(--accent);
       opacity: 0.75;
-      padding-top: 0.1rem;
+      padding-top: 0.15rem;
       line-height: 1;
     }
 
     .skill-body h3 {
-      font-size: 0.9375rem;
+      font-size: 1rem;
       font-weight: 500;
       letter-spacing: -0.01em;
-      margin-bottom: 0.3rem;
+      margin-bottom: 0.4rem;
+      color: #fff;
     }
 
     .skill-body p {
       font-size: 0.8125rem;
-      color: var(--muted);
+      color: rgba(255,255,255,0.55); /* raised from 0.4 for contrast */
       line-height: 1.65;
       font-weight: 300;
     }
 
-    /* ── Work ─────────────────────────────── */
-    .work-grid {
+    /* ── EXPERIENCE ───────────────────────────── */
+    .exp-section {
+      padding: 7rem 5vw;
+      background: var(--bg);
+    }
+
+    .exp-section-inner { max-width: 1100px; margin: 0 auto; }
+
+    .exp-section .sec-head  { border-bottom-color: var(--border); }
+    .exp-section .sec-num   { color: var(--accent); opacity: 0.85; }
+    .exp-section .sec-label { color: var(--muted); }
+
+    .exp-layout {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0.625rem;
+      gap: 5rem;
+      align-items: start;
     }
 
-    .work-tile {
-      background: var(--surface);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.5625rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--border);
-      overflow: hidden;
-      aspect-ratio: 4 / 3;
-    }
-
-    .work-tile img { width: 100%; height: 100%; object-fit: cover; display: block; object-position: center; }
-    .work-tile--top img  { object-position: top center; }
-    .work-tile--right img { object-position: center center; }
-
-    .work-tile:first-child {
-      grid-column: span 2;
-      aspect-ratio: 16 / 9;
-    }
-
-    .work-tile:first-child img {
-      object-fit: cover;
-    }
-
-    .work-tile--wide {
-      grid-column: span 2;
-      aspect-ratio: 16 / 9;
-    }
-
-    /* ── Work caption ────────────────────── */
-    .work-more {
-      margin-top: 1rem;
-      font-size: 0.8125rem;
+    .exp-intro {
+      font-size: clamp(2rem, 3.2vw, 3.25rem);
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-style: italic;
+      line-height: 1.35;
+      letter-spacing: -0.02em;
       color: var(--muted);
-      font-weight: 300;
     }
 
-    .work-more a {
+    .exp-intro p + p { margin-top: 1.5rem; }
+
+    .exp-intro strong {
       color: var(--fg);
-      text-underline-offset: 3px;
-      text-decoration-color: var(--border);
-      transition: text-decoration-color 0.15s;
+      font-style: normal;
     }
 
-    .work-more a:hover {
-      text-decoration-color: var(--accent);
-      color: var(--accent);
-    }
-
-    /* ── Experience ───────────────────────── */
     .exp-list { list-style: none; }
 
     .exp-item {
@@ -306,7 +536,7 @@
       grid-template-columns: auto 1fr;
       gap: 0 1.375rem;
       align-items: start;
-      padding: 1.375rem 0;
+      padding: 1.5rem 0;
       border-bottom: 1px solid var(--border);
     }
 
@@ -315,14 +545,15 @@
       height: 7px;
       border-radius: 50%;
       border: 1.5px solid var(--accent);
-      margin-top: 0.45rem;
+      margin-top: 0.5rem;
       flex-shrink: 0;
     }
 
     .exp-role {
-      font-size: 0.9375rem;
+      font-size: 1rem;
       font-weight: 500;
       letter-spacing: -0.01em;
+      color: var(--fg);
     }
 
     .exp-place {
@@ -334,129 +565,227 @@
 
     .exp-date {
       font-size: 0.75rem;
-      color: var(--muted);
-      margin-top: 0.3rem;
+      color: var(--accent);
+      margin-top: 0.35rem;
       font-weight: 400;
       letter-spacing: 0.04em;
+      opacity: 0.85;
     }
 
-    /* ── Links ────────────────────────────── */
+    /* ── SELECTED WORK ────────────────────────── */
+    .work-section {
+      padding: 7rem 5vw;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .work-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.625rem;
+    }
+
+    .work-tile {
+      background: var(--surface);
+      overflow: hidden;
+      aspect-ratio: 4 / 3;
+      cursor: zoom-in;
+      position: relative;
+      /* keyboard focus indicator */
+    }
+
+    .work-tile:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 2px;
+      z-index: 1;
+    }
+
+    .work-tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      object-position: center;
+      transition: transform 0.6s ease;
+      pointer-events: none; /* clicks handled on tile */
+    }
+
+    .work-tile:hover img,
+    .work-tile:focus-visible img { transform: scale(1.04); }
+
+    .work-tile--top img { object-position: top center; }
+
+    .work-tile:first-child {
+      grid-column: span 2;
+      aspect-ratio: 16 / 9;
+    }
+
+    .work-tile--wide {
+      grid-column: span 2;
+      aspect-ratio: 16 / 9;
+    }
+
+    .work-caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 1.5rem;
+      background: linear-gradient(to top, rgba(26,23,20,0.78) 0%, transparent 100%);
+      color: #fff;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .work-tile:hover .work-caption,
+    .work-tile:focus-visible .work-caption { opacity: 1; }
+
+    .work-caption-title {
+      display: block;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+
+    .work-caption-sub {
+      display: block;
+      font-size: 0.75rem;
+      opacity: 0.7;
+      margin-top: 0.2rem;
+      font-weight: 300;
+    }
+
+    .work-tile--placeholder {
+      cursor: default;
+      border: 2px dashed var(--border);
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .work-tile--placeholder::after {
+      content: 'Image coming soon';
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--border);
+    }
+
+    .work-more {
+      margin-top: 1.5rem;
+      font-size: 0.875rem;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    .work-more a {
+      color: var(--fg);
+      text-underline-offset: 3px;
+      text-decoration-color: var(--border);
+      transition: color 0.15s, text-decoration-color 0.15s;
+    }
+
+    .work-more a:hover,
+    .work-more a:focus-visible {
+      color: var(--accent);
+      text-decoration-color: var(--accent);
+    }
+
+    /* ── FIND ME ──────────────────────────────── */
+    .find-section {
+      background: var(--fg);
+      padding: 7rem 5vw;
+    }
+
+    .find-inner { max-width: 1100px; margin: 0 auto; }
+
+    .find-section .sec-head   { border-bottom-color: rgba(255,255,255,0.1); }
+    .find-section .sec-num    { color: var(--accent); }
+    .find-section .sec-label  { color: rgba(255,255,255,0.45); }
+
+    .find-tagline {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: clamp(2rem, 6vw, 4.5rem);
+      font-weight: 400;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      color: #fff;
+      margin-bottom: 3rem;
+    }
+
+    .find-tagline em {
+      font-style: italic;
+      color: rgba(255,255,255,0.45);
+    }
+
     .links { display: flex; flex-wrap: wrap; gap: 0.625rem; }
 
     .link-pill {
       display: inline-block;
-      padding: 0.5625rem 1.25rem;
-      border: 1px solid var(--border);
-      color: var(--fg);
+      padding: 0.75rem 1.5rem;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.75);
       font-size: 0.875rem;
       font-weight: 400;
       text-decoration: none;
-      letter-spacing: 0.01em;
-      transition: background 0.15s, border-color 0.15s, color 0.15s;
-      text-align: center;
+      letter-spacing: 0.02em;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
     }
 
-    .link-pill:not(.link-cta) {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .link-pill:hover {
+    .link-pill:hover,
+    .link-pill:focus-visible {
       background: var(--accent);
       border-color: var(--accent);
       color: #fff;
     }
 
     .link-cta {
-      margin-top: 0.75rem;
-      flex-basis: 100%;
       background: var(--accent);
       border-color: var(--accent);
       color: #fff;
-      letter-spacing: 0.02em;
+      flex-basis: 100%;
+      text-align: center;
+      margin-top: 0.5rem;
     }
 
-    .link-cta:hover {
-      background: var(--fg);
-      border-color: var(--fg);
+    .link-cta:hover,
+    .link-cta:focus-visible {
+      background: #fff;
+      border-color: #fff;
+      color: var(--fg);
     }
 
-    /* ── Footer ───────────────────────────── */
+    /* ── FOOTER ───────────────────────────────── */
     footer {
-      padding: 2.5rem 0 4rem;
-      border-top: 1px solid var(--border);
+      background: var(--fg);
+      border-top: 1px solid rgba(255,255,255,0.07);
+      padding: 2rem 5vw;
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-size: 0.8125rem;
-      color: var(--muted);
+      color: rgba(255,255,255,0.3);
       font-weight: 300;
     }
 
-    footer .footer-name {
+    .footer-name {
       font-family: 'DM Serif Display', Georgia, serif;
       font-style: italic;
       font-size: 1rem;
-      color: var(--fg);
+      color: rgba(255,255,255,0.55);
       letter-spacing: -0.01em;
     }
 
-    /* ── Work tile interaction ────────────── */
-    .work-tile {
-      cursor: zoom-in;
-      position: relative;
-    }
-
-    .work-tile img {
-      transition: opacity 0.25s;
-    }
-
-    .work-tile:hover img {
-      opacity: 0.15;
-    }
-
-    .work-caption {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 1.25rem;
-      opacity: 0;
-      transition: opacity 0.25s;
-      pointer-events: none;
-      text-align: center;
-      background: rgba(243, 237, 226, 0.88);
-    }
-
-    .work-tile:hover .work-caption {
-      opacity: 1;
-    }
-
-    .work-caption-title {
-      font-size: 0.9375rem;
-      font-weight: 500;
-      color: var(--fg);
-      letter-spacing: -0.01em;
-      line-height: 1.3;
-    }
-
-    .work-caption-sub {
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin-top: 0.3rem;
-      font-weight: 300;
-      letter-spacing: 0.02em;
-    }
-
-    /* ── Lightbox ─────────────────────────── */
+    /* ── LIGHTBOX ─────────────────────────────── */
     .lightbox {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(26, 23, 20, 0.93);
-      z-index: 100;
+      background: rgba(26, 23, 20, 0.95);
+      z-index: 200;
       align-items: center;
       justify-content: center;
       cursor: zoom-out;
@@ -477,14 +806,14 @@
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
-      box-shadow: 0 8px 60px rgba(0,0,0,0.6);
-      animation: lb-scale 0.2s ease;
+      box-shadow: 0 8px 80px rgba(0,0,0,0.8);
+      animation: lb-scale 0.25s ease;
       cursor: default;
     }
 
     @keyframes lb-scale {
-      from { transform: scale(0.96); }
-      to   { transform: scale(1); }
+      from { transform: scale(0.95); opacity: 0; }
+      to   { transform: scale(1);    opacity: 1; }
     }
 
     .lightbox-close {
@@ -497,73 +826,123 @@
       font-size: 1.75rem;
       line-height: 1;
       cursor: pointer;
-      padding: 0.25rem 0.5rem;
+      padding: 0.5rem 0.75rem;
       transition: color 0.15s;
       font-family: inherit;
     }
 
-    .lightbox-close:hover {
-      color: #fff;
-    }
+    .lightbox-close:hover,
+    .lightbox-close:focus-visible { color: #fff; }
 
     #lightbox-video {
       display: none;
       width: min(900px, 100%);
       aspect-ratio: 16/9;
-      box-shadow: 0 8px 60px rgba(0,0,0,0.6);
+      box-shadow: 0 8px 80px rgba(0,0,0,0.8);
     }
 
     .lightbox.is-video #lightbox-img   { display: none; }
     .lightbox.is-video #lightbox-video { display: block; }
 
-    /* ── Responsive ───────────────────────── */
-    @media (max-width: 540px) {
-      header { padding: 4.5rem 0 3rem; }
-      .container { padding: 0 1.5rem; }
-      .marquee-wrap { margin-left: -1.5rem; margin-right: -1.5rem; }
+    /* ── REVEAL ANIMATIONS ────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1),
+                  transform 0.8s cubic-bezier(0.16,1,0.3,1);
+    }
 
-      /* Hero title wraps gracefully */
-      .hero-title { font-size: 1.125rem; }
+    .reveal.is-visible    { opacity: 1; transform: translateY(0); }
 
-      /* Work grid: single column on very small screens */
-      .work-grid { grid-template-columns: 1fr; }
-      .work-tile { aspect-ratio: 16 / 9; }
-      .work-tile:first-child { aspect-ratio: 16 / 9; grid-column: span 1; }
-      .work-tile--wide { grid-column: span 1; }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
 
-      /* Skills: tighten up number column */
-      .skill-item { grid-template-columns: 2rem 1fr; gap: 0 1rem; }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
 
-      /* Social links: let them wrap naturally rather than squish into one row */
-      .link-pill:not(.link-cta) { flex: 0 1 auto; }
+    /* ── RESPONSIVE ───────────────────────────── */
+    @media (max-width: 900px) {
+      .exp-layout  { grid-template-columns: 1fr; gap: 3rem; }
+      .skills-grid { grid-template-columns: 1fr; }
+
+      .skills-grid .skill-item:nth-child(odd) {
+        border-right: none;
+        padding-right: 0;
+      }
+
+      .skills-grid .skill-item:nth-child(even) { padding-left: 0; }
+
+      /* all skill items share the same bottom border in single column */
+      .skill-item { border-bottom: 1px solid rgba(255,255,255,0.08); }
+
+      .exp-intro { font-size: clamp(1.5rem, 3.2vw, 2.25rem); }
+    }
+
+    @media (max-width: 600px) {
+      .hero-name        { font-size: clamp(3.5rem, 18vw, 5.5rem); }
+      .content-section  { padding: 4rem 1.5rem; }
+      .dark-section     { padding: 4rem 1.5rem; }
+      .exp-section      { padding: 4rem 1.5rem; }
+      .work-section     { padding: 4rem 1.5rem; }
+      .find-section     { padding: 4rem 1.5rem; }
+
+      .exp-intro        { font-size: 1.375rem; }
+
+      .find-tagline     { font-size: clamp(1.75rem, 8vw, 3rem); }
+
+      .work-grid        { grid-template-columns: 1fr; }
+      .work-tile        { aspect-ratio: 16/9; }
+      .work-tile:first-child { aspect-ratio: 16/9; grid-column: auto; }
+      .work-tile--wide  { grid-column: auto; }
+
+      .billboard        { height: 55vh; min-height: 260px; }
+      .hero-portrait-wrap { width: 60%; }
+      .hero-scroll      { display: none; }
 
       footer { flex-direction: column; align-items: flex-start; gap: 0.375rem; }
+
+      .link-pill:not(.link-cta) { flex: 0 1 auto; }
     }
   </style>
 </head>
 <body>
 
-<div class="container">
+<a class="skip-link" href="#main-content">Skip to main content</a>
 
-  <!-- Hero -->
-  <header>
-    <div class="avatar">
-      <img src="images/photo.jpg" alt="Tim Allen">
-    </div>
-    <div class="hero-meta">
-      <span class="hero-tag">Southeast Pennsylvania</span>
+<!-- ── STICKY NAV ────────────────────────────── -->
+<nav class="site-nav" id="site-nav" aria-label="Site navigation">
+  <span class="site-nav-name" aria-hidden="true">Tim Allen</span>
+  <a class="site-nav-cta" id="site-nav-cta" href="#">Get in touch</a>
+</nav>
+
+<!-- ── HERO ───────────────────────────────────── -->
+<section class="hero" aria-label="Tim Allen, Art Director">
+  <div class="hero-portrait-wrap">
+    <img class="hero-portrait" id="hero-portrait" src="images/photo.jpg" alt="" aria-hidden="true">
+  </div>
+
+  <div class="hero-content" id="main-content">
+    <div class="hero-eyebrow" aria-hidden="true">
+      <span>Southeast Pennsylvania</span>
       <div class="hero-dot"></div>
-      <span class="hero-tag">Since 2005</span>
+      <span>Since 2005</span>
     </div>
-    <h1>Tim Allen</h1>
-    <p class="hero-title">Art Director, Creative, &amp; Problem Solver</p>
-  </header>
+    <h1 class="hero-name">Tim<br><em>Allen</em></h1>
+    <p class="hero-sub">Art Director, Creative, &amp; Problem Solver</p>
+  </div>
 
-</div>
+  <div class="hero-scroll" aria-hidden="true">
+    <div class="hero-scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
 
-<!-- Full-bleed marquee -->
-<div class="marquee-wrap">
-  <div class="marquee-track" aria-hidden="true">
+<!-- ── MARQUEE ────────────────────────────────── -->
+<div class="marquee-wrap" aria-hidden="true">
+  <div class="marquee-track">
     <span>Graphic Design</span><span>Art Direction</span><span>Video Editing</span>
     <span>Motion Graphics</span><span>Digital Illustration</span><span>Brand Identity</span>
     <span>Logo Design</span><span>Figma</span><span>Adobe Creative Suite</span>
@@ -575,301 +954,419 @@
   </div>
 </div>
 
-<div class="container">
+<!-- ── ABOUT ──────────────────────────────────── -->
+<section class="content-section">
+  <div class="sec-head reveal">
+    <span class="sec-num" aria-hidden="true">01</span>
+    <h2 class="sec-label">About</h2>
+  </div>
+  <div class="about-body">
+    <p class="reveal reveal-delay-1"><strong>Art Director and Graphic Designer with 20 years of experience</strong> leading creative across elearning, product support, corporate communications, and digital campaigns. I work across illustration, animation, and design, building visual systems that are eye-catching, strategic, and thoughtful.</p>
+    <p class="reveal reveal-delay-2">My background spans the life sciences industry where I developed training content, technical illustrations, product support materials, and corporate event identities. Since 2011 I've been at Performance Development Group in Malvern, PA, where I moved from Senior Graphic Designer into my current role as Art Director.</p>
+    <p class="reveal reveal-delay-3">Outside work: Sports fan, gamer, beach lover, occasional aerial photographer, and sometimes disc golfer.</p>
+  </div>
+</section>
 
-  <!-- About -->
-  <section>
-    <div class="sec-head">
-      <span class="sec-num">01</span>
-      <span class="sec-label">About</span>
-    </div>
-    <div class="about-body">
-      <p>Art Director and Graphic Designer with 20 years of experience leading creative across elearning, product support, corporate communications, and digital campaigns. I work across illustration, animation, and design, building visual systems that are eye-catching, strategic, and thoughtful.</p>
-      <p>My background spans the life sciences industry where I developed training content, technical illustrations, product support materials, and corporate event identities. Since 2011 I've been at Performance Development Group in Malvern, PA, where I moved from Senior Graphic Designer into my current role as Art Director.</p>
-      <p>Outside work: Sports fan, gamer, beach lover, occasional aerial photographer, and sometimes disc golfer.</p>
-    </div>
-  </section>
+<!-- ── BILLBOARD 1: KAM Summit ────────────────── -->
+<div class="billboard" id="billboard-1">
+  <img class="billboard-img" src="images/8.jpg" alt="KAM Summit 2025 — a dramatic dark-themed presentation design" loading="lazy">
+  <div class="billboard-overlay" aria-hidden="true"></div>
+  <div class="billboard-num" aria-hidden="true">01</div>
+  <div class="billboard-label">
+    <span class="billboard-eyebrow">Selected Work</span>
+    <span class="billboard-label-title">KAM Summit 2025</span>
+    <span class="billboard-label-sub">Presentation Design</span>
+  </div>
+</div>
 
-  <!-- What I Do -->
-  <section>
-    <div class="sec-head">
-      <span class="sec-num">02</span>
-      <span class="sec-label">What I Do</span>
+<!-- ── WHAT I DO ──────────────────────────────── -->
+<section class="dark-section" aria-labelledby="skills-heading">
+  <div style="max-width:1100px;margin:0 auto;">
+    <div class="sec-head reveal">
+      <span class="sec-num" aria-hidden="true">02</span>
+      <h2 class="sec-label" id="skills-heading">What I Do</h2>
     </div>
-    <ul class="skills-list">
-      <li class="skill-item">
-        <span class="skill-num">01</span>
+    <ul class="skills-grid">
+      <li class="skill-item reveal reveal-delay-1">
+        <span class="skill-num" aria-hidden="true">01</span>
         <div class="skill-body">
           <h3>Graphic Design</h3>
           <p>Print, digital, identity, and collateral. Two decades of making things look exactly right.</p>
         </div>
       </li>
-      <li class="skill-item">
-        <span class="skill-num">02</span>
+      <li class="skill-item reveal reveal-delay-2">
+        <span class="skill-num" aria-hidden="true">02</span>
         <div class="skill-body">
           <h3>Art Direction</h3>
           <p>Defining and guiding the visual voice of a project, from first concept through final delivery.</p>
         </div>
       </li>
-      <li class="skill-item">
-        <span class="skill-num">03</span>
+      <li class="skill-item reveal reveal-delay-1">
+        <span class="skill-num" aria-hidden="true">03</span>
         <div class="skill-body">
           <h3>Video &amp; Motion</h3>
           <p>Editing, animation, and motion graphics for training, product launches, and internal comms.</p>
         </div>
       </li>
-      <li class="skill-item">
-        <span class="skill-num">04</span>
+      <li class="skill-item reveal reveal-delay-2">
+        <span class="skill-num" aria-hidden="true">04</span>
         <div class="skill-body">
           <h3>Digital Illustration</h3>
           <p>Digital illustration work across the full Adobe suite.</p>
         </div>
       </li>
-      <li class="skill-item">
-        <span class="skill-num">05</span>
+      <li class="skill-item reveal reveal-delay-1">
+        <span class="skill-num" aria-hidden="true">05</span>
         <div class="skill-body">
           <h3>Modern Toolset</h3>
-          <p>Figma for UI and collaborative design. Adobe Creative Suite across the board. And actively working with Claude AI to accelerate ideation, sharpen copy, and push creative problem-solving further.</p>
+          <p>Figma for UI and collaborative design. Adobe Creative Suite across the board. Actively working with Claude AI to accelerate ideation, sharpen copy, and push creative problem-solving further.</p>
         </div>
       </li>
-      <li class="skill-item">
-        <span class="skill-num">06</span>
+      <li class="skill-item reveal reveal-delay-2">
+        <span class="skill-num" aria-hidden="true">06</span>
         <div class="skill-body">
           <h3>Team Leadership</h3>
-          <p>Manage teams during high-volume periods, keeping work on schedule and quality high. Contribute to cross-functional brainstorming teams and participate in internal initiatives focused on employee engagement and satisfaction.</p>
+          <p>Manage teams during high-volume periods, keeping work on schedule and quality high. Contribute to cross-functional brainstorming and internal initiatives around employee engagement.</p>
         </div>
       </li>
     </ul>
-  </section>
+  </div>
+</section>
 
-  <!-- Experience -->
-  <section>
-    <div class="sec-head">
-      <span class="sec-num">03</span>
-      <span class="sec-label">Experience</span>
-    </div>
-    <ul class="exp-list">
-      <li class="exp-item">
-        <span class="exp-pip"></span>
-        <div>
-          <div class="exp-role">Art Director</div>
-          <div class="exp-place">Performance Development Group — Malvern, PA</div>
-          <div class="exp-date">2023 — Present</div>
-        </div>
-      </li>
-      <li class="exp-item">
-        <span class="exp-pip"></span>
-        <div>
-          <div class="exp-role">Senior Graphic Designer</div>
-          <div class="exp-place">Performance Development Group — Malvern, PA</div>
-          <div class="exp-date">2011 — 2023</div>
-        </div>
-      </li>
-      <li class="exp-item">
-        <span class="exp-pip"></span>
-        <div>
-          <div class="exp-role">Multimedia Designer / Artist</div>
-          <div class="exp-place">Pfizer — Collegeville, PA</div>
-          <div class="exp-date">2009 — 2011</div>
-        </div>
-      </li>
-      <li class="exp-item">
-        <span class="exp-pip"></span>
-        <div>
-          <div class="exp-role">Graphic Designer</div>
-          <div class="exp-place">Wyeth — Collegeville, PA</div>
-          <div class="exp-date">2005 — 2009</div>
-        </div>
-      </li>
-    </ul>
-  </section>
-
-  <!-- Selected Work -->
-  <section>
-    <div class="sec-head">
-      <span class="sec-num">04</span>
-      <span class="sec-label">Selected Work</span>
-    </div>
-    <div class="work-grid">
-      <!-- 1: Hero — full width -->
-      <div class="work-tile">
-        <img src="images/1.jpg" alt="Identity Theft — motion graphics" loading="lazy" data-video="https://www.youtube.com/embed/b_bQ8HuHYG4?autoplay=1">
-        <div class="work-caption">
-          <span class="work-caption-title">Identity Theft</span>
-          <span class="work-caption-sub">Motion Graphics</span>
-        </div>
-      </div>
-      <!-- Row 2: brand identity + dramatic presentation -->
-      <div class="work-tile">
-        <img src="images/4.png" alt="KAM Summit — brand identity" loading="lazy">
-        <div class="work-caption">
-          <span class="work-caption-title">KAM Summit</span>
-          <span class="work-caption-sub">Brand Identity</span>
-        </div>
-      </div>
-      <div class="work-tile">
-        <img src="images/6.jpg" alt="Leadership Base Camp — presentation design" loading="lazy">
-        <div class="work-caption">
-          <span class="work-caption-title">Leadership Base Camp</span>
-          <span class="work-caption-sub">Presentation Design</span>
-        </div>
-      </div>
-      <!-- Row 3: cinematic motion + clean identity -->
-      <div class="work-tile">
-        <img src="images/7.jpg" alt="SWAGGER — motion graphics" loading="lazy">
-        <div class="work-caption">
-          <span class="work-caption-title">SWAGGER</span>
-          <span class="work-caption-sub">Motion Graphics</span>
-        </div>
-      </div>
-      <div class="work-tile work-tile--right">
-        <img src="images/3.jpg" alt="Women's Health Elite — logo identity" loading="lazy">
-        <div class="work-caption">
-          <span class="work-caption-title">Women's Health Elite</span>
-          <span class="work-caption-sub">Logo &amp; Identity</span>
-        </div>
-      </div>
-      <!-- Row 4: retro presentation + eLearning -->
-      <div class="work-tile">
-        <img src="images/8.jpg" alt="KAM Summit 2025 — presentation design" loading="lazy">
-        <div class="work-caption">
-          <span class="work-caption-title">KAM Summit 2025</span>
-          <span class="work-caption-sub">Presentation Design</span>
-        </div>
-      </div>
-      <div class="work-tile">
-        <img src="images/9.jpg" alt="The Migraine Journey — eLearning design" loading="lazy">
-        <div class="work-caption">
-          <span class="work-caption-title">The Migraine Journey</span>
-          <span class="work-caption-sub">eLearning Design</span>
-        </div>
-      </div>
-      <!-- Row 5: editorial publication + reference design -->
-      <div class="work-tile work-tile--top">
-        <img src="images/5.png" alt="A Tale of Three Patients — publication design" loading="lazy">
-        <div class="work-caption">
-          <span class="work-caption-title">Patient Stories</span>
-          <span class="work-caption-sub">Digital Publication</span>
-        </div>
-      </div>
-      <div class="work-tile">
-        <img src="images/10.jpg" alt="Migraine Treatment Drug Classes — reference design" loading="lazy">
-        <div class="work-caption">
-          <span class="work-caption-title">Migraine Treatment</span>
-          <span class="work-caption-sub">Reference Design</span>
-        </div>
-      </div>
-      <!-- Row 6: illustrations last — artistic range -->
-      <div class="work-tile">
-        <img src="images/2.png" alt="Joel Embiid — digital portrait illustration" loading="lazy">
-        <div class="work-caption">
-          <span class="work-caption-title">Basketball Portrait</span>
-          <span class="work-caption-sub">Digital Illustration</span>
-        </div>
-      </div>
-      <div class="work-tile">
-        <img src="images/11.png" alt="Portrait illustration" loading="lazy">
-        <div class="work-caption">
-          <span class="work-caption-title">Portrait Study</span>
-          <span class="work-caption-sub">Digital Illustration</span>
-        </div>
-      </div>
-    </div>
-    <p class="work-more">More work is available to review on <a href="https://www.behance.net/redartist" target="_blank" rel="noopener">Behance</a>.</p>
-  </section>
-
-  <!-- Find Me -->
-  <section>
-    <div class="sec-head">
-      <span class="sec-num">05</span>
-      <span class="sec-label">Find Me</span>
-    </div>
-    <div class="links">
-      <a class="link-pill" href="https://www.linkedin.com/in/redartist/" target="_blank" rel="noopener">LinkedIn</a>
-      <a class="link-pill" href="https://www.behance.net/redartist" target="_blank" rel="noopener">Behance</a>
-      <a class="link-pill" href="https://www.instagram.com/daftporter/" target="_blank" rel="noopener">Instagram</a>
-      <a class="link-pill" href="https://bsky.app/profile/daftporter.bsky.social" target="_blank" rel="noopener">Bluesky</a>
-      <a class="link-pill" href="https://www.youtube.com/@daftporter" target="_blank" rel="noopener">YouTube</a>
-      <a class="link-pill link-cta" id="contact-link" href="#">Let's work together &rarr;</a>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer>
-    <span class="footer-name">Tim Allen</span>
-    <span>&copy; 2026</span>
-  </footer>
-
+<!-- ── BILLBOARD 2: SWAGGER ───────────────────── -->
+<div class="billboard" id="billboard-2">
+  <img class="billboard-img" src="images/7.jpg" alt="SWAGGER — cinematic motion graphics piece" loading="lazy">
+  <div class="billboard-overlay" aria-hidden="true"></div>
+  <div class="billboard-num" aria-hidden="true">02</div>
+  <div class="billboard-label">
+    <span class="billboard-eyebrow">Selected Work</span>
+    <span class="billboard-label-title">SWAGGER</span>
+    <span class="billboard-label-sub">Motion Graphics</span>
+  </div>
 </div>
 
-<!-- Lightbox -->
+<!-- ── EXPERIENCE ─────────────────────────────── -->
+<section class="exp-section" aria-labelledby="exp-heading">
+  <div class="exp-section-inner">
+    <div class="sec-head reveal">
+      <span class="sec-num" aria-hidden="true">03</span>
+      <h2 class="sec-label" id="exp-heading">Experience</h2>
+    </div>
+    <div class="exp-layout">
+      <div class="exp-intro reveal reveal-delay-1">
+        <p><strong>20 years of creative</strong> work across pharma, life sciences, and corporate learning &amp; development.</p>
+        <p><em>From designer to director — building things worth looking at.</em></p>
+      </div>
+      <ul class="exp-list">
+        <li class="exp-item reveal reveal-delay-1">
+          <span class="exp-pip" aria-hidden="true"></span>
+          <div>
+            <div class="exp-role">Art Director</div>
+            <div class="exp-place">Performance Development Group — Malvern, PA</div>
+            <div class="exp-date">2023 — Present</div>
+          </div>
+        </li>
+        <li class="exp-item reveal reveal-delay-2">
+          <span class="exp-pip" aria-hidden="true"></span>
+          <div>
+            <div class="exp-role">Senior Graphic Designer</div>
+            <div class="exp-place">Performance Development Group — Malvern, PA</div>
+            <div class="exp-date">2011 — 2023</div>
+          </div>
+        </li>
+        <li class="exp-item reveal reveal-delay-3">
+          <span class="exp-pip" aria-hidden="true"></span>
+          <div>
+            <div class="exp-role">Multimedia Designer / Artist</div>
+            <div class="exp-place">Pfizer — Collegeville, PA</div>
+            <div class="exp-date">2009 — 2011</div>
+          </div>
+        </li>
+        <li class="exp-item reveal reveal-delay-4">
+          <span class="exp-pip" aria-hidden="true"></span>
+          <div>
+            <div class="exp-role">Graphic Designer</div>
+            <div class="exp-place">Wyeth — Collegeville, PA</div>
+            <div class="exp-date">2005 — 2009</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ── BILLBOARD 3: Migraine Journey ──────────── -->
+<div class="billboard" id="billboard-3">
+  <img class="billboard-img" src="images/9.jpg" alt="The Migraine Journey — eLearning design" loading="lazy">
+  <div class="billboard-overlay" aria-hidden="true"></div>
+  <div class="billboard-num" aria-hidden="true">03</div>
+  <div class="billboard-label">
+    <span class="billboard-eyebrow">Selected Work</span>
+    <span class="billboard-label-title">The Migraine Journey</span>
+    <span class="billboard-label-sub">eLearning Design</span>
+  </div>
+</div>
+
+<!-- ── SELECTED WORK ───────────────────────────── -->
+<section class="work-section" aria-labelledby="work-heading">
+  <div class="sec-head reveal">
+    <span class="sec-num" aria-hidden="true">04</span>
+    <h2 class="sec-label" id="work-heading">Selected Work</h2>
+  </div>
+  <div class="work-grid">
+
+    <div class="work-tile reveal" tabindex="0" role="button"
+         aria-label="Identity Theft — Motion Graphics. Click to view."
+         data-video="https://www.youtube.com/embed/b_bQ8HuHYG4?autoplay=1">
+      <img src="images/1.jpg" alt="" loading="lazy">
+      <div class="work-caption" aria-hidden="true">
+        <span class="work-caption-title">Identity Theft</span>
+        <span class="work-caption-sub">Motion Graphics</span>
+      </div>
+    </div>
+
+    <div class="work-tile reveal reveal-delay-1" tabindex="0" role="button"
+         aria-label="KAM Summit — Brand Identity. Click to view."
+         data-img="images/4.png">
+      <img src="images/4.png" alt="" loading="lazy">
+      <div class="work-caption" aria-hidden="true">
+        <span class="work-caption-title">KAM Summit</span>
+        <span class="work-caption-sub">Brand Identity</span>
+      </div>
+    </div>
+
+    <div class="work-tile reveal reveal-delay-2" tabindex="0" role="button"
+         aria-label="Basketball Portrait — Digital Illustration. Click to view."
+         data-img="images/2.png">
+      <img src="images/2.png" alt="" loading="lazy">
+      <div class="work-caption" aria-hidden="true">
+        <span class="work-caption-title">Basketball Portrait</span>
+        <span class="work-caption-sub">Digital Illustration</span>
+      </div>
+    </div>
+
+    <div class="work-tile reveal reveal-delay-1" tabindex="0" role="button"
+         aria-label="The Migraine Journey — eLearning Design. Click to view."
+         data-img="images/9.jpg">
+      <img src="images/9.jpg" alt="" loading="lazy">
+      <div class="work-caption" aria-hidden="true">
+        <span class="work-caption-title">The Migraine Journey</span>
+        <span class="work-caption-sub">eLearning Design</span>
+      </div>
+    </div>
+
+    <div class="work-tile reveal reveal-delay-2" tabindex="0" role="button"
+         aria-label="Women's Health Elite — Logo and Identity. Click to view."
+         data-img="images/3.jpg">
+      <img src="images/3.jpg" alt="" loading="lazy">
+      <div class="work-caption" aria-hidden="true">
+        <span class="work-caption-title">Women's Health Elite</span>
+        <span class="work-caption-sub">Logo &amp; Identity</span>
+      </div>
+    </div>
+
+    <div class="work-tile work-tile--top reveal reveal-delay-1" tabindex="0" role="button"
+         aria-label="Patient Stories — Digital Publication. Click to view."
+         data-img="images/5.png">
+      <img src="images/5.png" alt="" loading="lazy">
+      <div class="work-caption" aria-hidden="true">
+        <span class="work-caption-title">Patient Stories</span>
+        <span class="work-caption-sub">Digital Publication</span>
+      </div>
+    </div>
+
+    <div class="work-tile reveal reveal-delay-2" tabindex="0" role="button"
+         aria-label="Portrait Study — Digital Illustration. Click to view."
+         data-img="images/11.png">
+      <img src="images/11.png" alt="" loading="lazy">
+      <div class="work-caption" aria-hidden="true">
+        <span class="work-caption-title">Portrait Study</span>
+        <span class="work-caption-sub">Digital Illustration</span>
+      </div>
+    </div>
+
+    <div class="work-tile reveal reveal-delay-1" tabindex="0" role="button"
+         aria-label="Migraine Treatment Drug Classes — Reference Design. Click to view."
+         data-img="images/10.jpg">
+      <img src="images/10.jpg" alt="" loading="lazy">
+      <div class="work-caption" aria-hidden="true">
+        <span class="work-caption-title">Migraine Treatment</span>
+        <span class="work-caption-sub">Reference Design</span>
+      </div>
+    </div>
+
+    <div class="work-tile reveal reveal-delay-1" tabindex="0" role="button"
+         aria-label="Payer Landscape — elearning Module. Click to view."
+         data-img="images/11.jpg">
+      <img src="images/11.jpg" alt="" loading="lazy">
+      <div class="work-caption" aria-hidden="true">
+        <span class="work-caption-title">Payer Landscape</span>
+        <span class="work-caption-sub">elearning Module</span>
+      </div>
+    </div>
+
+  </div>
+  <p class="work-more reveal">More work available on <a href="https://www.behance.net/redartist" target="_blank" rel="noopener" aria-label="Behance profile (opens in new tab)">Behance</a>.</p>
+</section>
+
+<!-- ── FIND ME ────────────────────────────────── -->
+<section class="find-section" aria-labelledby="contact-heading">
+  <div class="find-inner">
+    <div class="sec-head reveal">
+      <span class="sec-num" aria-hidden="true">05</span>
+      <h2 class="sec-label" id="contact-heading">Find Me</h2>
+    </div>
+    <p class="find-tagline reveal reveal-delay-1">Let's make<br><em>something great.</em></p>
+    <div class="links reveal reveal-delay-2">
+      <a class="link-pill" href="https://www.linkedin.com/in/redartist/" target="_blank" rel="noopener" aria-label="LinkedIn (opens in new tab)">LinkedIn</a>
+      <a class="link-pill" href="https://www.behance.net/redartist" target="_blank" rel="noopener" aria-label="Behance (opens in new tab)">Behance</a>
+      <a class="link-pill" href="https://www.instagram.com/daftporter/" target="_blank" rel="noopener" aria-label="Instagram (opens in new tab)">Instagram</a>
+      <a class="link-pill" href="https://bsky.app/profile/daftporter.bsky.social" target="_blank" rel="noopener" aria-label="Bluesky (opens in new tab)">Bluesky</a>
+      <a class="link-pill" href="https://www.youtube.com/@daftporter" target="_blank" rel="noopener" aria-label="YouTube (opens in new tab)">YouTube</a>
+      <a class="link-pill link-cta" id="contact-link" href="#">Let's work together &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────── -->
+<footer>
+  <span class="footer-name">Tim Allen</span>
+  <span>&copy; 2026</span>
+</footer>
+
+<!-- ── LIGHTBOX ───────────────────────────────── -->
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
-  <button class="lightbox-close" id="lightbox-close" aria-label="Close">&times;</button>
+  <button class="lightbox-close" id="lightbox-close" aria-label="Close image viewer">&times;</button>
   <img id="lightbox-img" src="" alt="">
-  <iframe id="lightbox-video" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  <iframe id="lightbox-video" src="" title="Portfolio video" frameborder="0"
+          allow="autoplay; encrypted-media" allowfullscreen></iframe>
 </div>
 
 <script>
+(function() {
+
   // ── Email (spam-safe) ──
-  (function() {
-    var a = 'porter.allen', b = 'gmail', c = 'com';
-    var el = document.getElementById('contact-link');
-    el.href = 'mailto:' + a + '\x40' + b + '.' + c;
-  })();
+  var emailStr = 'porter.allen' + '\x40' + 'gmail' + '.' + 'com';
+  document.getElementById('contact-link').href  = 'mailto:' + emailStr;
+  document.getElementById('site-nav-cta').href  = 'mailto:' + emailStr;
+
+  // ── Sticky nav ──
+  var siteNav = document.getElementById('site-nav');
+  var heroEl  = document.querySelector('.hero');
+
+  function updateNav() {
+    var below = heroEl ? heroEl.getBoundingClientRect().bottom <= 0 : false;
+    siteNav.classList.toggle('is-visible', below);
+  }
+
+  window.addEventListener('scroll', updateNav, { passive: true });
+  updateNav();
+
+  // ── Parallax ──
+  var reduced      = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var heroPortrait = document.getElementById('hero-portrait');
+  var billboards   = document.querySelectorAll('.billboard');
+
+  function runParallax() {
+    if (reduced || window.innerWidth <= 768) return;
+
+    if (heroPortrait) {
+      heroPortrait.style.transform = 'translateY(' + (window.scrollY * 0.3) + 'px)';
+    }
+
+    billboards.forEach(function(board) {
+      var rect = board.getBoundingClientRect();
+      var img  = board.querySelector('.billboard-img');
+      if (!img) return;
+      if (rect.bottom < -200 || rect.top > window.innerHeight + 200) return;
+      img.style.transform = 'translateY(' + (rect.top / window.innerHeight * 20) + 'px)';
+    });
+  }
+
+  window.addEventListener('scroll', runParallax, { passive: true });
+  runParallax();
+
+  // ── Scroll reveal ──
+  var revealEls = document.querySelectorAll('.reveal');
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+  revealEls.forEach(function(el) { io.observe(el); });
 
   // ── Lightbox ──
-  (function() {
-    var lb      = document.getElementById('lightbox');
-    var lbImg   = document.getElementById('lightbox-img');
-    var lbVideo = document.getElementById('lightbox-video');
-    var lbClose = document.getElementById('lightbox-close');
+  var lb        = document.getElementById('lightbox');
+  var lbImg     = document.getElementById('lightbox-img');
+  var lbVideo   = document.getElementById('lightbox-video');
+  var lbClose   = document.getElementById('lightbox-close');
+  var lastFocus = null; // element to return focus to on close
 
-    function openImage(src, alt) {
-      lb.classList.remove('is-video');
-      lbImg.src = src;
-      lbImg.alt = alt;
-      lb.classList.add('is-open');
-      document.body.style.overflow = 'hidden';
+  function openImage(src, label) {
+    lb.classList.remove('is-video');
+    lbImg.src = src;
+    lbImg.alt = label;
+    lb.setAttribute('aria-label', label);
+    lb.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    lbClose.focus();
+  }
+
+  function openVideo(url, label) {
+    lb.classList.add('is-video');
+    lbVideo.src = url;
+    lbVideo.title = label;
+    lb.setAttribute('aria-label', label);
+    lb.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    lbClose.focus();
+  }
+
+  function closeLb() {
+    lb.classList.remove('is-open', 'is-video');
+    document.body.style.overflow = '';
+    lbImg.src   = '';
+    lbVideo.src = '';
+    lb.setAttribute('aria-label', 'Image viewer');
+    if (lastFocus) { lastFocus.focus(); lastFocus = null; }
+  }
+
+  // Attach to work tiles (click + keyboard)
+  document.querySelectorAll('.work-tile').forEach(function(tile) {
+    function activate() {
+      lastFocus = tile;
+      var label = tile.getAttribute('aria-label').replace('. Click to view.', '');
+      if (tile.dataset.video) {
+        openVideo(tile.dataset.video, label);
+      } else {
+        openImage(tile.querySelector('img').src, label);
+      }
     }
 
-    function openVideo(embedUrl) {
-      lb.classList.add('is-video');
-      lbVideo.src = embedUrl;
-      lb.classList.add('is-open');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function close() {
-      lb.classList.remove('is-open', 'is-video');
-      document.body.style.overflow = '';
-      lbImg.src = '';
-      lbVideo.src = '';
-    }
-
-    // Attach click to each work tile image
-    document.querySelectorAll('.work-tile img').forEach(function(img) {
-      img.addEventListener('click', function() {
-        if (img.dataset.video) {
-          openVideo(img.dataset.video);
-        } else {
-          openImage(img.src, img.alt);
-        }
-      });
+    tile.addEventListener('click', activate);
+    tile.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        activate();
+      }
     });
+  });
 
-    // Close on overlay click (not on image/video itself)
-    lb.addEventListener('click', function(e) {
-      if (e.target !== lbImg && e.target !== lbVideo) close();
-    });
+  lb.addEventListener('click', function(e) {
+    if (e.target !== lbImg && e.target !== lbVideo) closeLb();
+  });
 
-    // Close button
-    lbClose.addEventListener('click', close);
+  lbClose.addEventListener('click', closeLb);
 
-    // Close on Escape
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') close();
-    });
-  })();
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && lb.classList.contains('is-open')) closeLb();
+  });
+
+})();
 </script>
 
 </body>
