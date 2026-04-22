@@ -363,7 +363,7 @@
       height: 108%;
       top: -4%;
       object-fit: cover;
-      object-position: center;
+      object-position: top;
       display: block;
       will-change: transform;
     }
@@ -426,7 +426,8 @@
       font-family: 'DM Serif Display', Georgia, serif;
       font-style: italic;
       font-size: clamp(5rem, 15vw, 12rem);
-      color: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.22);
+      text-shadow: 0 0 80px rgba(0,0,0,0.4), 0 0 40px rgba(0,0,0,0.25);
       line-height: 1;
       letter-spacing: -0.04em;
       pointer-events: none;
@@ -641,6 +642,10 @@
 
     .work-tile:hover .work-caption,
     .work-tile:focus-visible .work-caption { opacity: 1; }
+
+    @media (hover: none) {
+      .work-caption { opacity: 1; }
+    }
 
     .work-caption-title {
       display: block;
@@ -1068,7 +1073,7 @@
     <div class="exp-layout">
       <div class="exp-intro reveal reveal-delay-1">
         <p><strong>20 years of creative</strong> work across pharma, life sciences, and corporate learning &amp; development.</p>
-        <p><em>From designer to director — building things that deserve, and respect, your time.</em></p>
+        <p><em>From designer to director — building things worth looking at.</em></p>
       </div>
       <ul class="exp-list">
         <li class="exp-item reveal reveal-delay-1">
@@ -1178,13 +1183,13 @@
       </div>
     </div>
 
-    <div class="work-tile reveal reveal-delay-2" tabindex="0" role="button"
+       <div class="work-tile reveal reveal-delay-2" tabindex="0" role="button"
          aria-label="Wild in the Woods — Video Production. Click to view."
          data-video="https://www.youtube.com/embed/deWNU_QlI5g?autoplay=1">
       <img src="images/12.jpg" alt="" loading="lazy">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">Wild in the Woods</span>
-        <span class="work-caption-sub">Long Form Video Production</span>
+        <span class="work-caption-sub">Video Production</span>
       </div>
     </div>
 
