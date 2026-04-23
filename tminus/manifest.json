@@ -2,7 +2,7 @@
   "name": "Countdowns",
   "short_name": "Countdowns",
   "description": "Progress bars counting down to what matters",
-  "start_url": "/",
+  "start_url": "https://dftporter.github.io/tminus/",
   "display": "standalone",
   "background_color": "#0e0e18",
   "theme_color": "#0e0e18",
