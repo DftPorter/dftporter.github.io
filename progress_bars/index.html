@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Countdowns</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -23,14 +26,21 @@
     --bar-h-near: 22px;
   }
 
+  html { height: 100%; }
+
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    min-height: 100vh;
-    padding: 64px 32px 80px;
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-weight: 300;
+    letter-spacing: 0.03em;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 0 32px;
     max-width: 740px;
     margin: 0 auto;
+    overflow: hidden;
   }
 
   /* ── header ── */
@@ -38,13 +48,14 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 52px;
+    padding: 32px 0;
+    flex-shrink: 0;
   }
 
   .wordmark {
     font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
+    font-weight: 400;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
     color: #44445a;
   }
@@ -80,8 +91,8 @@
     50%       { opacity: 0.4; }
   }
 
-  /* settings button */
-  #settingsBtn {
+  /* header icon buttons */
+  #settingsBtn, #vacationBtn {
     background: none;
     border: none;
     color: #33334a;
@@ -92,13 +103,30 @@
     transition: color 0.15s;
   }
   #settingsBtn:hover { color: var(--muted); }
+  #vacationBtn:hover { color: var(--muted); }
+  #vacationBtn.active { color: #f97316; }
+
+  /* ── vacation panel ── */
+  #vacationPanel {
+    display: none;
+    flex-direction: column;
+    flex-shrink: 0;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid #3a2a1a;
+    border-radius: var(--radius);
+  }
+  #vacationPanel.open { display: flex; }
 
   /* ── settings panel ── */
   #settingsPanel {
     display: none;
     flex-direction: column;
+    flex-shrink: 0;
     gap: 16px;
-    margin-bottom: 40px;
+    margin-bottom: 16px;
     padding: 24px;
     background: var(--surface);
     border: 1px solid var(--border);
@@ -133,23 +161,31 @@
   .settings-error.visible { display: block; }
 
   /* ── bars ── */
-  #autoBars,
-  #barsList {
+  #barsWrapper {
+    flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
+    border-top: 1px solid var(--border);
+  }
+
+  #autoBars,
+  #barsList {
+    display: contents;
   }
 
   .bar-item {
-    padding: var(--bar-pad, 22px) 0;
+    flex: 1;
+    min-height: 0;
     border-bottom: 1px solid var(--border);
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: 9px;
     position: relative;
   }
 
-  .bar-item.first { border-top: 1px solid var(--border); }
-  .bar-item.near  { padding: calc(var(--bar-pad, 22px) + 6px) 0; }
+  .bar-item.near { flex: 1.5; }
 
   .recurring-badge {
     font-size: 11px;
@@ -167,14 +203,16 @@
 
   .bar-title {
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 400;
     color: var(--text);
-    letter-spacing: 0.01em;
+    letter-spacing: 0.06em;
   }
 
   .bar-status {
     font-size: 12px;
+    font-weight: 300;
     color: #55556a;
+    letter-spacing: 0.07em;
     font-variant-numeric: tabular-nums;
   }
 
@@ -242,8 +280,9 @@
     display: flex;
     justify-content: space-between;
     font-size: 11px;
+    font-weight: 300;
     color: #44445a;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.08em;
   }
 
   .delete-btn {
@@ -264,16 +303,21 @@
 
   /* ── empty ── */
   .empty-state {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     text-align: center;
     color: #33334a;
     font-size: 14px;
-    padding: 72px 0;
-    border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
   }
 
   /* ── add section ── */
-  .add-section { margin-top: 40px; }
+  .add-section {
+    flex-shrink: 0;
+    padding: 20px 0 28px;
+  }
 
   #toggleBtn {
     background: none;
@@ -302,9 +346,9 @@
   #addForm.open { display: flex; }
 
   .form-title {
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: #55556a;
   }
@@ -320,15 +364,39 @@
   .form-field.wide { flex: 2; }
 
   label {
-    font-size: 11px;
+    font-size: 10px;
+    font-weight: 400;
     color: #55556a;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
   }
 
+  .settings-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 4px 0;
+  }
+
+  .day-picker { display: flex; gap: 6px; }
+  .day-btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: #55556a;
+    font-size: 12px;
+    font-weight: 400;
+    font-family: inherit;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .day-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
   input[type="text"],
   input[type="date"],
-  input[type="password"] {
+  input[type="password"],
+  input[type="time"] {
     background: var(--bg);
     border: 1px solid var(--border);
     color: var(--text);
@@ -386,26 +454,53 @@
   <div class="header-right">
     <span id="syncDot" class="sync-dot" title="Sync not configured"></span>
     <span id="clock"></span>
+    <button id="vacationBtn" onclick="toggleVacationPanel()" title="Vacation mode">✈</button>
     <button id="settingsBtn" onclick="toggleSettings()" title="Sync settings">⚙</button>
   </div>
 </header>
 
+<div id="vacationPanel"></div>
+
 <div id="settingsPanel">
   <div class="form-title">GitHub Gist Sync</div>
   <p class="settings-hint">
-    Your countdowns will be saved to a private GitHub Gist and available in any browser.
-    You'll need a Personal Access Token with the <strong>gist</strong> scope.
+    Work schedule settings are saved locally. Optionally, enter a GitHub token to sync your countdowns across browsers via a private Gist.
+    The token needs the <strong>gist</strong> scope.
     <a href="https://github.com/settings/tokens/new?scopes=gist&description=Countdowns+Sync" target="_blank">Create one →</a>
   </p>
   <div class="form-field">
-    <label for="inputToken">Personal Access Token</label>
-    <input type="password" id="inputToken" placeholder="ghp_…" autocomplete="off" spellcheck="false">
+    <label for="inputToken">Personal Access Token <span style="font-weight:300;opacity:0.55">(optional)</span></label>
+    <input type="password" id="inputToken" placeholder="ghp_… (leave blank for local storage only)" autocomplete="off" spellcheck="false">
   </div>
   <div class="form-field" id="gistIdField" style="display:none">
     <label>Gist ID</label>
     <input type="text" id="inputGistId" placeholder="auto-created on first save" spellcheck="false">
   </div>
   <div id="gistLink" style="display:none"></div>
+  <div class="settings-divider"></div>
+  <div class="form-title">Work schedule</div>
+  <div class="form-field">
+    <label>Work days</label>
+    <div class="day-picker">
+      <button type="button" class="day-btn" data-day="1" onclick="this.classList.toggle('active')">M</button>
+      <button type="button" class="day-btn" data-day="2" onclick="this.classList.toggle('active')">T</button>
+      <button type="button" class="day-btn" data-day="3" onclick="this.classList.toggle('active')">W</button>
+      <button type="button" class="day-btn" data-day="4" onclick="this.classList.toggle('active')">T</button>
+      <button type="button" class="day-btn" data-day="5" onclick="this.classList.toggle('active')">F</button>
+      <button type="button" class="day-btn" data-day="6" onclick="this.classList.toggle('active')">S</button>
+      <button type="button" class="day-btn" data-day="0" onclick="this.classList.toggle('active')">S</button>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-field">
+      <label for="inputWorkStart">Day starts</label>
+      <input type="time" id="inputWorkStart" value="09:00">
+    </div>
+    <div class="form-field">
+      <label for="inputWorkEnd">Day ends</label>
+      <input type="time" id="inputWorkEnd" value="17:00">
+    </div>
+  </div>
   <div class="form-actions">
     <button class="btn-primary" onclick="saveSettings()">Save</button>
     <button class="btn-cancel" id="disconnectBtn" onclick="disconnectGist()" style="display:none">Disconnect</button>
@@ -413,8 +508,10 @@
   <div class="settings-error" id="settingsError"></div>
 </div>
 
-<div id="autoBars"></div>
-<div id="barsList"></div>
+<div id="barsWrapper">
+  <div id="autoBars"></div>
+  <div id="barsList"></div>
+</div>
 
 <div class="add-section">
   <button id="toggleBtn" onclick="toggleForm()">+ New countdown</button>
@@ -535,6 +632,7 @@ async function syncFromGist() {
     const items = await fetchFromGist(token, gistId);
     save(items);
     render();
+    fillBars();
     setSyncStatus('ok', `Synced ${new Date().toLocaleTimeString()}`);
   } catch (e) {
     setSyncStatus('error', `Sync failed: ${e.message}`);
@@ -558,6 +656,82 @@ async function syncToGist(items) {
   }
 }
 
+// ── vacation mode ─────────────────────────────────────────
+const VACATION_KEY = 'vacation_v1';
+
+function loadVacation() {
+  try { return JSON.parse(localStorage.getItem(VACATION_KEY)); }
+  catch { return null; }
+}
+
+function updateVacationBtn() {
+  const btn = document.getElementById('vacationBtn');
+  btn.classList.toggle('active', !!loadVacation());
+}
+
+function toggleVacationPanel() {
+  const panel = document.getElementById('vacationPanel');
+  const opening = !panel.classList.contains('open');
+  panel.classList.toggle('open', opening);
+  if (opening) {
+    document.getElementById('settingsPanel').classList.remove('open');
+    renderVacationPanel();
+  }
+}
+
+function renderVacationPanel() {
+  const panel = document.getElementById('vacationPanel');
+  const vac = loadVacation();
+  const todayStr = today().toISOString().slice(0, 10);
+
+  if (vac) {
+    panel.innerHTML = `
+      <div class="form-title">Vacation mode · active</div>
+      <p class="settings-hint">Work week and work day bars are hidden. Return date: <strong>${fmtDate(vac.returnDate)}</strong></p>
+      <div class="form-actions">
+        <button class="btn-primary" style="background:#f97316" onclick="disableVacation()">End vacation</button>
+      </div>
+    `;
+  } else {
+    panel.innerHTML = `
+      <div class="form-title">Vacation mode</div>
+      <div class="form-field">
+        <label for="inputReturnDate">Return to work</label>
+        <input type="date" id="inputReturnDate" min="${todayStr}">
+      </div>
+      <div class="form-actions">
+        <button class="btn-primary" style="background:#f97316" onclick="enableVacation()">Enable</button>
+        <button class="btn-cancel" onclick="toggleVacationPanel()">Cancel</button>
+      </div>
+      <div class="form-error" id="vacationError"></div>
+    `;
+  }
+}
+
+function enableVacation() {
+  const returnDate = document.getElementById('inputReturnDate').value;
+  const errEl = document.getElementById('vacationError');
+  if (!returnDate) {
+    errEl.textContent = 'Pick a return date.';
+    errEl.classList.add('visible');
+    return;
+  }
+  const startDate = today().toISOString().slice(0, 10);
+  localStorage.setItem(VACATION_KEY, JSON.stringify({ startDate, returnDate }));
+  document.getElementById('vacationPanel').classList.remove('open');
+  updateVacationBtn();
+  renderAutoBars();
+  fillBars();
+}
+
+function disableVacation() {
+  localStorage.removeItem(VACATION_KEY);
+  document.getElementById('vacationPanel').classList.remove('open');
+  updateVacationBtn();
+  renderAutoBars();
+  fillBars();
+}
+
 // ── settings panel ────────────────────────────────────────
 function toggleSettings() {
   const panel = document.getElementById('settingsPanel');
@@ -566,9 +740,15 @@ function toggleSettings() {
 }
 
 function populateSettingsPanel() {
-  const { token, gistId } = loadConfig();
-  document.getElementById('inputToken').value   = token   || '';
-  document.getElementById('inputGistId').value  = gistId  || '';
+  const { token, gistId, workStart, workEnd, workDays } = loadConfig();
+  document.getElementById('inputToken').value     = token     || '';
+  document.getElementById('inputGistId').value    = gistId    || '';
+  document.getElementById('inputWorkStart').value = workStart || '09:00';
+  document.getElementById('inputWorkEnd').value   = workEnd   || '17:00';
+  const days = workDays || [1,2,3,4,5];
+  document.querySelectorAll('.day-btn').forEach(btn => {
+    btn.classList.toggle('active', days.includes(Number(btn.dataset.day)));
+  });
   document.getElementById('gistIdField').style.display  = token  ? '' : 'none';
   document.getElementById('disconnectBtn').style.display = token ? '' : 'none';
 
@@ -587,7 +767,20 @@ async function saveSettings() {
   const errEl  = document.getElementById('settingsError');
   errEl.classList.remove('visible');
 
-  if (!token) { errEl.textContent = 'Token is required.'; errEl.classList.add('visible'); return; }
+  const workStart = document.getElementById('inputWorkStart').value || '09:00';
+  const workEnd   = document.getElementById('inputWorkEnd').value   || '17:00';
+  const workDays  = [...document.querySelectorAll('.day-btn.active')].map(b => Number(b.dataset.day));
+
+  if (!token) {
+    // No token — save work schedule only, skip Gist
+    saveConfig({ token: '', gistId: null, workStart, workEnd, workDays: workDays.length ? workDays : [1,2,3,4,5] });
+    populateSettingsPanel();
+    document.getElementById('settingsPanel').classList.remove('open');
+    renderAutoBars();
+    fillBars();
+    setSyncStatus('off', 'Sync not configured — click ⚙ to set up');
+    return;
+  }
 
   // Test token with a lightweight API call
   setSyncStatus('syncing', 'Verifying token…');
@@ -603,9 +796,11 @@ async function saveSettings() {
     return;
   }
 
-  saveConfig({ token, gistId: gistId || null });
+  saveConfig({ token, gistId: gistId || null, workStart, workEnd, workDays: workDays.length ? workDays : [1,2,3,4,5] });
   populateSettingsPanel();
   document.getElementById('settingsPanel').classList.remove('open');
+  renderAutoBars();
+  fillBars();
 
   // If there's a gistId, pull from it; otherwise push current data to create the Gist
   if (gistId) {
@@ -638,6 +833,12 @@ function parseLocal(str) {
 
 function fmtDate(str) {
   return parseLocal(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function fmtTime(timeStr) {
+  const [h, m] = timeStr.split(':').map(Number);
+  const d = new Date(); d.setHours(h, m, 0, 0);
+  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
 function esc(s) {
@@ -727,13 +928,6 @@ function render() {
     `;
   }).join('');
 
-  requestAnimationFrame(() => {
-    document.querySelectorAll('#barsList .bar-fill').forEach(el => {
-      el.style.width = el.dataset.pct + '%';
-    });
-    updateBarSpacing();
-  });
-
   // autoBars owns the top border; strip it from the first user bar
   const firstUserBar = document.querySelector('#barsList .bar-item');
   if (firstUserBar) firstUserBar.classList.remove('first');
@@ -744,6 +938,7 @@ function deleteItem(id) {
   save(items);
   syncToGist(items);
   render();
+  fillBars();
 }
 
 // ── add form ──────────────────────────────────────────────
@@ -789,6 +984,7 @@ function addCountdown(e) {
   document.getElementById('toggleBtn').textContent = '+ New countdown';
   clearForm();
   render();
+  fillBars();
 }
 
 // ── auto bars ─────────────────────────────────────────────
@@ -802,7 +998,7 @@ function buildAutoBar(title, pct, statusText, leftLabel, rightLabel, isFirst, co
         <span class="bar-status">${statusText}</span>
       </div>
       <div class="bar-track">
-        <div class="bar-fill" style="width:${pct.toFixed(2)}%"></div>
+        <div class="bar-fill" data-pct="${pct.toFixed(2)}" style="width:0%"></div>
       </div>
       <div class="bar-dates">
         <span>${leftLabel}</span>
@@ -814,31 +1010,73 @@ function buildAutoBar(title, pct, statusText, leftLabel, rightLabel, isFirst, co
 
 function renderAutoBars() {
   const now       = new Date();
-  const dow       = now.getDay();
-  const isWeekend = dow === 0 || dow === 6;
   const html      = [];
   const fmtDay    = d => d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 
-  // Work week: Mon 9 AM → Fri 5 PM
-  const daysFromMon = (dow === 0 ? 6 : dow - 1);
-  const monday  = new Date(now); monday.setHours(9, 0, 0, 0);  monday.setDate(now.getDate() - daysFromMon);
-  const friday  = new Date(monday); friday.setDate(monday.getDate() + 4); friday.setHours(17, 0, 0, 0);
-  const weekPct = isWeekend ? 100 : Math.max(0, Math.min(100, (now - monday) / (friday - monday) * 100));
-  const daysLeftInWeek = isWeekend ? 0 : Math.max(0, 5 - daysFromMon - 1 + (now.getHours() < 17 ? 1 : 0));
-  const weekStatus = isWeekend ? 'Weekend' : daysLeftInWeek === 0 ? 'Last day' : `${daysLeftInWeek}d left`;
-  html.push(buildAutoBar('Work week', weekPct, weekStatus, fmtDay(monday), fmtDay(friday), true, '#14b8a6'));
+  // ── Vacation mode ──
+  const vac = loadVacation();
+  if (vac) {
+    const returnDate = parseLocal(vac.returnDate);
+    const startDate  = parseLocal(vac.startDate);
+    if (now >= returnDate) {
+      // Auto-expire
+      localStorage.removeItem(VACATION_KEY);
+      updateVacationBtn();
+    } else {
+      const pct      = Math.max(0, Math.min(100, (now - startDate) / (returnDate - startDate) * 100));
+      const daysLeft = Math.round((returnDate - now) / 864e5);
+      const status   = daysLeft === 1 ? '1 day left' : `${daysLeft} days left`;
+      html.push(buildAutoBar('Back in office', pct, status, fmtDate(vac.startDate), fmtDate(vac.returnDate), true, '#f97316'));
+      document.getElementById('autoBars').innerHTML = html.join('');
+      const firstUserBar = document.querySelector('#barsList .bar-item');
+      if (firstUserBar) firstUserBar.classList.remove('first');
+      return;
+    }
+  }
 
-  // Work day: 9 AM → 5 PM (weekdays, hidden when done)
-  if (!isWeekend) {
-    const dayStart = new Date(now); dayStart.setHours(9, 0, 0, 0);
-    const dayEnd   = new Date(now); dayEnd.setHours(17, 0, 0, 0);
+  const dow       = now.getDay();
+  const isWeekend = dow === 0 || dow === 6;
+
+  const cfg = loadConfig();
+  const workStart = cfg.workStart || '09:00';
+  const workEnd   = cfg.workEnd   || '17:00';
+  const workDays  = (cfg.workDays && cfg.workDays.length) ? cfg.workDays : [1,2,3,4,5];
+  const [startH, startM] = workStart.split(':').map(Number);
+  const [endH,   endM]   = workEnd.split(':').map(Number);
+
+  // Sort work days Mon-first (treat Sun=0 as 7 for ordering)
+  const norm  = d => d === 0 ? 7 : d;
+  const sorted = [...workDays].sort((a, b) => norm(a) - norm(b));
+  const firstDow = sorted[0];         // JS day of first work day
+  const lastDow  = sorted[sorted.length - 1]; // JS day of last work day
+  const isWorkDay = workDays.includes(dow);
+
+  // Work week: first work day → last work day of current week
+  const normDow = norm(dow);
+  const weekStart = new Date(now); weekStart.setHours(startH, startM, 0, 0);
+  weekStart.setDate(now.getDate() - (normDow - norm(firstDow)));
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + (norm(lastDow) - norm(firstDow)));
+  weekEnd.setHours(endH, endM, 0, 0);
+  const weekPct = Math.max(0, Math.min(100, (now - weekStart) / (weekEnd - weekStart) * 100));
+  const dayEnd = new Date(now); dayEnd.setHours(endH, endM, 0, 0);
+  const todayStillActive = isWorkDay && now < dayEnd;
+  const daysLeftInWeek = sorted.filter(d => norm(d) > normDow).length + (todayStillActive ? 1 : 0);
+  const weekStatus = !isWorkDay ? 'Day off'
+    : daysLeftInWeek === 0 ? 'Last day' : `${daysLeftInWeek}d left`;
+  html.push(buildAutoBar('Work week', weekPct, weekStatus, fmtDay(weekStart), fmtDay(weekEnd), true, '#14b8a6'));
+
+  // Work day: [start] → [end] (work days only, hidden when done)
+  if (isWorkDay) {
+    const dayStart = new Date(now); dayStart.setHours(startH, startM, 0, 0);
+    const dayEnd   = new Date(now); dayEnd.setHours(endH, endM, 0, 0);
     if (now < dayEnd) {
       const dayPct   = Math.max(0, Math.min(100, (now - dayStart) / (dayEnd - dayStart) * 100));
       const minsLeft = Math.max(0, Math.round((dayEnd - now) / 60000));
       const dayStatus = now < dayStart ? 'Not started'
         : minsLeft < 60 ? `${minsLeft}m left`
         : `${Math.floor(minsLeft / 60)}h ${minsLeft % 60}m left`;
-      html.push(buildAutoBar('Work day', dayPct, dayStatus, '9:00 AM', '5:00 PM', false, '#0ea5e9'));
+      html.push(buildAutoBar('Work day', dayPct, dayStatus, fmtTime(workStart), fmtTime(workEnd), false, '#0ea5e9'));
     }
   }
 
@@ -847,24 +1085,25 @@ function renderAutoBars() {
   // If autoBars is rendering, the first user bar shouldn't have a top border
   const firstUserBar = document.querySelector('#barsList .bar-item');
   if (firstUserBar) firstUserBar.classList.remove('first');
-  updateBarSpacing();
 }
 
-// ── adaptive spacing ──────────────────────────────────────
-function updateBarSpacing() {
-  const bars = document.querySelectorAll('.bar-item');
-  if (!bars.length) return;
-  const header     = document.querySelector('header');
-  const addSection = document.querySelector('.add-section');
-  const topPad = 64, botPad = 80;
-  const available  = window.innerHeight - topPad - botPad
-                   - (header?.offsetHeight ?? 0)
-                   - (addSection?.offsetHeight ?? 0);
-  const perBar = available / bars.length;
-  const pad = Math.max(10, Math.min(38, (perBar - 54) / 2)); // 54px ≈ bar content height
-  document.documentElement.style.setProperty('--bar-pad', pad + 'px');
+// ── bar fill animation ────────────────────────────────────
+function fillBars(staggerMs = 0, durationMs = 700) {
+  const easing = staggerMs > 0 ? 'cubic-bezier(0.16, 1, 0.3, 1)' : 'cubic-bezier(0.4, 0, 0.2, 1)';
+  requestAnimationFrame(() => {
+    const fills = document.querySelectorAll('.bar-fill');
+    fills.forEach((el, i) => {
+      el.style.transition = `width ${durationMs}ms ${easing} ${i * staggerMs}ms, background 0.4s`;
+      el.style.width = (el.dataset.pct || '0') + '%';
+    });
+    if (staggerMs > 0) {
+      const total = durationMs + fills.length * staggerMs + 200;
+      setTimeout(() => {
+        document.querySelectorAll('.bar-fill').forEach(el => { el.style.transition = ''; });
+      }, total);
+    }
+  });
 }
-window.addEventListener('resize', updateBarSpacing);
 
 // ── clock ─────────────────────────────────────────────────
 function updateClock() {
@@ -876,7 +1115,7 @@ updateClock();
 setInterval(updateClock, 1000);
 
 // Auto bars refresh every minute
-setInterval(renderAutoBars, 60000);
+setInterval(() => { renderAutoBars(); fillBars(); }, 60000);
 
 // Re-render at midnight
 function msUntilMidnight() {
@@ -884,16 +1123,16 @@ function msUntilMidnight() {
   return new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1) - n;
 }
 setTimeout(() => {
-  render();
-  renderAutoBars();
-  setInterval(() => { render(); renderAutoBars(); }, 864e5);
+  render(); renderAutoBars(); fillBars();
+  setInterval(() => { render(); renderAutoBars(); fillBars(); }, 864e5);
 }, msUntilMidnight());
 
 // ── init ──────────────────────────────────────────────────
 render();
 renderAutoBars();
-updateBarSpacing();
-syncFromGist(); // pull latest from Gist in background
+updateVacationBtn();
+fillBars(110, 1800); // staggered page-load animation
+syncFromGist();
 </script>
 </body>
 </html>
