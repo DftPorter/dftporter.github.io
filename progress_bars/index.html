@@ -185,7 +185,8 @@
     position: relative;
   }
 
-  .bar-item.near { flex: 1.5; }
+  .bar-item.near  { flex: 1.5; }
+  .bar-item.today { flex: 2.2; }
 
   .recurring-badge {
     font-size: 11px;
@@ -218,6 +219,13 @@
 
   .bar-item.near .bar-status { color: #c07a20; }
   .bar-item.done .bar-status { color: #2a8a4a; }
+  .bar-item.today .bar-status {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
 
   .bar-track {
     width: 100%;
@@ -230,6 +238,7 @@
   }
 
   .bar-item.near .bar-track { height: var(--bar-h-near); }
+  .bar-item.today .bar-track { height: var(--bar-h-near); }
 
   .bar-fill {
     height: 100%;
@@ -274,6 +283,21 @@
       linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, transparent 60%),
       var(--fill-done);
     opacity: 0.7;
+  }
+
+  @keyframes today-pulse {
+    0%, 100% { box-shadow: 0 0 10px 2px var(--bar-color, var(--fill)), 0 0 32px 4px var(--bar-color, var(--fill)); opacity: 1; }
+    50%       { box-shadow: 0 0 22px 6px var(--bar-color, var(--fill)), 0 0 56px 10px var(--bar-color, var(--fill)); opacity: 0.88; }
+  }
+
+  .bar-item.today .bar-fill {
+    animation: today-pulse 2s ease-in-out infinite;
+  }
+
+  .bar-item.today .bar-title {
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
   }
 
   .bar-dates {
@@ -561,7 +585,7 @@ function colorForId(id) {
 // ── local storage ─────────────────────────────────────────
 const KEY     = 'countdowns_v1';
 const CFG_KEY = 'gist_config_v1';
-const PRUNE_MS = 14 * 24 * 60 * 60 * 1000;
+const PRUNE_MS = 3 * 24 * 60 * 60 * 1000;
 
 function load() {
   try { return JSON.parse(localStorage.getItem(KEY)) || []; }
@@ -848,12 +872,14 @@ function esc(s) {
 // ── render user bars ──────────────────────────────────────
 function render() {
   const now  = today();
+  const _td  = now;
+  const todayStr = `${_td.getFullYear()}-${String(_td.getMonth()+1).padStart(2,'0')}-${String(_td.getDate()).padStart(2,'0')}`;
   let items  = load();
   let dirty  = false;
 
   items = items.filter(item => {
     const end = parseLocal(item.endDate);
-    if (now >= end) {
+    if (now > end) {
       if (item.recurring) {
         // Advance to next year's occurrence
         const newEnd = new Date(end); newEnd.setFullYear(newEnd.getFullYear() + 1);
@@ -902,12 +928,17 @@ function render() {
       label = daysAgo === 0 ? 'Complete' : daysAgo === 1 ? 'Completed yesterday' : `Completed ${daysAgo}d ago`;
     } else {
       pct = Math.max(0, Math.min(100, (now - start) / (end - start) * 100));
-      const daysLeft = Math.round((end - now) / 864e5);
-      label = daysLeft <= 0 ? 'Today' : daysLeft === 1 ? '1 day left' : `${daysLeft} days left`;
+      if (item.endDate === todayStr) {
+        label = '🎉 Today!';
+      } else {
+        const daysLeft = Math.round((end - now) / 864e5);
+        label = daysLeft === 1 ? '1 day left' : `${daysLeft} days left`;
+      }
     }
 
-    const isNear = !isDone && pct >= 85;
-    const cls    = ['bar-item', idx === 0 ? 'first' : '', isNear ? 'near' : '', isDone ? 'done' : ''].filter(Boolean).join(' ');
+    const isNear   = !isDone && pct >= 85 && item.endDate !== todayStr;
+    const isToday  = !isDone && item.endDate === todayStr;
+    const cls      = ['bar-item', idx === 0 ? 'first' : '', isToday ? 'today' : isNear ? 'near' : '', isDone ? 'done' : ''].filter(Boolean).join(' ');
     const color  = colorForId(item.id);
 
     return `
