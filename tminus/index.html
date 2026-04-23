@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>T-Minus</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0e0e18">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Countdowns">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f12;
+    --surface: #18181f;
+    --border: #26262f;
+    --track: #22222c;
+    --fill: #5b6ef5;
+    --fill-near: #f59e0b;
+    --fill-done: #22c55e;
+    --text: #ebebf0;
+    --muted: #707088;
+    --accent: #5b6ef5;
+    --radius: 8px;
+    --bar-h: 11px;
+    --bar-h-near: 22px;
+  }
+
+  html { height: 100%; overflow: hidden; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-weight: 300;
+    letter-spacing: 0.03em;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 0 32px;
+    max-width: 740px;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+
+  /* ── header ── */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32px 0;
+    flex-shrink: 0;
+  }
+
+  .wordmark {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #44445a;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  #clock {
+    font-size: 12px;
+    color: #44445a;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* sync dot */
+  .sync-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #33334a;
+    cursor: default;
+    transition: background 0.3s;
+    flex-shrink: 0;
+  }
+  .sync-dot[data-state="syncing"] { background: #f59e0b; animation: pulse 1s infinite; }
+  .sync-dot[data-state="ok"]      { background: #22c55e; }
+  .sync-dot[data-state="error"]   { background: #f43f5e; cursor: pointer; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+
+  /* header icon buttons */
+  #settingsBtn, #vacationBtn {
+    background: none;
+    border: none;
+    color: #33334a;
+    font-size: 15px;
+    cursor: pointer;
+    padding: 2px 4px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  #settingsBtn:hover { color: var(--muted); }
+  #vacationBtn:hover { color: var(--muted); }
+  #vacationBtn.active { color: #f97316; }
+
+  /* ── vacation panel ── */
+  #vacationPanel {
+    display: none;
+    flex-direction: column;
+    flex-shrink: 0;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid #3a2a1a;
+    border-radius: var(--radius);
+  }
+  #vacationPanel.open { display: flex; }
+
+  /* ── settings panel ── */
+  #settingsPanel {
+    display: none;
+    flex-direction: column;
+    flex-shrink: 0;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  #settingsPanel.open { display: flex; }
+
+  .settings-hint {
+    font-size: 12px;
+    color: #55556a;
+    line-height: 1.5;
+  }
+
+  .settings-hint a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .settings-hint a:hover { text-decoration: underline; }
+
+  .settings-gist-link {
+    font-size: 12px;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .settings-gist-link:hover { text-decoration: underline; }
+
+  .settings-error {
+    font-size: 12px;
+    color: #f43f5e;
+    display: none;
+  }
+  .settings-error.visible { display: block; }
+
+  /* ── bars ── */
+  #barsWrapper {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--border);
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  #barsWrapper::-webkit-scrollbar { display: none; }
+
+  #autoBars,
+  #barsList {
+    display: contents;
+  }
+
+  .bar-item {
+    flex: 1;
+    min-height: 52px;
+    container-type: size;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 9px;
+    position: relative;
+  }
+
+  .bar-item.near  { flex: 1.5; }
+  .bar-item.today { flex: 2.2; }
+
+  .recurring-badge {
+    font-size: 11px;
+    color: #44445a;
+    margin-left: 7px;
+    vertical-align: middle;
+    letter-spacing: 0;
+  }
+
+  .bar-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    position: relative;
+  }
+
+  .bar-title {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text);
+    letter-spacing: 0.06em;
+  }
+
+  .bar-status {
+    font-size: 12px;
+    font-weight: 300;
+    color: #55556a;
+    letter-spacing: 0.07em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bar-item.near .bar-status { color: #c07a20; }
+  .bar-item.done .bar-status { color: #2a8a4a; }
+  .bar-item.today .bar-status {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .bar-track {
+    width: 100%;
+    height: var(--bar-h);
+    background: var(--track);
+    border-radius: 100px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+    transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .bar-item.near .bar-track { height: var(--bar-h-near); }
+  .bar-item.today .bar-track { height: var(--bar-h-near); }
+
+  .bar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 100px;
+    background:
+      repeating-linear-gradient(
+        -50deg,
+        transparent,
+        transparent 7px,
+        rgba(255,255,255,0.06) 7px,
+        rgba(255,255,255,0.06) 14px
+      ),
+      linear-gradient(to bottom, rgba(255,255,255,0.12) 0%, transparent 60%),
+      var(--bar-color, var(--fill));
+    transition: width 0.9s cubic-bezier(0.4, 0, 0.2, 1), background 0.4s;
+  }
+
+  .bar-item.near .bar-fill {
+    background:
+      repeating-linear-gradient(
+        -50deg,
+        transparent,
+        transparent 7px,
+        rgba(255,255,255,0.07) 7px,
+        rgba(255,255,255,0.07) 14px
+      ),
+      linear-gradient(to bottom, rgba(255,255,255,0.15) 0%, transparent 60%),
+      var(--fill-near);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.35);
+  }
+
+  .bar-item.done .bar-fill {
+    background:
+      repeating-linear-gradient(
+        -50deg,
+        transparent,
+        transparent 7px,
+        rgba(255,255,255,0.05) 7px,
+        rgba(255,255,255,0.05) 14px
+      ),
+      linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, transparent 60%),
+      var(--fill-done);
+    opacity: 0.7;
+  }
+
+  @keyframes today-pulse {
+    0%, 100% { box-shadow: 0 0 10px 2px var(--bar-color, var(--fill)), 0 0 32px 4px var(--bar-color, var(--fill)); opacity: 1; }
+    50%       { box-shadow: 0 0 22px 6px var(--bar-color, var(--fill)), 0 0 56px 10px var(--bar-color, var(--fill)); opacity: 0.88; }
+  }
+
+  .bar-item.today .bar-fill {
+    animation: today-pulse 2s ease-in-out infinite;
+  }
+
+  .bar-item.today .bar-title {
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+  }
+
+  .bar-dates {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 300;
+    color: #44445a;
+    letter-spacing: 0.08em;
+  }
+
+  @container (max-height: 68px) {
+    .bar-dates { display: none; }
+  }
+
+  .delete-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--bg);
+    border: none;
+    color: #55556a;
+    font-size: 16px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px 0 2px 8px;
+    opacity: 0;
+    transition: opacity 0.15s, color 0.15s;
+  }
+  .bar-item:hover .delete-btn { opacity: 1; }
+  .delete-btn:hover { color: #cc4444; }
+
+  .bar-confirm {
+    font-size: 12px;
+    font-weight: 300;
+    color: var(--muted);
+    letter-spacing: 0.07em;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .bar-confirm-yes, .bar-confirm-no {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.07em;
+    padding: 0;
+    transition: color 0.15s;
+  }
+  .bar-confirm-yes { color: #f43f5e; }
+  .bar-confirm-yes:hover { color: #ff6b6b; }
+  .bar-confirm-no { color: var(--muted); }
+  .bar-confirm-no:hover { color: var(--text); }
+  .bar-confirm-sep { color: var(--border); }
+
+  /* ── empty ── */
+  .empty-state {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #33334a;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── add section ── */
+  .add-section {
+    flex-shrink: 0;
+    padding: 20px 0 28px;
+  }
+
+  #toggleBtn {
+    background: none;
+    border: 1px solid var(--border);
+    color: #55556a;
+    padding: 9px 18px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    letter-spacing: 0.02em;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  #toggleBtn:hover { border-color: var(--accent); color: var(--text); }
+
+  #addForm {
+    display: none;
+    flex-direction: column;
+    gap: 18px;
+    margin-top: 24px;
+    padding: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  #addForm.open { display: flex; }
+
+  .form-title {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #55556a;
+  }
+
+  .form-row { display: flex; gap: 16px; }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    flex: 1;
+  }
+  .form-field.wide { flex: 2; }
+
+  label {
+    font-size: 10px;
+    font-weight: 400;
+    color: #55556a;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .settings-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 4px 0;
+  }
+
+  .day-picker { display: flex; gap: 6px; }
+  .day-btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: #55556a;
+    font-size: 12px;
+    font-weight: 400;
+    font-family: inherit;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .day-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  input[type="text"],
+  input[type="date"],
+  input[type="password"],
+  input[type="time"] {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 9px 13px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+  input:focus { border-color: var(--accent); }
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.3) brightness(1.5);
+    cursor: pointer;
+  }
+
+  .form-actions { display: flex; gap: 12px; align-items: center; }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 9px 22px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.82; }
+
+  .btn-cancel {
+    background: none;
+    border: 1px solid var(--border);
+    color: #55556a;
+    padding: 9px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .btn-cancel:hover { color: var(--text); border-color: #55556a; }
+
+  .form-error { font-size: 12px; color: #cc4444; display: none; }
+  .form-error.visible { display: block; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="wordmark">Countdowns</span>
+  <div class="header-right">
+    <span id="syncDot" class="sync-dot" title="Sync not configured"></span>
+    <span id="clock"></span>
+    <button id="vacationBtn" onclick="toggleVacationPanel()" title="Vacation mode">✈</button>
+    <button id="settingsBtn" onclick="toggleSettings()" title="Sync settings">⚙</button>
+  </div>
+</header>
+
+<div id="vacationPanel"></div>
+
+<div id="settingsPanel">
+  <div class="form-title">GitHub Gist Sync</div>
+  <p class="settings-hint">
+    Work schedule settings are saved locally. Optionally, enter a GitHub token to sync your countdowns across browsers via a private Gist.
+    The token needs the <strong>gist</strong> scope.
+    <a href="https://github.com/settings/tokens/new?scopes=gist&description=Countdowns+Sync" target="_blank">Create one →</a>
+  </p>
+  <div class="form-field">
+    <label for="inputToken">Personal Access Token <span style="font-weight:300;opacity:0.55">(optional)</span></label>
+    <input type="password" id="inputToken" placeholder="ghp_… (leave blank for local storage only)" autocomplete="off" spellcheck="false">
+  </div>
+  <div class="form-field" id="gistIdField" style="display:none">
+    <label>Gist ID</label>
+    <input type="text" id="inputGistId" placeholder="auto-created on first save" spellcheck="false">
+  </div>
+  <div id="gistLink" style="display:none"></div>
+  <div class="settings-divider"></div>
+  <div class="form-title">Work schedule</div>
+  <div class="form-field">
+    <label>Work days</label>
+    <div class="day-picker">
+      <button type="button" class="day-btn" data-day="1" onclick="this.classList.toggle('active')">M</button>
+      <button type="button" class="day-btn" data-day="2" onclick="this.classList.toggle('active')">T</button>
+      <button type="button" class="day-btn" data-day="3" onclick="this.classList.toggle('active')">W</button>
+      <button type="button" class="day-btn" data-day="4" onclick="this.classList.toggle('active')">T</button>
+      <button type="button" class="day-btn" data-day="5" onclick="this.classList.toggle('active')">F</button>
+      <button type="button" class="day-btn" data-day="6" onclick="this.classList.toggle('active')">S</button>
+      <button type="button" class="day-btn" data-day="0" onclick="this.classList.toggle('active')">S</button>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-field">
+      <label for="inputWorkStart">Day starts</label>
+      <input type="time" id="inputWorkStart" value="09:00">
+    </div>
+    <div class="form-field">
+      <label for="inputWorkEnd">Day ends</label>
+      <input type="time" id="inputWorkEnd" value="17:00">
+    </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn-primary" onclick="saveSettings()">Save</button>
+    <button class="btn-cancel" id="disconnectBtn" onclick="disconnectGist()" style="display:none">Disconnect</button>
+  </div>
+  <div class="settings-error" id="settingsError"></div>
+</div>
+
+<div id="barsWrapper">
+  <div id="autoBars"></div>
+  <div id="barsList"></div>
+</div>
+
+<div class="add-section">
+  <button id="toggleBtn" onclick="toggleForm()">+ New countdown</button>
+  <form id="addForm" onsubmit="addCountdown(event)">
+    <div class="form-title">New countdown</div>
+    <div class="form-row">
+      <div class="form-field wide">
+        <label for="inputTitle">Title</label>
+        <input type="text" id="inputTitle" placeholder="e.g. End of school" autocomplete="off" required>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label for="inputStart">Start date</label>
+        <input type="date" id="inputStart" required>
+      </div>
+      <div class="form-field">
+        <label for="inputEnd">End date</label>
+        <input type="date" id="inputEnd" required>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <input type="checkbox" id="inputRecurring" style="width:auto; accent-color:var(--accent);">
+      <label for="inputRecurring" style="text-transform:none; font-size:13px; letter-spacing:0; cursor:pointer;">Repeat yearly</label>
+    </div>
+    <div class="form-error" id="formError"></div>
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Add</button>
+      <button type="button" class="btn-cancel" onclick="toggleForm()">Cancel</button>
+    </div>
+  </form>
+</div>
+
+<script>
+// ── palette ──────────────────────────────────────────────
+const PALETTE = [
+  '#5b6ef5', '#8b5cf6', '#0ea5e9', '#14b8a6',
+  '#10b981', '#f97316', '#f43f5e', '#a855f7',
+];
+
+function colorForId(id) {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return PALETTE[h % PALETTE.length];
+}
+
+// ── local storage ─────────────────────────────────────────
+const KEY     = 'countdowns_v1';
+const CFG_KEY = 'gist_config_v1';
+const PRUNE_MS = 3 * 24 * 60 * 60 * 1000;
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(KEY)) || []; }
+  catch { return []; }
+}
+
+function save(items) {
+  localStorage.setItem(KEY, JSON.stringify(items));
+}
+
+function loadConfig() {
+  try { return JSON.parse(localStorage.getItem(CFG_KEY)) || {}; }
+  catch { return {}; }
+}
+
+function saveConfig(cfg) {
+  localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+}
+
+// ── gist API ──────────────────────────────────────────────
+const GIST_FILE = 'countdowns.json';
+
+async function fetchFromGist(token, gistId) {
+  const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
+  });
+  if (!res.ok) throw new Error(`GitHub ${res.status}`);
+  const data = await res.json();
+  const content = data.files[GIST_FILE]?.content;
+  return content ? JSON.parse(content) : [];
+}
+
+async function pushToGist(token, gistId, items) {
+  const method = gistId ? 'PATCH' : 'POST';
+  const url    = gistId
+    ? `https://api.github.com/gists/${gistId}`
+    : 'https://api.github.com/gists';
+  const res = await fetch(url, {
+    method,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      description: 'Countdowns sync',
+      public: false,
+      files: { [GIST_FILE]: { content: JSON.stringify(items, null, 2) } },
+    }),
+  });
+  if (!res.ok) throw new Error(`GitHub ${res.status}`);
+  const data = await res.json();
+  return data.id;
+}
+
+// ── sync status ───────────────────────────────────────────
+function setSyncStatus(state, title = '') {
+  const dot = document.getElementById('syncDot');
+  dot.dataset.state = state;
+  dot.title = title;
+}
+
+async function syncFromGist() {
+  const { token, gistId } = loadConfig();
+  if (!token || !gistId) { setSyncStatus('off', 'Sync not configured — click ⚙ to set up'); return; }
+  setSyncStatus('syncing', 'Fetching from Gist…');
+  try {
+    const items = await fetchFromGist(token, gistId);
+    save(items);
+    render();
+    fillBars();
+    setSyncStatus('ok', `Synced ${new Date().toLocaleTimeString()}`);
+  } catch (e) {
+    setSyncStatus('error', `Sync failed: ${e.message}`);
+  }
+}
+
+async function syncToGist(items) {
+  const cfg = loadConfig();
+  if (!cfg.token) return;
+  setSyncStatus('syncing', 'Saving…');
+  try {
+    const newId = await pushToGist(cfg.token, cfg.gistId || null, items);
+    if (!cfg.gistId) {
+      cfg.gistId = newId;
+      saveConfig(cfg);
+      populateSettingsPanel(); // update UI to show new Gist ID
+    }
+    setSyncStatus('ok', `Saved ${new Date().toLocaleTimeString()}`);
+  } catch (e) {
+    setSyncStatus('error', `Save failed: ${e.message} — click ⚙`);
+  }
+}
+
+// ── vacation mode ─────────────────────────────────────────
+const VACATION_KEY = 'vacation_v1';
+
+function loadVacation() {
+  try { return JSON.parse(localStorage.getItem(VACATION_KEY)); }
+  catch { return null; }
+}
+
+function updateVacationBtn() {
+  const btn = document.getElementById('vacationBtn');
+  btn.classList.toggle('active', !!loadVacation());
+}
+
+function toggleVacationPanel() {
+  const panel = document.getElementById('vacationPanel');
+  const opening = !panel.classList.contains('open');
+  panel.classList.toggle('open', opening);
+  if (opening) {
+    document.getElementById('settingsPanel').classList.remove('open');
+    renderVacationPanel();
+  }
+}
+
+function renderVacationPanel() {
+  const panel = document.getElementById('vacationPanel');
+  const vac = loadVacation();
+  const todayStr = today().toISOString().slice(0, 10);
+
+  if (vac) {
+    panel.innerHTML = `
+      <div class="form-title">Vacation mode · active</div>
+      <p class="settings-hint">Work week and work day bars are hidden. Return date: <strong>${fmtDate(vac.returnDate)}</strong></p>
+      <div class="form-actions">
+        <button class="btn-primary" style="background:#f97316" onclick="disableVacation()">End vacation</button>
+      </div>
+    `;
+  } else {
+    panel.innerHTML = `
+      <div class="form-title">Vacation mode</div>
+      <div class="form-field">
+        <label for="inputReturnDate">Return to work</label>
+        <input type="date" id="inputReturnDate" min="${todayStr}">
+      </div>
+      <div class="form-actions">
+        <button class="btn-primary" style="background:#f97316" onclick="enableVacation()">Enable</button>
+        <button class="btn-cancel" onclick="toggleVacationPanel()">Cancel</button>
+      </div>
+      <div class="form-error" id="vacationError"></div>
+    `;
+  }
+}
+
+function enableVacation() {
+  const returnDate = document.getElementById('inputReturnDate').value;
+  const errEl = document.getElementById('vacationError');
+  if (!returnDate) {
+    errEl.textContent = 'Pick a return date.';
+    errEl.classList.add('visible');
+    return;
+  }
+  const startDate = today().toISOString().slice(0, 10);
+  localStorage.setItem(VACATION_KEY, JSON.stringify({ startDate, returnDate }));
+  document.getElementById('vacationPanel').classList.remove('open');
+  updateVacationBtn();
+  renderAutoBars();
+  fillBars();
+}
+
+function disableVacation() {
+  localStorage.removeItem(VACATION_KEY);
+  document.getElementById('vacationPanel').classList.remove('open');
+  updateVacationBtn();
+  renderAutoBars();
+  fillBars();
+}
+
+// ── settings panel ────────────────────────────────────────
+function toggleSettings() {
+  const panel = document.getElementById('settingsPanel');
+  const open  = panel.classList.toggle('open');
+  if (open) populateSettingsPanel();
+}
+
+function populateSettingsPanel() {
+  const { token, gistId, workStart, workEnd, workDays } = loadConfig();
+  document.getElementById('inputToken').value     = token     || '';
+  document.getElementById('inputGistId').value    = gistId    || '';
+  document.getElementById('inputWorkStart').value = workStart || '09:00';
+  document.getElementById('inputWorkEnd').value   = workEnd   || '17:00';
+  const days = workDays || [1,2,3,4,5];
+  document.querySelectorAll('.day-btn').forEach(btn => {
+    btn.classList.toggle('active', days.includes(Number(btn.dataset.day)));
+  });
+  document.getElementById('gistIdField').style.display  = token  ? '' : 'none';
+  document.getElementById('disconnectBtn').style.display = token ? '' : 'none';
+
+  const linkEl = document.getElementById('gistLink');
+  if (gistId) {
+    linkEl.style.display = '';
+    linkEl.innerHTML = `<a class="settings-gist-link" href="https://gist.github.com/${gistId}" target="_blank">View Gist →</a>`;
+  } else {
+    linkEl.style.display = 'none';
+  }
+}
+
+async function saveSettings() {
+  const token  = document.getElementById('inputToken').value.trim();
+  const gistId = document.getElementById('inputGistId').value.trim();
+  const errEl  = document.getElementById('settingsError');
+  errEl.classList.remove('visible');
+
+  const workStart = document.getElementById('inputWorkStart').value || '09:00';
+  const workEnd   = document.getElementById('inputWorkEnd').value   || '17:00';
+  const workDays  = [...document.querySelectorAll('.day-btn.active')].map(b => Number(b.dataset.day));
+
+  if (!token) {
+    // No token — save work schedule only, skip Gist
+    saveConfig({ token: '', gistId: null, workStart, workEnd, workDays: workDays.length ? workDays : [1,2,3,4,5] });
+    populateSettingsPanel();
+    document.getElementById('settingsPanel').classList.remove('open');
+    renderAutoBars();
+    fillBars();
+    setSyncStatus('off', 'Sync not configured — click ⚙ to set up');
+    return;
+  }
+
+  // Test token with a lightweight API call
+  setSyncStatus('syncing', 'Verifying token…');
+  try {
+    const res = await fetch('https://api.github.com/user', {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
+    });
+    if (!res.ok) throw new Error(`GitHub returned ${res.status} — check your token`);
+  } catch (e) {
+    setSyncStatus('error', e.message);
+    errEl.textContent = e.message;
+    errEl.classList.add('visible');
+    return;
+  }
+
+  saveConfig({ token, gistId: gistId || null, workStart, workEnd, workDays: workDays.length ? workDays : [1,2,3,4,5] });
+  populateSettingsPanel();
+  document.getElementById('settingsPanel').classList.remove('open');
+  renderAutoBars();
+  fillBars();
+
+  // If there's a gistId, pull from it; otherwise push current data to create the Gist
+  if (gistId) {
+    syncFromGist();
+  } else {
+    syncToGist(load());
+  }
+}
+
+function disconnectGist() {
+  saveConfig({});
+  document.getElementById('settingsPanel').classList.remove('open');
+  setSyncStatus('off', 'Sync not configured — click ⚙ to set up');
+}
+
+// ── helpers ───────────────────────────────────────────────
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+function today() {
+  const d = new Date();
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function parseLocal(str) {
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function fmtDate(str) {
+  return parseLocal(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function fmtTime(timeStr) {
+  const [h, m] = timeStr.split(':').map(Number);
+  const d = new Date(); d.setHours(h, m, 0, 0);
+  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── render user bars ──────────────────────────────────────
+function render() {
+  const now  = today();
+  const _td  = now;
+  const todayStr = `${_td.getFullYear()}-${String(_td.getMonth()+1).padStart(2,'0')}-${String(_td.getDate()).padStart(2,'0')}`;
+  let items  = load();
+  let dirty  = false;
+
+  items = items.filter(item => {
+    const end = parseLocal(item.endDate);
+    if (now > end) {
+      if (item.recurring) {
+        // Advance to next year's occurrence
+        const newEnd = new Date(end); newEnd.setFullYear(newEnd.getFullYear() + 1);
+        item.startDate = item.endDate;
+        item.endDate   = newEnd.toISOString().slice(0, 10);
+        item.completedAt = null;
+        dirty = true;
+      } else if (!item.completedAt) {
+        item.completedAt = now.toISOString(); dirty = true;
+      }
+    }
+    if (item.completedAt && now - new Date(item.completedAt) > PRUNE_MS) { dirty = true; return false; }
+    return true;
+  });
+
+  save(items);
+  if (dirty) syncToGist(items);
+
+  const active = items.filter(i => !i.completedAt).sort((a, b) => {
+    const pctOf = item => {
+      const s = parseLocal(item.startDate), e = parseLocal(item.endDate);
+      return Math.max(0, Math.min(1, (now - s) / (e - s)));
+    };
+    return pctOf(b) - pctOf(a);
+  });
+  const done   = items.filter(i => i.completedAt).sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
+  const sorted = [...active, ...done];
+
+  const list = document.getElementById('barsList');
+
+  if (sorted.length === 0) {
+    list.innerHTML = '<div class="empty-state">No countdowns yet.</div>';
+    renderAutoBars(); // refresh border ownership
+    return;
+  }
+
+  list.innerHTML = sorted.map((item, idx) => {
+    const start  = parseLocal(item.startDate);
+    const end    = parseLocal(item.endDate);
+    const isDone = !!item.completedAt;
+
+    let pct = 0, label = '';
+    if (isDone) {
+      pct = 100;
+      const daysAgo = Math.round((now - new Date(item.completedAt)) / 864e5);
+      label = daysAgo === 0 ? 'Complete' : daysAgo === 1 ? 'Completed yesterday' : `Completed ${daysAgo}d ago`;
+    } else {
+      pct = Math.max(0, Math.min(100, (now - start) / (end - start) * 100));
+      if (item.endDate === todayStr) {
+        label = '🎉 Today!';
+      } else {
+        const daysLeft = Math.round((end - now) / 864e5);
+        label = daysLeft === 1 ? '1 day left' : `${daysLeft} days left`;
+      }
+    }
+
+    const isNear   = !isDone && pct >= 85 && item.endDate !== todayStr;
+    const isToday  = !isDone && item.endDate === todayStr;
+    const cls      = ['bar-item', idx === 0 ? 'first' : '', isToday ? 'today' : isNear ? 'near' : '', isDone ? 'done' : ''].filter(Boolean).join(' ');
+    const color  = colorForId(item.id);
+
+    return `
+      <div class="${cls}" data-id="${item.id}" style="--bar-color:${color}">
+        <div class="bar-row">
+          <span class="bar-title">${esc(item.title)}${item.recurring ? '<span class="recurring-badge">↻</span>' : ''}</span>
+          <span class="bar-status">${label}</span>
+          <button class="delete-btn" onclick="confirmDelete('${item.id}')" title="Remove">×</button>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" data-pct="${pct.toFixed(2)}"></div>
+        </div>
+        <div class="bar-dates">
+          <span>${fmtDate(item.startDate)}</span>
+          <span>${fmtDate(item.endDate)}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // autoBars owns the top border; strip it from the first user bar
+  const firstUserBar = document.querySelector('#barsList .bar-item');
+  if (firstUserBar) firstUserBar.classList.remove('first');
+}
+
+function confirmDelete(id) {
+  // Find the bar row for this item
+  const bar = document.querySelector(`[data-id="${id}"]`);
+  if (!bar) return;
+  const row = bar.querySelector('.bar-row');
+  const statusEl = bar.querySelector('.bar-status');
+  const deleteBtn = bar.querySelector('.delete-btn');
+
+  // Already confirming — do nothing
+  if (bar.classList.contains('confirming')) return;
+  bar.classList.add('confirming');
+
+  // Swap status text for inline confirm UI
+  const originalStatus = statusEl.outerHTML;
+  statusEl.outerHTML = `<span class="bar-confirm">
+    Delete?
+    <button class="bar-confirm-yes" onclick="deleteItem('${id}')">Yes</button>
+    <span class="bar-confirm-sep">·</span>
+    <button class="bar-confirm-no" onclick="cancelDelete('${id}')">No</button>
+  </span>`;
+  deleteBtn.style.opacity = '0';
+  deleteBtn.style.pointerEvents = 'none';
+}
+
+function cancelDelete(id) {
+  render();
+  fillBars();
+}
+
+function deleteItem(id) {
+  const items = load().filter(i => i.id !== id);
+  save(items);
+  syncToGist(items);
+  render();
+  fillBars();
+}
+
+// ── add form ──────────────────────────────────────────────
+function toggleForm() {
+  const form = document.getElementById('addForm');
+  const open = form.classList.toggle('open');
+  document.getElementById('toggleBtn').textContent = open ? '× Cancel' : '+ New countdown';
+  if (open) {
+    document.getElementById('inputStart').value = today().toISOString().slice(0, 10);
+    document.getElementById('inputTitle').focus();
+    document.getElementById('formError').classList.remove('visible');
+  } else {
+    clearForm();
+  }
+}
+
+function clearForm() {
+  ['inputTitle','inputStart','inputEnd'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('inputRecurring').checked = false;
+}
+
+function addCountdown(e) {
+  e.preventDefault();
+  const title     = document.getElementById('inputTitle').value.trim();
+  const startDate = document.getElementById('inputStart').value;
+  const endDate   = document.getElementById('inputEnd').value;
+  const err       = document.getElementById('formError');
+
+  if (startDate >= endDate) {
+    err.textContent = 'End date must be after start date.';
+    err.classList.add('visible');
+    return;
+  }
+
+  err.classList.remove('visible');
+  const items = load();
+  const recurring = document.getElementById('inputRecurring').checked;
+  items.push({ id: uid(), title, startDate, endDate, completedAt: null, recurring });
+  save(items);
+  syncToGist(items);
+
+  document.getElementById('addForm').classList.remove('open');
+  document.getElementById('toggleBtn').textContent = '+ New countdown';
+  clearForm();
+  render();
+  fillBars();
+}
+
+// ── auto bars ─────────────────────────────────────────────
+function buildAutoBar(title, pct, statusText, leftLabel, rightLabel, isFirst, color) {
+  const isNear = pct >= 85;
+  const cls    = ['bar-item', isFirst ? 'first' : '', isNear ? 'near' : ''].filter(Boolean).join(' ');
+  return `
+    <div class="${cls}" style="--bar-color:${color}">
+      <div class="bar-row">
+        <span class="bar-title">${esc(title)}</span>
+        <span class="bar-status">${statusText}</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" data-pct="${pct.toFixed(2)}" style="width:0%"></div>
+      </div>
+      <div class="bar-dates">
+        <span>${leftLabel}</span>
+        <span>${rightLabel}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderAutoBars() {
+  const now       = new Date();
+  const html      = [];
+  const fmtDay    = d => d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+  // ── Vacation mode ──
+  const vac = loadVacation();
+  if (vac) {
+    const returnDate = parseLocal(vac.returnDate);
+    const startDate  = parseLocal(vac.startDate);
+    if (now >= returnDate) {
+      // Auto-expire
+      localStorage.removeItem(VACATION_KEY);
+      updateVacationBtn();
+    } else {
+      const pct      = Math.max(0, Math.min(100, (now - startDate) / (returnDate - startDate) * 100));
+      const daysLeft = Math.round((returnDate - now) / 864e5);
+      const status   = daysLeft === 1 ? '1 day left' : `${daysLeft} days left`;
+      html.push(buildAutoBar('Back in office', pct, status, fmtDate(vac.startDate), fmtDate(vac.returnDate), true, '#f97316'));
+      document.getElementById('autoBars').innerHTML = html.join('');
+      const firstUserBar = document.querySelector('#barsList .bar-item');
+      if (firstUserBar) firstUserBar.classList.remove('first');
+      return;
+    }
+  }
+
+  const dow       = now.getDay();
+  const isWeekend = dow === 0 || dow === 6;
+
+  const cfg = loadConfig();
+  const workStart = cfg.workStart || '09:00';
+  const workEnd   = cfg.workEnd   || '17:00';
+  const workDays  = (cfg.workDays && cfg.workDays.length) ? cfg.workDays : [1,2,3,4,5];
+  const [startH, startM] = workStart.split(':').map(Number);
+  const [endH,   endM]   = workEnd.split(':').map(Number);
+
+  // Sort work days Mon-first (treat Sun=0 as 7 for ordering)
+  const norm  = d => d === 0 ? 7 : d;
+  const sorted = [...workDays].sort((a, b) => norm(a) - norm(b));
+  const firstDow = sorted[0];         // JS day of first work day
+  const lastDow  = sorted[sorted.length - 1]; // JS day of last work day
+  const isWorkDay = workDays.includes(dow);
+
+  // Work week: first work day → last work day of current week
+  const normDow = norm(dow);
+  const weekStart = new Date(now); weekStart.setHours(startH, startM, 0, 0);
+  weekStart.setDate(now.getDate() - (normDow - norm(firstDow)));
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + (norm(lastDow) - norm(firstDow)));
+  weekEnd.setHours(endH, endM, 0, 0);
+  const weekPct = Math.max(0, Math.min(100, (now - weekStart) / (weekEnd - weekStart) * 100));
+  const dayEnd = new Date(now); dayEnd.setHours(endH, endM, 0, 0);
+  const todayStillActive = isWorkDay && now < dayEnd;
+  const daysLeftInWeek = sorted.filter(d => norm(d) > normDow).length + (todayStillActive ? 1 : 0);
+  const weekStatus = !isWorkDay ? 'Day off'
+    : daysLeftInWeek === 0 ? 'Last day' : `${daysLeftInWeek}d left`;
+  html.push(buildAutoBar('Work week', weekPct, weekStatus, fmtDay(weekStart), fmtDay(weekEnd), true, '#14b8a6'));
+
+  // Work day: [start] → [end] (work days only, hidden when done)
+  if (isWorkDay) {
+    const dayStart = new Date(now); dayStart.setHours(startH, startM, 0, 0);
+    const dayEnd   = new Date(now); dayEnd.setHours(endH, endM, 0, 0);
+    if (now < dayEnd) {
+      const dayPct   = Math.max(0, Math.min(100, (now - dayStart) / (dayEnd - dayStart) * 100));
+      const minsLeft = Math.max(0, Math.round((dayEnd - now) / 60000));
+      const dayStatus = now < dayStart ? 'Not started'
+        : minsLeft < 60 ? `${minsLeft}m left`
+        : `${Math.floor(minsLeft / 60)}h ${minsLeft % 60}m left`;
+      html.push(buildAutoBar('Work day', dayPct, dayStatus, fmtTime(workStart), fmtTime(workEnd), false, '#0ea5e9'));
+    }
+  }
+
+  document.getElementById('autoBars').innerHTML = html.join('');
+
+  // If autoBars is rendering, the first user bar shouldn't have a top border
+  const firstUserBar = document.querySelector('#barsList .bar-item');
+  if (firstUserBar) firstUserBar.classList.remove('first');
+}
+
+// ── bar fill animation ────────────────────────────────────
+function fillBars(staggerMs = 0, durationMs = 700) {
+  const easing = staggerMs > 0 ? 'cubic-bezier(0.16, 1, 0.3, 1)' : 'cubic-bezier(0.4, 0, 0.2, 1)';
+  requestAnimationFrame(() => {
+    const fills = document.querySelectorAll('.bar-fill');
+    fills.forEach((el, i) => {
+      el.style.transition = `width ${durationMs}ms ${easing} ${i * staggerMs}ms, background 0.4s`;
+      el.style.width = (el.dataset.pct || '0') + '%';
+    });
+    if (staggerMs > 0) {
+      const total = durationMs + fills.length * staggerMs + 200;
+      setTimeout(() => {
+        document.querySelectorAll('.bar-fill').forEach(el => { el.style.transition = ''; });
+      }, total);
+    }
+  });
+}
+
+// ── clock ─────────────────────────────────────────────────
+function updateClock() {
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US', {
+    hour: 'numeric', minute: '2-digit', second: '2-digit'
+  });
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// Auto bars refresh every minute
+setInterval(() => { renderAutoBars(); fillBars(); }, 60000);
+
+// Re-render at midnight
+function msUntilMidnight() {
+  const n = new Date();
+  return new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1) - n;
+}
+setTimeout(() => {
+  render(); renderAutoBars(); fillBars();
+  setInterval(() => { render(); renderAutoBars(); fillBars(); }, 864e5);
+}, msUntilMidnight());
+
+// ── init ──────────────────────────────────────────────────
+render();
+renderAutoBars();
+updateVacationBtn();
+fillBars(110, 1800); // staggered page-load animation
+syncFromGist();
+
+// ── service worker ────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
