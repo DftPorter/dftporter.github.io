@@ -2,7 +2,7 @@
   "name": "T-Minus",
   "short_name": "T-Minus",
   "description": "Progress bars counting down to what matters",
-  "start_url": "../tminus/",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#0e0e18",
   "theme_color": "#0e0e18",
