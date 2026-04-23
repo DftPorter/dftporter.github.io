@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Countdowns</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f12;
+    --surface: #18181f;
+    --border: #26262f;
+    --track: #22222c;
+    --fill: #5b6ef5;
+    --fill-near: #f59e0b;
+    --fill-done: #22c55e;
+    --text: #ebebf0;
+    --muted: #707088;
+    --accent: #5b6ef5;
+    --radius: 8px;
+    --bar-h: 11px;
+    --bar-h-near: 22px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 64px 32px 80px;
+    max-width: 740px;
+    margin: 0 auto;
+  }
+
+  /* ── header ── */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 52px;
+  }
+
+  .wordmark {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #44445a;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  #clock {
+    font-size: 12px;
+    color: #44445a;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* sync dot */
+  .sync-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #33334a;
+    cursor: default;
+    transition: background 0.3s;
+    flex-shrink: 0;
+  }
+  .sync-dot[data-state="syncing"] { background: #f59e0b; animation: pulse 1s infinite; }
+  .sync-dot[data-state="ok"]      { background: #22c55e; }
+  .sync-dot[data-state="error"]   { background: #f43f5e; cursor: pointer; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+
+  /* settings button */
+  #settingsBtn {
+    background: none;
+    border: none;
+    color: #33334a;
+    font-size: 15px;
+    cursor: pointer;
+    padding: 2px 4px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  #settingsBtn:hover { color: var(--muted); }
+
+  /* ── settings panel ── */
+  #settingsPanel {
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 40px;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  #settingsPanel.open { display: flex; }
+
+  .settings-hint {
+    font-size: 12px;
+    color: #55556a;
+    line-height: 1.5;
+  }
+
+  .settings-hint a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .settings-hint a:hover { text-decoration: underline; }
+
+  .settings-gist-link {
+    font-size: 12px;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .settings-gist-link:hover { text-decoration: underline; }
+
+  .settings-error {
+    font-size: 12px;
+    color: #f43f5e;
+    display: none;
+  }
+  .settings-error.visible { display: block; }
+
+  /* ── bars ── */
+  #autoBars,
+  #barsList {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bar-item {
+    padding: var(--bar-pad, 22px) 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    position: relative;
+  }
+
+  .bar-item.first { border-top: 1px solid var(--border); }
+  .bar-item.near  { padding: calc(var(--bar-pad, 22px) + 6px) 0; }
+
+  .recurring-badge {
+    font-size: 11px;
+    color: #44445a;
+    margin-left: 7px;
+    vertical-align: middle;
+    letter-spacing: 0;
+  }
+
+  .bar-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .bar-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: 0.01em;
+  }
+
+  .bar-status {
+    font-size: 12px;
+    color: #55556a;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bar-item.near .bar-status { color: #c07a20; }
+  .bar-item.done .bar-status { color: #2a8a4a; }
+
+  .bar-track {
+    width: 100%;
+    height: var(--bar-h);
+    background: var(--track);
+    border-radius: 100px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+    transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .bar-item.near .bar-track { height: var(--bar-h-near); }
+
+  .bar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 100px;
+    background:
+      repeating-linear-gradient(
+        -50deg,
+        transparent,
+        transparent 7px,
+        rgba(255,255,255,0.06) 7px,
+        rgba(255,255,255,0.06) 14px
+      ),
+      linear-gradient(to bottom, rgba(255,255,255,0.12) 0%, transparent 60%),
+      var(--bar-color, var(--fill));
+    transition: width 0.9s cubic-bezier(0.4, 0, 0.2, 1), background 0.4s;
+  }
+
+  .bar-item.near .bar-fill {
+    background:
+      repeating-linear-gradient(
+        -50deg,
+        transparent,
+        transparent 7px,
+        rgba(255,255,255,0.07) 7px,
+        rgba(255,255,255,0.07) 14px
+      ),
+      linear-gradient(to bottom, rgba(255,255,255,0.15) 0%, transparent 60%),
+      var(--fill-near);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.35);
+  }
+
+  .bar-item.done .bar-fill {
+    background:
+      repeating-linear-gradient(
+        -50deg,
+        transparent,
+        transparent 7px,
+        rgba(255,255,255,0.05) 7px,
+        rgba(255,255,255,0.05) 14px
+      ),
+      linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, transparent 60%),
+      var(--fill-done);
+    opacity: 0.7;
+  }
+
+  .bar-dates {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #44445a;
+    letter-spacing: 0.02em;
+  }
+
+  .delete-btn {
+    position: absolute;
+    top: 50%;
+    right: -28px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #33334a;
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px 6px;
+    transition: color 0.15s;
+  }
+  .delete-btn:hover { color: #cc4444; }
+
+  /* ── empty ── */
+  .empty-state {
+    text-align: center;
+    color: #33334a;
+    font-size: 14px;
+    padding: 72px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── add section ── */
+  .add-section { margin-top: 40px; }
+
+  #toggleBtn {
+    background: none;
+    border: 1px solid var(--border);
+    color: #55556a;
+    padding: 9px 18px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    letter-spacing: 0.02em;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  #toggleBtn:hover { border-color: var(--accent); color: var(--text); }
+
+  #addForm {
+    display: none;
+    flex-direction: column;
+    gap: 18px;
+    margin-top: 24px;
+    padding: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  #addForm.open { display: flex; }
+
+  .form-title {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #55556a;
+  }
+
+  .form-row { display: flex; gap: 16px; }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    flex: 1;
+  }
+  .form-field.wide { flex: 2; }
+
+  label {
+    font-size: 11px;
+    color: #55556a;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  input[type="text"],
+  input[type="date"],
+  input[type="password"] {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 9px 13px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+  input:focus { border-color: var(--accent); }
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.3) brightness(1.5);
+    cursor: pointer;
+  }
+
+  .form-actions { display: flex; gap: 12px; align-items: center; }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 9px 22px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.82; }
+
+  .btn-cancel {
+    background: none;
+    border: 1px solid var(--border);
+    color: #55556a;
+    padding: 9px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .btn-cancel:hover { color: var(--text); border-color: #55556a; }
+
+  .form-error { font-size: 12px; color: #cc4444; display: none; }
+  .form-error.visible { display: block; }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="wordmark">Countdowns</span>
+  <div class="header-right">
+    <span id="syncDot" class="sync-dot" title="Sync not configured"></span>
+    <span id="clock"></span>
+    <button id="settingsBtn" onclick="toggleSettings()" title="Sync settings">⚙</button>
+  </div>
+</header>
+
+<div id="settingsPanel">
+  <div class="form-title">GitHub Gist Sync</div>
+  <p class="settings-hint">
+    Your countdowns will be saved to a private GitHub Gist and available in any browser.
+    You'll need a Personal Access Token with the <strong>gist</strong> scope.
+    <a href="https://github.com/settings/tokens/new?scopes=gist&description=Countdowns+Sync" target="_blank">Create one →</a>
+  </p>
+  <div class="form-field">
+    <label for="inputToken">Personal Access Token</label>
+    <input type="password" id="inputToken" placeholder="ghp_…" autocomplete="off" spellcheck="false">
+  </div>
+  <div class="form-field" id="gistIdField" style="display:none">
+    <label>Gist ID</label>
+    <input type="text" id="inputGistId" placeholder="auto-created on first save" spellcheck="false">
+  </div>
+  <div id="gistLink" style="display:none"></div>
+  <div class="form-actions">
+    <button class="btn-primary" onclick="saveSettings()">Save</button>
+    <button class="btn-cancel" id="disconnectBtn" onclick="disconnectGist()" style="display:none">Disconnect</button>
+  </div>
+  <div class="settings-error" id="settingsError"></div>
+</div>
+
+<div id="autoBars"></div>
+<div id="barsList"></div>
+
+<div class="add-section">
+  <button id="toggleBtn" onclick="toggleForm()">+ New countdown</button>
+  <form id="addForm" onsubmit="addCountdown(event)">
+    <div class="form-title">New countdown</div>
+    <div class="form-row">
+      <div class="form-field wide">
+        <label for="inputTitle">Title</label>
+        <input type="text" id="inputTitle" placeholder="e.g. End of school" autocomplete="off" required>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label for="inputStart">Start date</label>
+        <input type="date" id="inputStart" required>
+      </div>
+      <div class="form-field">
+        <label for="inputEnd">End date</label>
+        <input type="date" id="inputEnd" required>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <input type="checkbox" id="inputRecurring" style="width:auto; accent-color:var(--accent);">
+      <label for="inputRecurring" style="text-transform:none; font-size:13px; letter-spacing:0; cursor:pointer;">Repeat yearly</label>
+    </div>
+    <div class="form-error" id="formError"></div>
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Add</button>
+      <button type="button" class="btn-cancel" onclick="toggleForm()">Cancel</button>
+    </div>
+  </form>
+</div>
+
+<script>
+// ── palette ──────────────────────────────────────────────
+const PALETTE = [
+  '#5b6ef5', '#8b5cf6', '#0ea5e9', '#14b8a6',
+  '#10b981', '#f97316', '#f43f5e', '#a855f7',
+];
+
+function colorForId(id) {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return PALETTE[h % PALETTE.length];
+}
+
+// ── local storage ─────────────────────────────────────────
+const KEY     = 'countdowns_v1';
+const CFG_KEY = 'gist_config_v1';
+const PRUNE_MS = 14 * 24 * 60 * 60 * 1000;
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(KEY)) || []; }
+  catch { return []; }
+}
+
+function save(items) {
+  localStorage.setItem(KEY, JSON.stringify(items));
+}
+
+function loadConfig() {
+  try { return JSON.parse(localStorage.getItem(CFG_KEY)) || {}; }
+  catch { return {}; }
+}
+
+function saveConfig(cfg) {
+  localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+}
+
+// ── gist API ──────────────────────────────────────────────
+const GIST_FILE = 'countdowns.json';
+
+async function fetchFromGist(token, gistId) {
+  const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
+  });
+  if (!res.ok) throw new Error(`GitHub ${res.status}`);
+  const data = await res.json();
+  const content = data.files[GIST_FILE]?.content;
+  return content ? JSON.parse(content) : [];
+}
+
+async function pushToGist(token, gistId, items) {
+  const method = gistId ? 'PATCH' : 'POST';
+  const url    = gistId
+    ? `https://api.github.com/gists/${gistId}`
+    : 'https://api.github.com/gists';
+  const res = await fetch(url, {
+    method,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      description: 'Countdowns sync',
+      public: false,
+      files: { [GIST_FILE]: { content: JSON.stringify(items, null, 2) } },
+    }),
+  });
+  if (!res.ok) throw new Error(`GitHub ${res.status}`);
+  const data = await res.json();
+  return data.id;
+}
+
+// ── sync status ───────────────────────────────────────────
+function setSyncStatus(state, title = '') {
+  const dot = document.getElementById('syncDot');
+  dot.dataset.state = state;
+  dot.title = title;
+}
+
+async function syncFromGist() {
+  const { token, gistId } = loadConfig();
+  if (!token || !gistId) { setSyncStatus('off', 'Sync not configured — click ⚙ to set up'); return; }
+  setSyncStatus('syncing', 'Fetching from Gist…');
+  try {
+    const items = await fetchFromGist(token, gistId);
+    save(items);
+    render();
+    setSyncStatus('ok', `Synced ${new Date().toLocaleTimeString()}`);
+  } catch (e) {
+    setSyncStatus('error', `Sync failed: ${e.message}`);
+  }
+}
+
+async function syncToGist(items) {
+  const cfg = loadConfig();
+  if (!cfg.token) return;
+  setSyncStatus('syncing', 'Saving…');
+  try {
+    const newId = await pushToGist(cfg.token, cfg.gistId || null, items);
+    if (!cfg.gistId) {
+      cfg.gistId = newId;
+      saveConfig(cfg);
+      populateSettingsPanel(); // update UI to show new Gist ID
+    }
+    setSyncStatus('ok', `Saved ${new Date().toLocaleTimeString()}`);
+  } catch (e) {
+    setSyncStatus('error', `Save failed: ${e.message} — click ⚙`);
+  }
+}
+
+// ── settings panel ────────────────────────────────────────
+function toggleSettings() {
+  const panel = document.getElementById('settingsPanel');
+  const open  = panel.classList.toggle('open');
+  if (open) populateSettingsPanel();
+}
+
+function populateSettingsPanel() {
+  const { token, gistId } = loadConfig();
+  document.getElementById('inputToken').value   = token   || '';
+  document.getElementById('inputGistId').value  = gistId  || '';
+  document.getElementById('gistIdField').style.display  = token  ? '' : 'none';
+  document.getElementById('disconnectBtn').style.display = token ? '' : 'none';
+
+  const linkEl = document.getElementById('gistLink');
+  if (gistId) {
+    linkEl.style.display = '';
+    linkEl.innerHTML = `<a class="settings-gist-link" href="https://gist.github.com/${gistId}" target="_blank">View Gist →</a>`;
+  } else {
+    linkEl.style.display = 'none';
+  }
+}
+
+async function saveSettings() {
+  const token  = document.getElementById('inputToken').value.trim();
+  const gistId = document.getElementById('inputGistId').value.trim();
+  const errEl  = document.getElementById('settingsError');
+  errEl.classList.remove('visible');
+
+  if (!token) { errEl.textContent = 'Token is required.'; errEl.classList.add('visible'); return; }
+
+  // Test token with a lightweight API call
+  setSyncStatus('syncing', 'Verifying token…');
+  try {
+    const res = await fetch('https://api.github.com/user', {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
+    });
+    if (!res.ok) throw new Error(`GitHub returned ${res.status} — check your token`);
+  } catch (e) {
+    setSyncStatus('error', e.message);
+    errEl.textContent = e.message;
+    errEl.classList.add('visible');
+    return;
+  }
+
+  saveConfig({ token, gistId: gistId || null });
+  populateSettingsPanel();
+  document.getElementById('settingsPanel').classList.remove('open');
+
+  // If there's a gistId, pull from it; otherwise push current data to create the Gist
+  if (gistId) {
+    syncFromGist();
+  } else {
+    syncToGist(load());
+  }
+}
+
+function disconnectGist() {
+  saveConfig({});
+  document.getElementById('settingsPanel').classList.remove('open');
+  setSyncStatus('off', 'Sync not configured — click ⚙ to set up');
+}
+
+// ── helpers ───────────────────────────────────────────────
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+function today() {
+  const d = new Date();
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function parseLocal(str) {
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function fmtDate(str) {
+  return parseLocal(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── render user bars ──────────────────────────────────────
+function render() {
+  const now  = today();
+  let items  = load();
+  let dirty  = false;
+
+  items = items.filter(item => {
+    const end = parseLocal(item.endDate);
+    if (now >= end) {
+      if (item.recurring) {
+        // Advance to next year's occurrence
+        const newEnd = new Date(end); newEnd.setFullYear(newEnd.getFullYear() + 1);
+        item.startDate = item.endDate;
+        item.endDate   = newEnd.toISOString().slice(0, 10);
+        item.completedAt = null;
+        dirty = true;
+      } else if (!item.completedAt) {
+        item.completedAt = now.toISOString(); dirty = true;
+      }
+    }
+    if (item.completedAt && now - new Date(item.completedAt) > PRUNE_MS) { dirty = true; return false; }
+    return true;
+  });
+
+  save(items);
+  if (dirty) syncToGist(items);
+
+  const active = items.filter(i => !i.completedAt).sort((a, b) => {
+    const pctOf = item => {
+      const s = parseLocal(item.startDate), e = parseLocal(item.endDate);
+      return Math.max(0, Math.min(1, (now - s) / (e - s)));
+    };
+    return pctOf(b) - pctOf(a);
+  });
+  const done   = items.filter(i => i.completedAt).sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
+  const sorted = [...active, ...done];
+
+  const list = document.getElementById('barsList');
+
+  if (sorted.length === 0) {
+    list.innerHTML = '<div class="empty-state">No countdowns yet.</div>';
+    renderAutoBars(); // refresh border ownership
+    return;
+  }
+
+  list.innerHTML = sorted.map((item, idx) => {
+    const start  = parseLocal(item.startDate);
+    const end    = parseLocal(item.endDate);
+    const isDone = !!item.completedAt;
+
+    let pct = 0, label = '';
+    if (isDone) {
+      pct = 100;
+      const daysAgo = Math.round((now - new Date(item.completedAt)) / 864e5);
+      label = daysAgo === 0 ? 'Complete' : daysAgo === 1 ? 'Completed yesterday' : `Completed ${daysAgo}d ago`;
+    } else {
+      pct = Math.max(0, Math.min(100, (now - start) / (end - start) * 100));
+      const daysLeft = Math.round((end - now) / 864e5);
+      label = daysLeft <= 0 ? 'Today' : daysLeft === 1 ? '1 day left' : `${daysLeft} days left`;
+    }
+
+    const isNear = !isDone && pct >= 85;
+    const cls    = ['bar-item', idx === 0 ? 'first' : '', isNear ? 'near' : '', isDone ? 'done' : ''].filter(Boolean).join(' ');
+    const color  = colorForId(item.id);
+
+    return `
+      <div class="${cls}" data-id="${item.id}" style="--bar-color:${color}">
+        <button class="delete-btn" onclick="deleteItem('${item.id}')" title="Remove">×</button>
+        <div class="bar-row">
+          <span class="bar-title">${esc(item.title)}${item.recurring ? '<span class="recurring-badge">↻</span>' : ''}</span>
+          <span class="bar-status">${label}</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" data-pct="${pct.toFixed(2)}"></div>
+        </div>
+        <div class="bar-dates">
+          <span>${fmtDate(item.startDate)}</span>
+          <span>${fmtDate(item.endDate)}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  requestAnimationFrame(() => {
+    document.querySelectorAll('#barsList .bar-fill').forEach(el => {
+      el.style.width = el.dataset.pct + '%';
+    });
+    updateBarSpacing();
+  });
+
+  // autoBars owns the top border; strip it from the first user bar
+  const firstUserBar = document.querySelector('#barsList .bar-item');
+  if (firstUserBar) firstUserBar.classList.remove('first');
+}
+
+function deleteItem(id) {
+  const items = load().filter(i => i.id !== id);
+  save(items);
+  syncToGist(items);
+  render();
+}
+
+// ── add form ──────────────────────────────────────────────
+function toggleForm() {
+  const form = document.getElementById('addForm');
+  const open = form.classList.toggle('open');
+  document.getElementById('toggleBtn').textContent = open ? '× Cancel' : '+ New countdown';
+  if (open) {
+    document.getElementById('inputStart').value = today().toISOString().slice(0, 10);
+    document.getElementById('inputTitle').focus();
+    document.getElementById('formError').classList.remove('visible');
+  } else {
+    clearForm();
+  }
+}
+
+function clearForm() {
+  ['inputTitle','inputStart','inputEnd'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('inputRecurring').checked = false;
+}
+
+function addCountdown(e) {
+  e.preventDefault();
+  const title     = document.getElementById('inputTitle').value.trim();
+  const startDate = document.getElementById('inputStart').value;
+  const endDate   = document.getElementById('inputEnd').value;
+  const err       = document.getElementById('formError');
+
+  if (startDate >= endDate) {
+    err.textContent = 'End date must be after start date.';
+    err.classList.add('visible');
+    return;
+  }
+
+  err.classList.remove('visible');
+  const items = load();
+  const recurring = document.getElementById('inputRecurring').checked;
+  items.push({ id: uid(), title, startDate, endDate, completedAt: null, recurring });
+  save(items);
+  syncToGist(items);
+
+  document.getElementById('addForm').classList.remove('open');
+  document.getElementById('toggleBtn').textContent = '+ New countdown';
+  clearForm();
+  render();
+}
+
+// ── auto bars ─────────────────────────────────────────────
+function buildAutoBar(title, pct, statusText, leftLabel, rightLabel, isFirst, color) {
+  const isNear = pct >= 85;
+  const cls    = ['bar-item', isFirst ? 'first' : '', isNear ? 'near' : ''].filter(Boolean).join(' ');
+  return `
+    <div class="${cls}" style="--bar-color:${color}">
+      <div class="bar-row">
+        <span class="bar-title">${esc(title)}</span>
+        <span class="bar-status">${statusText}</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${pct.toFixed(2)}%"></div>
+      </div>
+      <div class="bar-dates">
+        <span>${leftLabel}</span>
+        <span>${rightLabel}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderAutoBars() {
+  const now       = new Date();
+  const dow       = now.getDay();
+  const isWeekend = dow === 0 || dow === 6;
+  const html      = [];
+  const fmtDay    = d => d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+  // Work week: Mon 9 AM → Fri 5 PM
+  const daysFromMon = (dow === 0 ? 6 : dow - 1);
+  const monday  = new Date(now); monday.setHours(9, 0, 0, 0);  monday.setDate(now.getDate() - daysFromMon);
+  const friday  = new Date(monday); friday.setDate(monday.getDate() + 4); friday.setHours(17, 0, 0, 0);
+  const weekPct = isWeekend ? 100 : Math.max(0, Math.min(100, (now - monday) / (friday - monday) * 100));
+  const daysLeftInWeek = isWeekend ? 0 : Math.max(0, 5 - daysFromMon - 1 + (now.getHours() < 17 ? 1 : 0));
+  const weekStatus = isWeekend ? 'Weekend' : daysLeftInWeek === 0 ? 'Last day' : `${daysLeftInWeek}d left`;
+  html.push(buildAutoBar('Work week', weekPct, weekStatus, fmtDay(monday), fmtDay(friday), true, '#14b8a6'));
+
+  // Work day: 9 AM → 5 PM (weekdays, hidden when done)
+  if (!isWeekend) {
+    const dayStart = new Date(now); dayStart.setHours(9, 0, 0, 0);
+    const dayEnd   = new Date(now); dayEnd.setHours(17, 0, 0, 0);
+    if (now < dayEnd) {
+      const dayPct   = Math.max(0, Math.min(100, (now - dayStart) / (dayEnd - dayStart) * 100));
+      const minsLeft = Math.max(0, Math.round((dayEnd - now) / 60000));
+      const dayStatus = now < dayStart ? 'Not started'
+        : minsLeft < 60 ? `${minsLeft}m left`
+        : `${Math.floor(minsLeft / 60)}h ${minsLeft % 60}m left`;
+      html.push(buildAutoBar('Work day', dayPct, dayStatus, '9:00 AM', '5:00 PM', false, '#0ea5e9'));
+    }
+  }
+
+  document.getElementById('autoBars').innerHTML = html.join('');
+
+  // If autoBars is rendering, the first user bar shouldn't have a top border
+  const firstUserBar = document.querySelector('#barsList .bar-item');
+  if (firstUserBar) firstUserBar.classList.remove('first');
+  updateBarSpacing();
+}
+
+// ── adaptive spacing ──────────────────────────────────────
+function updateBarSpacing() {
+  const bars = document.querySelectorAll('.bar-item');
+  if (!bars.length) return;
+  const header     = document.querySelector('header');
+  const addSection = document.querySelector('.add-section');
+  const topPad = 64, botPad = 80;
+  const available  = window.innerHeight - topPad - botPad
+                   - (header?.offsetHeight ?? 0)
+                   - (addSection?.offsetHeight ?? 0);
+  const perBar = available / bars.length;
+  const pad = Math.max(10, Math.min(38, (perBar - 54) / 2)); // 54px ≈ bar content height
+  document.documentElement.style.setProperty('--bar-pad', pad + 'px');
+}
+window.addEventListener('resize', updateBarSpacing);
+
+// ── clock ─────────────────────────────────────────────────
+function updateClock() {
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US', {
+    hour: 'numeric', minute: '2-digit', second: '2-digit'
+  });
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// Auto bars refresh every minute
+setInterval(renderAutoBars, 60000);
+
+// Re-render at midnight
+function msUntilMidnight() {
+  const n = new Date();
+  return new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1) - n;
+}
+setTimeout(() => {
+  render();
+  renderAutoBars();
+  setInterval(() => { render(); renderAutoBars(); }, 864e5);
+}, msUntilMidnight());
+
+// ── init ──────────────────────────────────────────────────
+render();
+renderAutoBars();
+updateBarSpacing();
+syncFromGist(); // pull latest from Gist in background
+</script>
+</body>
+</html>
