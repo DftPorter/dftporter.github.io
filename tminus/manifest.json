@@ -1,6 +1,6 @@
 {
-  "name": "Countdowns",
-  "short_name": "Countdowns",
+  "name": "T-Minus",
+  "short_name": "T-Minus",
   "description": "Progress bars counting down to what matters",
   "start_url": "https://dftporter.github.io/tminus/",
   "display": "standalone",
