@@ -26,7 +26,7 @@
     --bar-h-near: 22px;
   }
 
-  html { height: 100%; }
+  html { height: 100%; overflow: hidden; }
 
   body {
     background: var(--bg);
@@ -167,7 +167,10 @@
     display: flex;
     flex-direction: column;
     border-top: 1px solid var(--border);
+    overflow-y: auto;
+    scrollbar-width: none;
   }
+  #barsWrapper::-webkit-scrollbar { display: none; }
 
   #autoBars,
   #barsList {
@@ -176,7 +179,8 @@
 
   .bar-item {
     flex: 1;
-    min-height: 0;
+    min-height: 52px;
+    container-type: size;
     border-bottom: 1px solid var(--border);
     display: flex;
     flex-direction: column;
@@ -198,11 +202,13 @@
 
   .bar-row {
     display: flex;
-    justify-content: space-between;
     align-items: baseline;
+    gap: 8px;
+    position: relative;
   }
 
   .bar-title {
+    flex: 1;
     font-size: 14px;
     font-weight: 400;
     color: var(--text);
@@ -309,20 +315,26 @@
     letter-spacing: 0.08em;
   }
 
+  @container (max-height: 68px) {
+    .bar-dates { display: none; }
+  }
+
   .delete-btn {
     position: absolute;
+    right: 0;
     top: 50%;
-    right: -28px;
     transform: translateY(-50%);
-    background: none;
+    background: var(--bg);
     border: none;
-    color: #33334a;
-    font-size: 18px;
+    color: #55556a;
+    font-size: 16px;
     cursor: pointer;
     line-height: 1;
-    padding: 4px 6px;
-    transition: color 0.15s;
+    padding: 2px 0 2px 8px;
+    opacity: 0;
+    transition: opacity 0.15s, color 0.15s;
   }
+  .bar-item:hover .delete-btn { opacity: 1; }
   .delete-btn:hover { color: #cc4444; }
 
   /* ── empty ── */
@@ -943,10 +955,10 @@ function render() {
 
     return `
       <div class="${cls}" data-id="${item.id}" style="--bar-color:${color}">
-        <button class="delete-btn" onclick="deleteItem('${item.id}')" title="Remove">×</button>
         <div class="bar-row">
           <span class="bar-title">${esc(item.title)}${item.recurring ? '<span class="recurring-badge">↻</span>' : ''}</span>
           <span class="bar-status">${label}</span>
+          <button class="delete-btn" onclick="deleteItem('${item.id}')" title="Remove">×</button>
         </div>
         <div class="bar-track">
           <div class="bar-fill" data-pct="${pct.toFixed(2)}"></div>
