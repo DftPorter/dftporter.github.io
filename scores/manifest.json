@@ -2,7 +2,7 @@
   "name": "Philly Sports HQ",
   "short_name": "Philly HQ",
   "description": "Tim's Philly Sports Scores",
-  "start_url": "/index.html",
+  "start_url": "/scores/index.html",
   "display": "standalone",
   "background_color": "#090b13",
   "theme_color": "#090b13",
