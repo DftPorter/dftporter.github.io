@@ -405,7 +405,7 @@
     justify-content: space-between;
   }
 
-  #toggleBtn {
+  #toggleBtn, #filterBtn {
     background: none;
     border: 1px solid var(--border);
     color: #55556a;
@@ -417,7 +417,8 @@
     letter-spacing: 0.02em;
     transition: border-color 0.2s, color 0.2s;
   }
-  #toggleBtn:hover { border-color: var(--accent); color: var(--text); }
+  #toggleBtn:hover, #filterBtn:hover { border-color: var(--accent); color: var(--text); }
+  #filterBtn.active { border-color: var(--accent); color: var(--accent); }
 
   #addForm {
     display: none;
@@ -618,6 +619,7 @@
 <div class="add-section">
   <div class="add-section-top">
     <button id="toggleBtn" onclick="toggleForm()">+ New countdown</button>
+    <button id="filterBtn" onclick="toggleFilter()">Next 60 days</button>
     <a href="http://dftporter.github.io" target="_blank" rel="noopener" class="footer-link">dftporter.github.io</a>
   </div>
   <form id="addForm" onsubmit="addCountdown(event)">
@@ -630,7 +632,7 @@
     </div>
     <div class="form-row">
       <div class="form-field">
-        <label for="inputStart">Starts</label>
+        <label for="inputStart">Countdown Starts</label>
         <input type="date" id="inputStart">
       </div>
       <div class="form-field">
@@ -640,7 +642,7 @@
     </div>
     <div class="form-row">
       <div class="form-field">
-        <label for="inputEnd">Ends</label>
+        <label for="inputEnd">Countdown Ends</label>
         <input type="date" id="inputEnd" required>
       </div>
       <div class="form-field">
@@ -1090,7 +1092,7 @@ function render() {
     const color  = colorForId(item.id);
 
     return `
-      <div class="${cls}" data-id="${item.id}" style="--bar-color:${color}">
+      <div class="${cls}" data-id="${item.id}" data-enddate="${item.endDate}" style="--bar-color:${color}">
         <div class="bar-row">
           <span class="bar-title">${esc(item.title)}${item.recurring ? '<span class="recurring-badge">↻</span>' : ''}</span>
           <span class="bar-status">${label}</span>
@@ -1121,6 +1123,8 @@ function render() {
   // autoBars owns the top border; strip it from the first user bar
   const firstUserBar = document.querySelector('#barsList .bar-item');
   if (firstUserBar) firstUserBar.classList.remove('first');
+
+  applyFilter();
 }
 
 function confirmDelete(id) {
@@ -1318,6 +1322,25 @@ function renderAutoBars() {
   if (firstUserBar) firstUserBar.classList.remove('first');
 }
 
+// ── filter ────────────────────────────────────────────────
+let filterNear = localStorage.getItem('filter_near') === 'true';
+
+function toggleFilter() {
+  filterNear = !filterNear;
+  localStorage.setItem('filter_near', filterNear);
+  document.getElementById('filterBtn').classList.toggle('active', filterNear);
+  applyFilter();
+}
+
+function applyFilter() {
+  const now = today();
+  document.querySelectorAll('#barsList .bar-item[data-enddate]').forEach(el => {
+    if (!filterNear) { el.style.display = ''; return; }
+    const daysLeft = Math.round((parseLocal(el.dataset.enddate) - now) / 864e5);
+    el.style.display = daysLeft > 60 ? 'none' : '';
+  });
+}
+
 // ── bar fill animation ────────────────────────────────────
 function fillBars(staggerMs = 0, durationMs = 700) {
   const easing = staggerMs > 0 ? 'cubic-bezier(0.16, 1, 0.3, 1)' : 'cubic-bezier(0.4, 0, 0.2, 1)';
@@ -1339,7 +1362,7 @@ function fillBars(staggerMs = 0, durationMs = 700) {
 // ── clock ─────────────────────────────────────────────────
 function updateClock() {
   document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US', {
-    hour: 'numeric', minute: '2-digit', second: '2-digit'
+    hour: 'numeric', minute: '2-digit'
   });
 }
 updateClock();
@@ -1359,6 +1382,7 @@ setTimeout(() => {
 }, msUntilMidnight());
 
 // ── init ──────────────────────────────────────────────────
+document.getElementById('filterBtn').classList.toggle('active', filterNear);
 render();
 renderAutoBars();
 updateVacationBtn();
