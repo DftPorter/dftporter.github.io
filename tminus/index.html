@@ -1376,16 +1376,24 @@ setInterval(updateClock, 1000);
 // Auto bars refresh every minute
 setInterval(() => { renderAutoBars(); fillBars(); }, 60000);
 
-// Smooth real-time fill for bars ending today
+// Smooth real-time fill + label for bars ending today
 setInterval(() => {
   const todayStr = localDateStr(today());
   document.querySelectorAll(`#barsList .bar-item[data-enddate="${todayStr}"]`).forEach(bar => {
-    const fill = bar.querySelector('.bar-fill');
+    const fill   = bar.querySelector('.bar-fill');
+    const status = bar.querySelector('.bar-status');
     if (!fill || bar.classList.contains('done')) return;
-    const start = parseLocalWithTime(bar.dataset.startdate, bar.dataset.starttime || null);
-    const end   = parseLocalWithTime(bar.dataset.enddate,   bar.dataset.endtime   || null);
-    const pct   = Math.max(0, Math.min(100, (new Date() - start) / (end - start) * 100));
+    const start    = parseLocalWithTime(bar.dataset.startdate, bar.dataset.starttime || null);
+    const end      = parseLocalWithTime(bar.dataset.enddate,   bar.dataset.endtime   || null);
+    const now      = new Date();
+    const pct      = Math.max(0, Math.min(100, (now - start) / (end - start) * 100));
     fill.style.width = pct + '%';
+    if (status && bar.dataset.endtime) {
+      const minsLeft = Math.round((end - now) / 60000);
+      status.textContent = minsLeft > 60 ? `${Math.floor(minsLeft / 60)}h ${minsLeft % 60}m left`
+                         : minsLeft > 0  ? `${minsLeft}m left`
+                         : '🎉 Now!';
+    }
   });
 }, 1000);
 
