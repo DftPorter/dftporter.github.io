@@ -65,6 +65,17 @@
     letter-spacing: 0.22em;
     text-transform: uppercase;
     color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .wordmark img {
+    display: block;
+    width: 16px;
+    height: 16px;
+    opacity: 0.85;
+    flex-shrink: 0;
   }
 
   .header-right {
@@ -75,7 +86,7 @@
 
   #clock {
     font-size: 12px;
-    color: #44445a;
+    color: #5e5e78;
     font-variant-numeric: tabular-nums;
   }
 
@@ -102,7 +113,7 @@
   #settingsBtn, #vacationBtn {
     background: none;
     border: none;
-    color: #33334a;
+    color: #4a4a65;
     font-size: 15px;
     cursor: pointer;
     padding: 2px 4px;
@@ -143,7 +154,7 @@
 
   .settings-hint {
     font-size: 12px;
-    color: #55556a;
+    color: #7878a0;
     line-height: 1.5;
   }
 
@@ -201,7 +212,7 @@
 
   .recurring-badge {
     font-size: 11px;
-    color: #44445a;
+    color: #5e5e78;
     margin-left: 7px;
     vertical-align: middle;
     letter-spacing: 0;
@@ -225,13 +236,13 @@
   .bar-status {
     font-size: 12px;
     font-weight: 300;
-    color: #55556a;
+    color: #7878a0;
     letter-spacing: 0.07em;
     font-variant-numeric: tabular-nums;
   }
 
-  .bar-item.near .bar-status { color: #c07a20; }
-  .bar-item.done .bar-status { color: #2a8a4a; }
+  .bar-item.near .bar-status { color: #d4913a; }
+  .bar-item.done .bar-status { color: #3aaa5e; }
   .bar-item.today .bar-status {
     color: #fff;
     font-size: 14px;
@@ -318,7 +329,7 @@
     justify-content: space-between;
     font-size: 11px;
     font-weight: 300;
-    color: #44445a;
+    color: #5e5e78;
     letter-spacing: 0.08em;
   }
 
@@ -377,7 +388,7 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    color: #33334a;
+    color: #55556a;
     font-size: 14px;
     border-bottom: 1px solid var(--border);
   }
@@ -386,6 +397,12 @@
   .add-section {
     flex-shrink: 0;
     padding: 20px 0 28px;
+  }
+
+  .add-section-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
   #toggleBtn {
@@ -435,7 +452,7 @@
   label {
     font-size: 10px;
     font-weight: 400;
-    color: #55556a;
+    color: #7878a0;
     letter-spacing: 0.14em;
     text-transform: uppercase;
   }
@@ -478,9 +495,15 @@
     transition: border-color 0.2s;
   }
   input:focus { border-color: var(--accent); }
-  input[type="date"]::-webkit-calendar-picker-indicator {
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
     filter: invert(0.3) brightness(1.5);
     cursor: pointer;
+  }
+
+  /* always show delete btn on touch devices */
+  @media (hover: none) {
+    .delete-btn { opacity: 1; }
   }
 
   .form-actions { display: flex; gap: 12px; align-items: center; }
@@ -514,17 +537,27 @@
 
   .form-error { font-size: 12px; color: #cc4444; display: none; }
   .form-error.visible { display: block; }
+
+  /* ── footer link ── */
+  .footer-link {
+    font-size: 11px;
+    color: #3a3a52;
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    transition: color 0.2s;
+  }
+  .footer-link:hover { color: var(--muted); }
 </style>
 </head>
 <body>
 
 <header>
-  <span class="wordmark">T-Minus</span>
+  <span class="wordmark"><img src="favicon.png" alt="">T-Minus</span>
   <div class="header-right">
     <span id="syncDot" class="sync-dot" title="Sync not configured"></span>
     <span id="clock"></span>
-    <button id="vacationBtn" onclick="toggleVacationPanel()" title="Vacation mode">✈</button>
-    <button id="settingsBtn" onclick="toggleSettings()" title="Sync settings">⚙</button>
+    <button id="vacationBtn" onclick="toggleVacationPanel()" title="Vacation mode" aria-label="Vacation mode">✈</button>
+    <button id="settingsBtn" onclick="toggleSettings()" title="Sync settings" aria-label="Sync settings">⚙</button>
   </div>
 </header>
 
@@ -535,7 +568,7 @@
   <p class="settings-hint">
     Work schedule settings are saved locally. Optionally, enter a GitHub token to sync your countdowns across browsers via a private Gist.
     The token needs the <strong>gist</strong> scope.
-    <a href="https://github.com/settings/tokens/new?scopes=gist&description=Countdowns+Sync" target="_blank">Create one →</a>
+    <a href="https://github.com/settings/tokens/new?scopes=gist&description=Countdowns+Sync" target="_blank" rel="noopener">Create one →</a>
   </p>
   <div class="form-field">
     <label for="inputToken">Personal Access Token <span style="font-weight:300;opacity:0.55">(optional)</span></label>
@@ -551,13 +584,13 @@
   <div class="form-field">
     <label>Work days</label>
     <div class="day-picker">
-      <button type="button" class="day-btn" data-day="1" onclick="this.classList.toggle('active')">M</button>
-      <button type="button" class="day-btn" data-day="2" onclick="this.classList.toggle('active')">T</button>
-      <button type="button" class="day-btn" data-day="3" onclick="this.classList.toggle('active')">W</button>
-      <button type="button" class="day-btn" data-day="4" onclick="this.classList.toggle('active')">T</button>
-      <button type="button" class="day-btn" data-day="5" onclick="this.classList.toggle('active')">F</button>
-      <button type="button" class="day-btn" data-day="6" onclick="this.classList.toggle('active')">S</button>
-      <button type="button" class="day-btn" data-day="0" onclick="this.classList.toggle('active')">S</button>
+      <button type="button" class="day-btn" data-day="1" aria-label="Monday" onclick="this.classList.toggle('active')">M</button>
+      <button type="button" class="day-btn" data-day="2" aria-label="Tuesday" onclick="this.classList.toggle('active')">T</button>
+      <button type="button" class="day-btn" data-day="3" aria-label="Wednesday" onclick="this.classList.toggle('active')">W</button>
+      <button type="button" class="day-btn" data-day="4" aria-label="Thursday" onclick="this.classList.toggle('active')">T</button>
+      <button type="button" class="day-btn" data-day="5" aria-label="Friday" onclick="this.classList.toggle('active')">F</button>
+      <button type="button" class="day-btn" data-day="6" aria-label="Saturday" onclick="this.classList.toggle('active')">S</button>
+      <button type="button" class="day-btn" data-day="0" aria-label="Sunday" onclick="this.classList.toggle('active')">S</button>
     </div>
   </div>
   <div class="form-row">
@@ -583,7 +616,10 @@
 </div>
 
 <div class="add-section">
-  <button id="toggleBtn" onclick="toggleForm()">+ New countdown</button>
+  <div class="add-section-top">
+    <button id="toggleBtn" onclick="toggleForm()">+ New countdown</button>
+    <a href="http://dftporter.github.io" target="_blank" rel="noopener" class="footer-link">dftporter.github.io</a>
+  </div>
   <form id="addForm" onsubmit="addCountdown(event)">
     <div class="form-title">New countdown</div>
     <div class="form-row">
@@ -602,6 +638,16 @@
         <input type="date" id="inputEnd" required>
       </div>
     </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label for="inputStartTime">Start time <span style="font-weight:300;opacity:0.5;text-transform:none;letter-spacing:0">(optional)</span></label>
+        <input type="time" id="inputStartTime">
+      </div>
+      <div class="form-field">
+        <label for="inputEndTime">End time <span style="font-weight:300;opacity:0.5;text-transform:none;letter-spacing:0">(optional)</span></label>
+        <input type="time" id="inputEndTime">
+      </div>
+    </div>
     <div style="display:flex; align-items:center; gap:10px;">
       <input type="checkbox" id="inputRecurring" style="width:auto; accent-color:var(--accent);">
       <label for="inputRecurring" style="text-transform:none; font-size:13px; letter-spacing:0; cursor:pointer;">Repeat yearly</label>
@@ -613,6 +659,7 @@
     </div>
   </form>
 </div>
+
 
 <script>
 // ── palette ──────────────────────────────────────────────
@@ -691,6 +738,8 @@ function setSyncStatus(state, title = '') {
   const dot = document.getElementById('syncDot');
   dot.dataset.state = state;
   dot.title = title;
+  dot.onclick = state === 'error' ? toggleSettings : null;
+  dot.style.cursor = state === 'error' ? 'pointer' : '';
 }
 
 async function syncFromGist() {
@@ -751,7 +800,7 @@ function toggleVacationPanel() {
 function renderVacationPanel() {
   const panel = document.getElementById('vacationPanel');
   const vac = loadVacation();
-  const todayStr = today().toISOString().slice(0, 10);
+  const todayStr = localDateStr(today());
 
   if (vac) {
     panel.innerHTML = `
@@ -785,7 +834,7 @@ function enableVacation() {
     errEl.classList.add('visible');
     return;
   }
-  const startDate = today().toISOString().slice(0, 10);
+  const startDate = localDateStr(today());
   localStorage.setItem(VACATION_KEY, JSON.stringify({ startDate, returnDate }));
   document.getElementById('vacationPanel').classList.remove('open');
   updateVacationBtn();
@@ -819,7 +868,10 @@ function populateSettingsPanel() {
     btn.classList.toggle('active', days.includes(Number(btn.dataset.day)));
   });
   document.getElementById('gistIdField').style.display  = token  ? '' : 'none';
-  document.getElementById('disconnectBtn').style.display = token ? '' : 'none';
+  const disconnectBtn = document.getElementById('disconnectBtn');
+  disconnectBtn.style.display = token ? '' : 'none';
+  disconnectBtn.textContent = 'Disconnect';
+  delete disconnectBtn.dataset.confirming;
 
   const linkEl = document.getElementById('gistLink');
   if (gistId) {
@@ -839,6 +891,12 @@ async function saveSettings() {
   const workStart = document.getElementById('inputWorkStart').value || '09:00';
   const workEnd   = document.getElementById('inputWorkEnd').value   || '17:00';
   const workDays  = [...document.querySelectorAll('.day-btn.active')].map(b => Number(b.dataset.day));
+
+  if (workStart >= workEnd) {
+    errEl.textContent = 'Day start must be before day end.';
+    errEl.classList.add('visible');
+    return;
+  }
 
   if (!token) {
     // No token — save work schedule only, skip Gist
@@ -880,9 +938,23 @@ async function saveSettings() {
 }
 
 function disconnectGist() {
-  saveConfig({});
+  const btn = document.getElementById('disconnectBtn');
+  if (btn.dataset.confirming) return;
+  btn.dataset.confirming = '1';
+  btn.innerHTML = `Remove sync? <span style="color:#f43f5e;font-weight:400;cursor:pointer" onclick="event.stopPropagation();confirmDisconnect()">Yes</span> <span style="color:var(--muted)">·</span> <span style="cursor:pointer" onclick="event.stopPropagation();cancelDisconnect()">No</span>`;
+}
+
+function confirmDisconnect() {
+  const cfg = loadConfig();
+  saveConfig({ workStart: cfg.workStart, workEnd: cfg.workEnd, workDays: cfg.workDays });
   document.getElementById('settingsPanel').classList.remove('open');
   setSyncStatus('off', 'Sync not configured — click ⚙ to set up');
+}
+
+function cancelDisconnect() {
+  const btn = document.getElementById('disconnectBtn');
+  delete btn.dataset.confirming;
+  btn.textContent = 'Disconnect';
 }
 
 // ── helpers ───────────────────────────────────────────────
@@ -895,13 +967,27 @@ function today() {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
+function localDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
 function parseLocal(str) {
   const [y, m, d] = str.split('-').map(Number);
   return new Date(y, m - 1, d);
 }
 
-function fmtDate(str) {
-  return parseLocal(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+function parseLocalWithTime(dateStr, timeStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  if (timeStr) {
+    const [h, min] = timeStr.split(':').map(Number);
+    return new Date(y, m - 1, d, h, min);
+  }
+  return new Date(y, m - 1, d);
+}
+
+function fmtDate(str, timeStr) {
+  const datePart = parseLocal(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return timeStr ? `${datePart} · ${fmtTime(timeStr)}` : datePart;
 }
 
 function fmtTime(timeStr) {
@@ -923,17 +1009,19 @@ function render() {
   let dirty  = false;
 
   items = items.filter(item => {
-    const end = parseLocal(item.endDate);
-    if (now > end) {
+    const end = item.endTime ? parseLocalWithTime(item.endDate, item.endTime) : parseLocal(item.endDate);
+    const ref = item.endTime ? new Date() : now;
+    if (ref > end) {
       if (item.recurring) {
-        // Advance to next year's occurrence
-        const newEnd = new Date(end); newEnd.setFullYear(newEnd.getFullYear() + 1);
-        item.startDate = item.endDate;
-        item.endDate   = newEnd.toISOString().slice(0, 10);
+        // Advance both dates by one year to preserve the original span
+        const newStart = parseLocal(item.startDate); newStart.setFullYear(newStart.getFullYear() + 1);
+        const newEnd   = parseLocal(item.endDate);   newEnd.setFullYear(newEnd.getFullYear() + 1);
+        item.startDate   = localDateStr(newStart);
+        item.endDate     = localDateStr(newEnd);
         item.completedAt = null;
         dirty = true;
       } else if (!item.completedAt) {
-        item.completedAt = now.toISOString(); dirty = true;
+        item.completedAt = new Date().toISOString(); dirty = true;
       }
     }
     if (item.completedAt && now - new Date(item.completedAt) > PRUNE_MS) { dirty = true; return false; }
@@ -945,8 +1033,9 @@ function render() {
 
   const active = items.filter(i => !i.completedAt).sort((a, b) => {
     const pctOf = item => {
-      const s = parseLocal(item.startDate), e = parseLocal(item.endDate);
-      return Math.max(0, Math.min(1, (now - s) / (e - s)));
+      const s = parseLocalWithTime(item.startDate, item.startTime);
+      const e = parseLocalWithTime(item.endDate, item.endTime);
+      return Math.max(0, Math.min(1, (new Date() - s) / (e - s)));
     };
     return pctOf(b) - pctOf(a);
   });
@@ -962,8 +1051,8 @@ function render() {
   }
 
   list.innerHTML = sorted.map((item, idx) => {
-    const start  = parseLocal(item.startDate);
-    const end    = parseLocal(item.endDate);
+    const start  = parseLocalWithTime(item.startDate, item.startTime);
+    const end    = parseLocalWithTime(item.endDate, item.endTime);
     const isDone = !!item.completedAt;
 
     let pct = 0, label = '';
@@ -972,11 +1061,11 @@ function render() {
       const daysAgo = Math.round((now - new Date(item.completedAt)) / 864e5);
       label = daysAgo === 0 ? 'Complete' : daysAgo === 1 ? 'Completed yesterday' : `Completed ${daysAgo}d ago`;
     } else {
-      pct = Math.max(0, Math.min(100, (now - start) / (end - start) * 100));
+      pct = Math.max(0, Math.min(100, (new Date() - start) / (end - start) * 100));
       if (item.endDate === todayStr) {
-        label = '🎉 Today!';
+        label = item.endTime ? `ends ${fmtTime(item.endTime)}` : '🎉 Today!';
       } else {
-        const daysLeft = Math.round((end - now) / 864e5);
+        const daysLeft = Math.round((parseLocal(item.endDate) - now) / 864e5);
         label = daysLeft === 1 ? '1 day left' : `${daysLeft} days left`;
       }
     }
@@ -997,8 +1086,8 @@ function render() {
           <div class="bar-fill" data-pct="${pct.toFixed(2)}"></div>
         </div>
         <div class="bar-dates">
-          <span>${fmtDate(item.startDate)}</span>
-          <span>${fmtDate(item.endDate)}</span>
+          <span>${fmtDate(item.startDate, item.startTime)}</span>
+          <span>${fmtDate(item.endDate, item.endTime)}</span>
         </div>
       </div>
     `;
@@ -1052,7 +1141,7 @@ function toggleForm() {
   const open = form.classList.toggle('open');
   document.getElementById('toggleBtn').textContent = open ? '× Cancel' : '+ New countdown';
   if (open) {
-    document.getElementById('inputStart').value = today().toISOString().slice(0, 10);
+    document.getElementById('inputStart').value = localDateStr(today());
     document.getElementById('inputTitle').focus();
     document.getElementById('formError').classList.remove('visible');
   } else {
@@ -1061,7 +1150,7 @@ function toggleForm() {
 }
 
 function clearForm() {
-  ['inputTitle','inputStart','inputEnd'].forEach(id => document.getElementById(id).value = '');
+  ['inputTitle','inputStart','inputEnd','inputStartTime','inputEndTime'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('inputRecurring').checked = false;
 }
 
@@ -1070,10 +1159,14 @@ function addCountdown(e) {
   const title     = document.getElementById('inputTitle').value.trim();
   const startDate = document.getElementById('inputStart').value;
   const endDate   = document.getElementById('inputEnd').value;
+  const startTime = document.getElementById('inputStartTime').value || null;
+  const endTime   = document.getElementById('inputEndTime').value || null;
   const err       = document.getElementById('formError');
 
-  if (startDate >= endDate) {
-    err.textContent = 'End date must be after start date.';
+  if (parseLocalWithTime(startDate, startTime) >= parseLocalWithTime(endDate, endTime)) {
+    err.textContent = (startDate === endDate && (startTime || endTime))
+      ? 'End time must be after start time.'
+      : 'End date must be after start date.';
     err.classList.add('visible');
     return;
   }
@@ -1081,7 +1174,7 @@ function addCountdown(e) {
   err.classList.remove('visible');
   const items = load();
   const recurring = document.getElementById('inputRecurring').checked;
-  items.push({ id: uid(), title, startDate, endDate, completedAt: null, recurring });
+  items.push({ id: uid(), title, startDate, endDate, startTime, endTime, completedAt: null, recurring });
   save(items);
   syncToGist(items);
 
@@ -1139,8 +1232,7 @@ function renderAutoBars() {
     }
   }
 
-  const dow       = now.getDay();
-  const isWeekend = dow === 0 || dow === 6;
+  const dow = now.getDay();
 
   const cfg = loadConfig();
   const workStart = cfg.workStart || '09:00';
