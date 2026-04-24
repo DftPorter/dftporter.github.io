@@ -1163,8 +1163,11 @@ function addCountdown(e) {
   const endTime   = document.getElementById('inputEndTime').value || null;
   const err       = document.getElementById('formError');
 
-  if (parseLocalWithTime(startDate, startTime) >= parseLocalWithTime(endDate, endTime)) {
-    err.textContent = (startDate === endDate && (startTime || endTime))
+  const invalid = endTime
+    ? parseLocalWithTime(startDate, startTime) >= parseLocalWithTime(endDate, endTime)
+    : startDate >= endDate;
+  if (invalid) {
+    err.textContent = (endTime && startDate === endDate)
       ? 'End time must be after start time.'
       : 'End date must be after start date.';
     err.classList.add('visible');
