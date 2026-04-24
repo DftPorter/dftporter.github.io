@@ -630,18 +630,22 @@
     </div>
     <div class="form-row">
       <div class="form-field">
-        <label for="inputEnd">Event date</label>
-        <input type="date" id="inputEnd" required>
+        <label for="inputStart">Starts</label>
+        <input type="date" id="inputStart">
       </div>
       <div class="form-field">
-        <label for="inputEndTime">Event time <span style="font-weight:300;opacity:0.5;text-transform:none;letter-spacing:0">(optional)</span></label>
-        <input type="time" id="inputEndTime">
+        <label for="inputStartTime">At <span style="font-weight:300;opacity:0.5;text-transform:none;letter-spacing:0">(optional)</span></label>
+        <input type="time" id="inputStartTime">
       </div>
     </div>
     <div class="form-row">
       <div class="form-field">
-        <label for="inputStart">Count from <span style="font-weight:300;opacity:0.5;text-transform:none;letter-spacing:0">(optional)</span></label>
-        <input type="date" id="inputStart">
+        <label for="inputEnd">Ends</label>
+        <input type="date" id="inputEnd" required>
+      </div>
+      <div class="form-field">
+        <label for="inputEndTime">At <span style="font-weight:300;opacity:0.5;text-transform:none;letter-spacing:0">(optional)</span></label>
+        <input type="time" id="inputEndTime">
       </div>
     </div>
     <div style="display:flex; align-items:center; gap:10px;">
@@ -1035,7 +1039,7 @@ function render() {
 
   const active = items.filter(i => !i.completedAt).sort((a, b) => {
     const pctOf = item => {
-      const s = parseLocal(item.startDate);
+      const s = parseLocalWithTime(item.startDate, item.startTime);
       const e = parseLocalWithTime(item.endDate, item.endTime);
       return Math.max(0, Math.min(1, (new Date() - s) / (e - s)));
     };
@@ -1053,7 +1057,7 @@ function render() {
   }
 
   list.innerHTML = sorted.map((item, idx) => {
-    const start  = parseLocal(item.startDate);
+    const start  = parseLocalWithTime(item.startDate, item.startTime);
     const end    = parseLocalWithTime(item.endDate, item.endTime);
     const isDone = !!item.completedAt;
 
@@ -1067,9 +1071,11 @@ function render() {
       if (item.endDate === todayStr) {
         if (item.endTime) {
           const minsLeft = Math.round((end - new Date()) / 60000);
-          label = minsLeft > 60 ? fmtTime(item.endTime)
-                : minsLeft > 0  ? `${minsLeft}m left`
-                : '🎉 Now!';
+          const timeStr  = fmtTime(item.endTime);
+          const remaining = minsLeft > 60
+            ? `${Math.floor(minsLeft / 60)}h ${minsLeft % 60}m`
+            : `${minsLeft}m`;
+          label = minsLeft > 0 ? `${timeStr} · ${remaining}` : '🎉 Now!';
         } else {
           label = '🎉 Today!';
         }
@@ -1096,7 +1102,7 @@ function render() {
           <div class="bar-fill" data-pct="${pct.toFixed(2)}"></div>
         </div>
         <div class="bar-dates">
-          <span>${item.startDate !== item.endDate ? fmtDate(item.startDate) : ''}</span>
+          <span>${item.startDate !== item.endDate ? fmtDate(item.startDate, item.startTime) : ''}</span>
           <span>${fmtDate(item.endDate, item.endTime)}</span>
         </div>
       </div>
@@ -1160,7 +1166,7 @@ function toggleForm() {
 }
 
 function clearForm() {
-  ['inputTitle','inputStart','inputEnd','inputEndTime'].forEach(id => document.getElementById(id).value = '');
+  ['inputTitle','inputStart','inputStartTime','inputEnd','inputEndTime'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('inputRecurring').checked = false;
 }
 
@@ -1170,15 +1176,22 @@ function addCountdown(e) {
   const endDate   = document.getElementById('inputEnd').value;
   const endTime   = document.getElementById('inputEndTime').value || null;
   const startDate = document.getElementById('inputStart').value || localDateStr(today());
+  const startTime = document.getElementById('inputStartTime').value || null;
   const err       = document.getElementById('formError');
 
   if (startDate > endDate) {
-    err.textContent = 'The "count from" date must be before the event date.';
+    err.textContent = 'Start date must be before end date.';
     err.classList.add('visible');
     return;
   }
   if (startDate === endDate && !endTime) {
-    err.textContent = 'For a same-day countdown, add an event time.';
+    err.textContent = 'Start and end are the same day — add an end time.';
+    err.classList.add('visible');
+    return;
+  }
+  if (startDate === endDate && endTime &&
+      parseLocalWithTime(startDate, startTime) >= parseLocalWithTime(endDate, endTime)) {
+    err.textContent = 'End time must be after start time.';
     err.classList.add('visible');
     return;
   }
@@ -1186,7 +1199,7 @@ function addCountdown(e) {
   err.classList.remove('visible');
   const items = load();
   const recurring = document.getElementById('inputRecurring').checked;
-  items.push({ id: uid(), title, startDate, endDate, endTime, completedAt: null, recurring });
+  items.push({ id: uid(), title, startDate, startTime, endDate, endTime, completedAt: null, recurring });
   save(items);
   syncToGist(items);
 
