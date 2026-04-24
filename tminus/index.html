@@ -310,12 +310,14 @@
   }
 
   @keyframes today-pulse {
-    0%, 100% { box-shadow: 0 0 10px 2px var(--bar-color, var(--fill)), 0 0 32px 4px var(--bar-color, var(--fill)); opacity: 1; }
-    50%       { box-shadow: 0 0 22px 6px var(--bar-color, var(--fill)), 0 0 56px 10px var(--bar-color, var(--fill)); opacity: 0.88; }
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.72; }
   }
 
   .bar-item.today .bar-fill {
+    box-shadow: 0 0 16px 4px var(--bar-color, var(--fill)), 0 0 40px 8px var(--bar-color, var(--fill));
     animation: today-pulse 2s ease-in-out infinite;
+    will-change: opacity;
   }
 
   .bar-item.today .bar-title {
@@ -1382,10 +1384,12 @@ setInterval(() => {
   });
 }, 60000);
 
-// Smooth real-time fill + label for bars ending today
+// Smooth real-time fill + label for bars ending today with a specific time
+// (bars without endTime span midnight-to-midnight — change is ~0.001%/sec, imperceptible)
 setInterval(() => {
   const todayStr = localDateStr(today());
   document.querySelectorAll(`#barsList .bar-item[data-enddate="${todayStr}"]`).forEach(bar => {
+    if (!bar.dataset.endtime) return; // skip full-day bars — movement is invisible
     const fill   = bar.querySelector('.bar-fill');
     const status = bar.querySelector('.bar-status');
     if (!fill || bar.classList.contains('done')) return;
