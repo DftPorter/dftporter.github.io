@@ -353,7 +353,12 @@
     transition: opacity 0.15s, color 0.15s;
   }
   .bar-item:hover .delete-btn { opacity: 1; }
+  .bar-item:hover .bar-row { padding-right: 24px; }
   .delete-btn:hover { color: #cc4444; }
+
+  @media (hover: none) {
+    .bar-row { padding-right: 24px; }
+  }
 
   .bar-confirm {
     font-size: 12px;
@@ -619,7 +624,7 @@
 <div class="add-section">
   <div class="add-section-top">
     <button id="toggleBtn" onclick="toggleForm()">+ New countdown</button>
-    <button id="filterBtn" onclick="toggleFilter()">Next 60 days</button>
+    <button id="filterBtn" onclick="toggleFilter()">&#8804 60 days</button>
     <a href="http://dftporter.github.io" target="_blank" rel="noopener" class="footer-link">dftporter.github.io</a>
   </div>
   <form id="addForm" onsubmit="addCountdown(event)">
@@ -1092,7 +1097,7 @@ function render() {
     const color  = colorForId(item.id);
 
     return `
-      <div class="${cls}" data-id="${item.id}" data-enddate="${item.endDate}" style="--bar-color:${color}">
+      <div class="${cls}" data-id="${item.id}" data-startdate="${item.startDate}" data-starttime="${item.startTime||''}" data-enddate="${item.endDate}" data-endtime="${item.endTime||''}" style="--bar-color:${color}">
         <div class="bar-row">
           <span class="bar-title">${esc(item.title)}${item.recurring ? '<span class="recurring-badge">↻</span>' : ''}</span>
           <span class="bar-status">${label}</span>
@@ -1370,6 +1375,19 @@ setInterval(updateClock, 1000);
 
 // Auto bars refresh every minute
 setInterval(() => { renderAutoBars(); fillBars(); }, 60000);
+
+// Smooth real-time fill for bars ending today
+setInterval(() => {
+  const todayStr = localDateStr(today());
+  document.querySelectorAll(`#barsList .bar-item[data-enddate="${todayStr}"]`).forEach(bar => {
+    const fill = bar.querySelector('.bar-fill');
+    if (!fill || bar.classList.contains('done')) return;
+    const start = parseLocalWithTime(bar.dataset.startdate, bar.dataset.starttime || null);
+    const end   = parseLocalWithTime(bar.dataset.enddate,   bar.dataset.endtime   || null);
+    const pct   = Math.max(0, Math.min(100, (new Date() - start) / (end - start) * 100));
+    fill.style.width = pct + '%';
+  });
+}, 1000);
 
 // Re-render at midnight
 function msUntilMidnight() {
