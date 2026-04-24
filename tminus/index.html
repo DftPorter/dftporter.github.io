@@ -1071,11 +1071,9 @@ function render() {
       if (item.endDate === todayStr) {
         if (item.endTime) {
           const minsLeft = Math.round((end - new Date()) / 60000);
-          const timeStr  = fmtTime(item.endTime);
-          const remaining = minsLeft > 60
-            ? `${Math.floor(minsLeft / 60)}h ${minsLeft % 60}m`
-            : `${minsLeft}m`;
-          label = minsLeft > 0 ? `${timeStr} · ${remaining}` : '🎉 Now!';
+          label = minsLeft > 60 ? `${Math.floor(minsLeft / 60)}h ${minsLeft % 60}m left`
+                : minsLeft > 0  ? `${minsLeft}m left`
+                : '🎉 Now!';
         } else {
           label = '🎉 Today!';
         }
@@ -1102,8 +1100,19 @@ function render() {
           <div class="bar-fill" data-pct="${pct.toFixed(2)}"></div>
         </div>
         <div class="bar-dates">
-          <span>${item.startDate !== item.endDate ? fmtDate(item.startDate, item.startTime) : ''}</span>
-          <span>${fmtDate(item.endDate, item.endTime)}</span>
+          <span>${(() => {
+            if (item.startDate === item.endDate) return '';
+            const daysAway = Math.abs(today() - parseLocal(item.startDate)) / 864e5;
+            return daysAway <= 7
+              ? (item.startTime ? fmtTime(item.startTime) : '')
+              : fmtDate(item.startDate, item.startTime);
+          })()}</span>
+          <span>${(() => {
+            const daysAway = Math.abs(today() - parseLocal(item.endDate)) / 864e5;
+            return daysAway <= 7 && item.endTime
+              ? fmtTime(item.endTime)
+              : fmtDate(item.endDate, item.endTime);
+          })()}</span>
         </div>
       </div>
     `;
