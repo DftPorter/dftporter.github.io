@@ -630,22 +630,18 @@
     </div>
     <div class="form-row">
       <div class="form-field">
-        <label for="inputStart">Start date</label>
-        <input type="date" id="inputStart" required>
+        <label for="inputEnd">Event date</label>
+        <input type="date" id="inputEnd" required>
       </div>
       <div class="form-field">
-        <label for="inputEnd">End date</label>
-        <input type="date" id="inputEnd" required>
+        <label for="inputEndTime">Event time <span style="font-weight:300;opacity:0.5;text-transform:none;letter-spacing:0">(optional)</span></label>
+        <input type="time" id="inputEndTime">
       </div>
     </div>
     <div class="form-row">
       <div class="form-field">
-        <label for="inputStartTime">Start time <span style="font-weight:300;opacity:0.5;text-transform:none;letter-spacing:0">(optional)</span></label>
-        <input type="time" id="inputStartTime">
-      </div>
-      <div class="form-field">
-        <label for="inputEndTime">End time <span style="font-weight:300;opacity:0.5;text-transform:none;letter-spacing:0">(optional)</span></label>
-        <input type="time" id="inputEndTime">
+        <label for="inputStart">Count from <span style="font-weight:300;opacity:0.5;text-transform:none;letter-spacing:0">(optional)</span></label>
+        <input type="date" id="inputStart">
       </div>
     </div>
     <div style="display:flex; align-items:center; gap:10px;">
@@ -1009,11 +1005,17 @@ function render() {
   let dirty  = false;
 
   items = items.filter(item => {
+    // Normalize legacy point-in-time items (endDate was null, startTime held the target time)
+    if (!item.endDate) {
+      item.endDate = item.startDate;
+      item.endTime = item.startTime || null;
+      dirty = true;
+    }
+
     const end = item.endTime ? parseLocalWithTime(item.endDate, item.endTime) : parseLocal(item.endDate);
     const ref = item.endTime ? new Date() : now;
     if (ref > end) {
       if (item.recurring) {
-        // Advance both dates by one year to preserve the original span
         const newStart = parseLocal(item.startDate); newStart.setFullYear(newStart.getFullYear() + 1);
         const newEnd   = parseLocal(item.endDate);   newEnd.setFullYear(newEnd.getFullYear() + 1);
         item.startDate   = localDateStr(newStart);
@@ -1033,7 +1035,7 @@ function render() {
 
   const active = items.filter(i => !i.completedAt).sort((a, b) => {
     const pctOf = item => {
-      const s = parseLocalWithTime(item.startDate, item.startTime);
+      const s = parseLocal(item.startDate);
       const e = parseLocalWithTime(item.endDate, item.endTime);
       return Math.max(0, Math.min(1, (new Date() - s) / (e - s)));
     };
@@ -1051,7 +1053,7 @@ function render() {
   }
 
   list.innerHTML = sorted.map((item, idx) => {
-    const start  = parseLocalWithTime(item.startDate, item.startTime);
+    const start  = parseLocal(item.startDate);
     const end    = parseLocalWithTime(item.endDate, item.endTime);
     const isDone = !!item.completedAt;
 
@@ -1063,15 +1065,23 @@ function render() {
     } else {
       pct = Math.max(0, Math.min(100, (new Date() - start) / (end - start) * 100));
       if (item.endDate === todayStr) {
-        label = item.endTime ? `ends ${fmtTime(item.endTime)}` : '🎉 Today!';
+        if (item.endTime) {
+          const minsLeft = Math.round((end - new Date()) / 60000);
+          label = minsLeft > 60 ? fmtTime(item.endTime)
+                : minsLeft > 0  ? `${minsLeft}m left`
+                : '🎉 Now!';
+        } else {
+          label = '🎉 Today!';
+        }
       } else {
         const daysLeft = Math.round((parseLocal(item.endDate) - now) / 864e5);
         label = daysLeft === 1 ? '1 day left' : `${daysLeft} days left`;
       }
     }
 
-    const isNear   = !isDone && pct >= 85 && item.endDate !== todayStr;
-    const isToday  = !isDone && item.endDate === todayStr;
+    const isNear  = !isDone && pct >= 85 && item.endDate !== todayStr;
+    const isToday = !isDone && item.endDate === todayStr &&
+                    (!item.endTime || Math.round((end - new Date()) / 60000) < 61);
     const cls      = ['bar-item', idx === 0 ? 'first' : '', isToday ? 'today' : isNear ? 'near' : '', isDone ? 'done' : ''].filter(Boolean).join(' ');
     const color  = colorForId(item.id);
 
@@ -1086,7 +1096,7 @@ function render() {
           <div class="bar-fill" data-pct="${pct.toFixed(2)}"></div>
         </div>
         <div class="bar-dates">
-          <span>${fmtDate(item.startDate, item.startTime)}</span>
+          <span>${item.startDate !== item.endDate ? fmtDate(item.startDate) : ''}</span>
           <span>${fmtDate(item.endDate, item.endTime)}</span>
         </div>
       </div>
@@ -1150,26 +1160,25 @@ function toggleForm() {
 }
 
 function clearForm() {
-  ['inputTitle','inputStart','inputEnd','inputStartTime','inputEndTime'].forEach(id => document.getElementById(id).value = '');
+  ['inputTitle','inputStart','inputEnd','inputEndTime'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('inputRecurring').checked = false;
 }
 
 function addCountdown(e) {
   e.preventDefault();
   const title     = document.getElementById('inputTitle').value.trim();
-  const startDate = document.getElementById('inputStart').value;
   const endDate   = document.getElementById('inputEnd').value;
-  const startTime = document.getElementById('inputStartTime').value || null;
   const endTime   = document.getElementById('inputEndTime').value || null;
+  const startDate = document.getElementById('inputStart').value || localDateStr(today());
   const err       = document.getElementById('formError');
 
-  const invalid = endTime
-    ? parseLocalWithTime(startDate, startTime) >= parseLocalWithTime(endDate, endTime)
-    : startDate >= endDate;
-  if (invalid) {
-    err.textContent = (endTime && startDate === endDate)
-      ? 'End time must be after start time.'
-      : 'End date must be after start date.';
+  if (startDate > endDate) {
+    err.textContent = 'The "count from" date must be before the event date.';
+    err.classList.add('visible');
+    return;
+  }
+  if (startDate === endDate && !endTime) {
+    err.textContent = 'For a same-day countdown, add an event time.';
     err.classList.add('visible');
     return;
   }
@@ -1177,7 +1186,7 @@ function addCountdown(e) {
   err.classList.remove('visible');
   const items = load();
   const recurring = document.getElementById('inputRecurring').checked;
-  items.push({ id: uid(), title, startDate, endDate, startTime, endTime, completedAt: null, recurring });
+  items.push({ id: uid(), title, startDate, endDate, endTime, completedAt: null, recurring });
   save(items);
   syncToGist(items);
 
