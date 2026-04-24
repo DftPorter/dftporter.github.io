@@ -31,6 +31,7 @@
     --radius: 8px;
     --bar-h: 11px;
     --bar-h-near: 22px;
+    --bar-h-far: 2px;
   }
 
   html { height: 100%; overflow: hidden; }
@@ -307,6 +308,39 @@
       linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, transparent 60%),
       var(--fill-done);
     opacity: 0.7;
+  }
+
+  /* ── far items (> 60 days out) ── */
+  .bar-item.far {
+    flex: 0.65;
+    min-height: 38px;
+    gap: 6px;
+  }
+
+  .bar-item.far .bar-title {
+    font-size: 12px;
+    color: #5e5e78;
+    letter-spacing: 0.05em;
+  }
+
+  .bar-item.far .bar-status {
+    font-size: 11px;
+    color: #44445a;
+  }
+
+  .bar-item.far .bar-track {
+    height: var(--bar-h-far);
+    background: #1c1c26;
+    box-shadow: none;
+  }
+
+  .bar-item.far .bar-fill {
+    opacity: 0.5;
+  }
+
+  .bar-item.far .bar-dates {
+    font-size: 10px;
+    color: #44445a;
   }
 
   @keyframes today-pulse {
@@ -1046,16 +1080,18 @@ function render() {
   save(items);
   if (dirty) syncToGist(items);
 
-  const active = items.filter(i => !i.completedAt).sort((a, b) => {
-    const pctOf = item => {
-      const s = parseLocalWithTime(item.startDate, item.startTime);
-      const e = parseLocalWithTime(item.endDate, item.endTime);
-      return Math.max(0, Math.min(1, (new Date() - s) / (e - s)));
-    };
-    return pctOf(b) - pctOf(a);
-  });
-  const done   = items.filter(i => i.completedAt).sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
-  const sorted = [...active, ...done];
+  const pctOf = item => {
+    const s = parseLocalWithTime(item.startDate, item.startTime);
+    const e = parseLocalWithTime(item.endDate, item.endTime);
+    return Math.max(0, Math.min(1, (new Date() - s) / (e - s)));
+  };
+  const byPct = (a, b) => pctOf(b) - pctOf(a);
+
+  const active  = items.filter(i => !i.completedAt);
+  const near    = active.filter(i => Math.round((parseLocal(i.endDate) - now) / 864e5) <= 60).sort(byPct);
+  const far     = active.filter(i => Math.round((parseLocal(i.endDate) - now) / 864e5) >  60).sort(byPct);
+  const done    = items.filter(i =>  i.completedAt).sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
+  const sorted  = [...near, ...far, ...done];
 
   const list = document.getElementById('barsList');
 
@@ -1095,7 +1131,9 @@ function render() {
     const isNear  = !isDone && pct >= 85 && item.endDate !== todayStr;
     const isToday = !isDone && item.endDate === todayStr &&
                     (!item.endTime || Math.round((end - new Date()) / 60000) < 61);
-    const cls      = ['bar-item', idx === 0 ? 'first' : '', isToday ? 'today' : isNear ? 'near' : '', isDone ? 'done' : ''].filter(Boolean).join(' ');
+    const daysLeft = isDone ? 0 : Math.round((parseLocal(item.endDate) - now) / 864e5);
+    const isFar   = !isDone && !isToday && !isNear && daysLeft > 60;
+    const cls      = ['bar-item', idx === 0 ? 'first' : '', isToday ? 'today' : isNear ? 'near' : isFar ? 'far' : '', isDone ? 'done' : ''].filter(Boolean).join(' ');
     const color  = colorForId(item.id);
 
     return `
