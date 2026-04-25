@@ -621,6 +621,9 @@
     <input type="text" id="inputGistId" placeholder="auto-created on first save" spellcheck="false">
   </div>
   <div id="gistLink" style="display:none"></div>
+  <div id="disconnectRow" style="display:none">
+    <button class="btn-cancel" id="disconnectBtn" onclick="disconnectGist()">Disconnect</button>
+  </div>
   <div class="settings-divider"></div>
   <div class="form-title">Work schedule</div>
   <div class="form-field">
@@ -647,7 +650,7 @@
   </div>
   <div class="form-actions">
     <button class="btn-primary" onclick="saveSettings()">Save</button>
-    <button class="btn-cancel" id="disconnectBtn" onclick="disconnectGist()" style="display:none">Disconnect</button>
+    <button class="btn-cancel" onclick="toggleSettings()">Cancel</button>
   </div>
   <div class="settings-error" id="settingsError"></div>
 </div>
@@ -910,9 +913,9 @@ function populateSettingsPanel() {
   document.querySelectorAll('.day-btn').forEach(btn => {
     btn.classList.toggle('active', days.includes(Number(btn.dataset.day)));
   });
-  document.getElementById('gistIdField').style.display  = token  ? '' : 'none';
+  document.getElementById('gistIdField').style.display   = token ? '' : 'none';
+  document.getElementById('disconnectRow').style.display = token ? '' : 'none';
   const disconnectBtn = document.getElementById('disconnectBtn');
-  disconnectBtn.style.display = token ? '' : 'none';
   disconnectBtn.textContent = 'Disconnect';
   delete disconnectBtn.dataset.confirming;
 
@@ -1123,15 +1126,15 @@ function render() {
           label = '🎉 Today!';
         }
       } else {
-        const daysLeft = Math.round((parseLocal(item.endDate) - now) / 864e5);
-        label = daysLeft === 1 ? '1 day left' : `${daysLeft} days left`;
+        const dl = Math.round((parseLocal(item.endDate) - now) / 864e5);
+        label = dl === 1 ? '1 day left' : `${dl} days left`;
       }
     }
 
-    const isNear  = !isDone && pct >= 85 && item.endDate !== todayStr;
     const isToday = !isDone && item.endDate === todayStr &&
                     (!item.endTime || Math.round((end - new Date()) / 60000) < 61);
     const daysLeft = isDone ? 0 : Math.round((parseLocal(item.endDate) - now) / 864e5);
+    const isNear  = !isDone && !isToday && daysLeft > 0 && daysLeft <= 7;
     const isFar   = !isDone && !isToday && !isNear && daysLeft > 60;
     const cls      = ['bar-item', idx === 0 ? 'first' : '', isToday ? 'today' : isNear ? 'near' : isFar ? 'far' : '', isDone ? 'done' : ''].filter(Boolean).join(' ');
     const color  = colorForId(item.id);
@@ -1344,7 +1347,9 @@ function renderAutoBars() {
   const daysLeftInWeek = sorted.filter(d => norm(d) > normDow).length + (todayStillActive ? 1 : 0);
   const weekStatus = !isWorkDay ? 'Day off'
     : daysLeftInWeek === 0 ? 'Last day' : `${daysLeftInWeek}d left`;
-  html.push(buildAutoBar('Work week', weekPct, weekStatus, fmtDay(weekStart), fmtDay(weekEnd), true, '#14b8a6'));
+  if (now < weekEnd) {
+    html.push(buildAutoBar('Work week', weekPct, weekStatus, fmtDay(weekStart), fmtDay(weekEnd), true, '#14b8a6'));
+  }
 
   // Work day: [start] → [end] (work days only, hidden when done)
   if (isWorkDay) {
