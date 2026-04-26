@@ -91,6 +91,13 @@
     font-variant-numeric: tabular-nums;
   }
 
+  #lastRefreshed {
+    font-size: 10px;
+    color: #3a3a52;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+  }
+
   /* sync dot */
   .sync-dot {
     width: 7px;
@@ -598,6 +605,7 @@
   <div class="header-right">
     <span id="syncDot" class="sync-dot" title="Sync not configured"></span>
     <span id="clock"></span>
+    <span id="lastRefreshed" title="Last time bars were recalculated"></span>
     <button id="vacationBtn" onclick="toggleVacationPanel()" title="Vacation mode" aria-label="Vacation mode">✈</button>
     <button id="settingsBtn" onclick="toggleSettings()" title="Sync settings" aria-label="Sync settings">⚙&#xFE0E;</button>
   </div>
@@ -1003,6 +1011,12 @@ function cancelDisconnect() {
   btn.textContent = 'Disconnect';
 }
 
+// ── last refreshed ────────────────────────────────────────
+function stampRefresh() {
+  const el = document.getElementById('lastRefreshed');
+  if (el) el.textContent = 'refreshed ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
 // ── helpers ───────────────────────────────────────────────
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -1173,6 +1187,7 @@ function render() {
   if (firstUserBar) firstUserBar.classList.remove('first');
 
   applyFilter();
+  stampRefresh();
 }
 
 function confirmDelete(id) {
@@ -1447,8 +1462,19 @@ setInterval(() => {
                          : minsLeft > 0  ? `${minsLeft}m left`
                          : '🎉 Now!';
     }
+    stampRefresh();
   });
 }, 1000);
+
+// Re-render when page becomes visible again (tab/window was backgrounded)
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    render(); renderAutoBars(); fillBars();
+  }
+});
+window.addEventListener('focus', () => {
+  render(); renderAutoBars(); fillBars();
+});
 
 // Re-render at midnight
 function msUntilMidnight() {
