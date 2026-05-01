@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Training Module</title>
+
+  <!-- Load Google Font defined in config.js (applied after scripts run) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- Branding & Content (edit these two files — not this one) -->
+  <script src="config.js"></script>
+  <script src="content.js"></script>
+
+  <style>
+    /* ── Reset & base ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font), system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ── Layout shell ─────────────────────────────────────── */
+    #app {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── Progress bar ─────────────────────────────────────── */
+    #progress-track {
+      width: 100%;
+      height: 4px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+    #progress-fill {
+      height: 100%;
+      background: var(--primary);
+      transition: width 0.4s ease;
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* ── Header ───────────────────────────────────────────── */
+    #header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px 10px;
+      flex-shrink: 0;
+    }
+    #header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #header-logo {
+      height: 28px;
+      max-width: 120px;
+      object-fit: contain;
+      display: none;
+    }
+    #header-company {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+      letter-spacing: 0.02em;
+    }
+    #header-counter {
+      font-size: 12px;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+
+    /* ── Screen container ─────────────────────────────────── */
+    #screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 8px 20px 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ── Card ─────────────────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      animation: fadeUp 0.32s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-icon {
+      font-size: 40px;
+      line-height: 1;
+      margin-bottom: 16px;
+      display: block;
+    }
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1.25;
+      margin-bottom: 12px;
+    }
+    .card-body {
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--text);
+    }
+    .card-bullets {
+      margin-top: 14px;
+      padding-left: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .card-bullets li {
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text);
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .card-bullets li::before {
+      content: "▸";
+      color: var(--secondary);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .card-note {
+      margin-top: 16px;
+      font-size: 11px;
+      color: var(--text-light);
+      font-style: italic;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+
+    /* ── Intro screen ─────────────────────────────────────── */
+    #intro-card {
+      padding: 0;
+      overflow: hidden;
+      position: relative;
+    }
+    .hero-wrap {
+      position: relative;
+      height: calc(100vh - 150px);   /* fallback */
+      height: calc(100svh - 150px);  /* accounts for mobile browser chrome */
+      min-height: 300px;
+      max-height: 720px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    /* Placeholder shown when no image URL is set */
+    .hero-bg-placeholder {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg,
+        color-mix(in srgb, var(--primary) 80%, black) 0%,
+        color-mix(in srgb, var(--primary) 50%, black) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .hero-ph-icon { font-size: 32px; color: rgba(255,255,255,0.45); }
+    .hero-ph-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: rgba(255,255,255,0.5);
+    }
+    .hero-ph-alt {
+      font-size: 12px;
+      color: rgba(255,255,255,0.45);
+      font-style: italic;
+      padding: 0 32px;
+      text-align: center;
+      line-height: 1.4;
+    }
+    /* Gradient scrim over the image for text legibility */
+    .hero-scrim {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.0)  0%,
+        rgba(0,0,0,0.2)  45%,
+        rgba(0,0,0,0.72) 70%,
+        rgba(0,0,0,0.85) 100%
+      );
+    }
+    /* Text sitting above the scrim */
+    .hero-text {
+      position: relative;
+      z-index: 1;
+      padding: 28px 24px 32px;
+      text-align: left;
+    }
+    .intro-subtitle {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 8px;
+    }
+    #intro-card .card-title {
+      font-size: 24px;
+      color: #ffffff;
+      margin-bottom: 12px;
+    }
+    .intro-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255,255,255,0.18);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 99px;
+      margin-bottom: 14px;
+    }
+    .intro-body {
+      font-size: 14px;
+      color: #ffffff;
+      line-height: 1.65;
+    }
+
+    /* ── Title accent bar ─────────────────────────────────── */
+    .title-accent {
+      width: 36px;
+      height: 3px;
+      background: var(--primary);
+      border-radius: 2px;
+      margin: 10px 0 16px;
+      flex-shrink: 0;
+    }
+
+    /* ── Stat callout ─────────────────────────────────────── */
+    .stat-callout {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin: 16px 0;
+      padding: 16px 18px;
+      background: color-mix(in srgb, var(--primary) 7%, white);
+      border-left: 4px solid var(--primary);
+      border-radius: 0 10px 10px 0;
+    }
+    .stat-value {
+      font-size: 40px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-light);
+      line-height: 1.4;
+      font-weight: 500;
+    }
+
+    /* ── Slide image ──────────────────────────────────────── */
+    .slide-img {
+      width: 100%;
+      border-radius: 10px;
+      margin-top: 18px;
+      display: block;
+      object-fit: cover;
+      max-height: 200px;
+    }
+    .slide-img-placeholder {
+      width: 100%;
+      margin-top: 18px;
+      border-radius: 10px;
+      border: 2px dashed var(--border);
+      background: color-mix(in srgb, var(--primary) 4%, white);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 28px 20px;
+      text-align: center;
+    }
+    .slide-img-placeholder-icon { font-size: 28px; line-height: 1; opacity: 0.4; }
+    .slide-img-placeholder-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--primary);
+      opacity: 0.5;
+    }
+    .slide-img-placeholder-alt {
+      font-size: 12px;
+      color: var(--text-light);
+      font-style: italic;
+      line-height: 1.4;
+    }
+
+    /* ── Quiz ─────────────────────────────────────────────── */
+    .quiz-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--secondary);
+      margin-bottom: 6px;
+    }
+    .quiz-question {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.4;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .option {
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      min-height: 44px;
+      font-size: 14px;
+      line-height: 1.4;
+      color: var(--text);
+      background: var(--card);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: border-color 0.18s, background 0.18s;
+      text-align: left;
+      width: 100%;
+      -webkit-appearance: none;
+    }
+    .option:active { transform: scale(0.98); }
+    .option-letter {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      color: var(--text-light);
+      transition: all 0.18s;
+    }
+    .option:hover:not(.answered) { border-color: var(--primary); }
+    .option:hover:not(.answered) .option-letter { border-color: var(--primary); color: var(--primary); }
+    .option:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+    .option.correct {
+      border-color: var(--secondary);
+      background: color-mix(in srgb, var(--secondary) 10%, white);
+    }
+    .option.correct .option-letter {
+      background: var(--secondary);
+      border-color: var(--secondary);
+      color: #fff;
+    }
+    .option.wrong {
+      border-color: var(--danger);
+      background: color-mix(in srgb, var(--danger) 8%, white);
+    }
+    .option.wrong .option-letter {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: #fff;
+    }
+    .option.dimmed { opacity: 0.45; }
+
+    .explanation {
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 14px;
+      line-height: 1.6;
+      animation: fadeUp 0.28s ease both;
+      margin-bottom: 4px;
+    }
+    .explanation.correct {
+      background: color-mix(in srgb, var(--secondary) 12%, white);
+      border-left: 4px solid var(--secondary);
+      color: var(--text);
+    }
+    .explanation.wrong {
+      background: color-mix(in srgb, var(--danger) 8%, white);
+      border-left: 4px solid var(--danger);
+      color: var(--text);
+    }
+
+    /* ── Results screen ───────────────────────────────────── */
+    #results-card { text-align: center; }
+    .score-ring {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: conic-gradient(var(--primary) var(--pct), var(--border) 0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      position: relative;
+    }
+    .score-ring-inner {
+      width: 82px;
+      height: 82px;
+      border-radius: 50%;
+      background: var(--card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    .score-pct { font-size: 26px; font-weight: 800; color: var(--primary); }
+    .score-sub { font-size: 11px; color: var(--text-light); font-weight: 600; }
+    .results-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .results-body { font-size: 14px; line-height: 1.6; color: var(--text-light); margin-bottom: 20px; }
+    .takeaways-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-light);
+      margin-bottom: 10px;
+      text-align: left;
+    }
+    .takeaways {
+      text-align: left;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .takeaways li {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text);
+      display: flex;
+      gap: 8px;
+    }
+    .takeaways li::before {
+      content: "✓";
+      color: var(--secondary);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* ── Navigation footer ────────────────────────────────── */
+    #nav {
+      padding: 14px 20px 24px;
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .btn {
+      flex: 1;
+      padding: 15px 20px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      font-family: inherit;
+      letter-spacing: 0.01em;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-secondary {
+      background: var(--card);
+      color: var(--primary);
+      border: 2px solid var(--border);
+      flex: 0 0 auto;
+      min-width: 52px;
+      padding: 15px;
+    }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-primary:not(:disabled):hover { opacity: 0.88; }
+
+    /* ── Phase label strip ────────────────────────────────── */
+    .phase-strip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 20px 4px;
+      flex-shrink: 0;
+    }
+    .phase-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      opacity: 0.6;
+    }
+    .phase-text {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-light);
+    }
+
+    /* ── Utility ──────────────────────────────────────────── */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Progress bar (top) -->
+  <div id="progress-track" class="hidden">
+    <div id="progress-fill" style="width:0%"></div>
+  </div>
+
+  <!-- Header -->
+  <div id="header">
+    <div id="header-left">
+      <img id="header-logo" alt="logo" />
+      <span id="header-company"></span>
+    </div>
+    <span id="header-counter"></span>
+  </div>
+
+  <!-- Phase label -->
+  <div id="phase-strip" class="phase-strip hidden">
+    <div class="phase-dot"></div>
+    <span id="phase-text" class="phase-text"></span>
+  </div>
+
+  <!-- Main content area -->
+  <div id="screen"></div>
+
+  <!-- Navigation -->
+  <div id="nav">
+    <button id="btn-back"  class="btn btn-secondary hidden" aria-label="Back">←</button>
+    <button id="btn-next"  class="btn btn-primary" aria-label="Next step">Start →</button>
+  </div>
+
+</div>
+
+<script>
+// ── Apply CSS variables from config ────────────────────────
+(function applyTheme() {
+  const r = document.documentElement.style;
+  const c = CONFIG;
+  const font = encodeURIComponent(c.fontFamily || 'Inter');
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = `https://fonts.googleapis.com/css2?family=${font}:wght@400;500;600;700;800&display=swap`;
+  document.head.appendChild(link);
+
+  r.setProperty('--font',       `'${c.fontFamily}', system-ui, sans-serif`);
+  r.setProperty('--primary',    c.colorPrimary);
+  r.setProperty('--secondary',  c.colorSecondary);
+  r.setProperty('--danger',     c.colorDanger);
+  r.setProperty('--bg',         c.colorBackground);
+  r.setProperty('--card',       c.colorCard);
+  r.setProperty('--text',       c.colorText);
+  r.setProperty('--text-light', c.colorTextLight);
+  r.setProperty('--border',     c.colorBorder);
+
+  document.title = CONTENT.module.title;
+
+  const logoEl   = document.getElementById('header-logo');
+  const companyEl = document.getElementById('header-company');
+  if (c.logoUrl) {
+    logoEl.src = c.logoUrl;
+    logoEl.style.display = 'block';
+  } else {
+    companyEl.textContent = c.companyName;
+  }
+
+  if (c.showProgressBar) {
+    document.getElementById('progress-track').classList.remove('hidden');
+  }
+})();
+
+// ── State ───────────────────────────────────────────────────
+const STATE = {
+  phase: 'intro',   // 'intro' | 'slides' | 'quiz' | 'results'
+  slideIdx: 0,
+  quizIdx:  0,
+  quizAnswered: false,
+  score: 0,
+};
+
+const slides = CONTENT.slides;
+const quiz   = CONTENT.quiz;
+const total  = 1 + slides.length + quiz.length + 1; // intro + slides + quiz + results
+let stepNum  = 0;
+
+const screen    = document.getElementById('screen');
+const btnNext   = document.getElementById('btn-next');
+const btnBack   = document.getElementById('btn-back');
+const progFill  = document.getElementById('progress-fill');
+const counter   = document.getElementById('header-counter');
+const phaseStrip= document.getElementById('phase-strip');
+const phaseText = document.getElementById('phase-text');
+
+// ── Render helpers ──────────────────────────────────────────
+function setProgress(step, of) {
+  progFill.style.width = Math.round((step / of) * 100) + '%';
+}
+
+function setCounter(text) {
+  counter.textContent = CONFIG.showSlideNumbers ? text : '';
+}
+
+function setPhase(label) {
+  if (label) {
+    phaseStrip.classList.remove('hidden');
+    phaseText.textContent = label;
+  } else {
+    phaseStrip.classList.add('hidden');
+  }
+}
+
+function clearScreen() {
+  screen.innerHTML = '';
+  screen.scrollTop = 0;
+}
+
+function el(tag, cls, html) {
+  const e = document.createElement(tag);
+  if (cls)  e.className = cls;
+  if (html) e.innerHTML = html;
+  return e;
+}
+
+// ── Screens ─────────────────────────────────────────────────
+function renderIntro() {
+  STATE.phase = 'intro';
+  stepNum = 0;
+  clearScreen();
+  setPhase(null);
+  setProgress(0, total);
+  setCounter('');
+  btnBack.classList.add('hidden');
+  btnNext.textContent = 'Start →';
+  btnNext.disabled = false;
+
+  const m = CONTENT.module;
+  const heroBg = m.heroImage && m.heroImage.url
+    ? `<img class="hero-bg" src="${m.heroImage.url}" alt="${m.heroImage.alt}" />`
+    : `<div class="hero-bg-placeholder">
+         <span class="hero-ph-icon">🖼️</span>
+         <span class="hero-ph-label">Hero image</span>
+         <span class="hero-ph-alt">${m.heroImage ? m.heroImage.alt : ''}</span>
+       </div>`;
+
+  const card = el('div', 'card', `
+    <div class="hero-wrap">
+      ${heroBg}
+      <div class="hero-scrim"></div>
+      <div class="hero-text">
+        <div class="intro-subtitle">${CONFIG.moduleLabel}</div>
+        <div class="card-title">${m.title}</div>
+        <div class="intro-badge">⏱ ${m.estimatedTime}</div>
+        <p class="intro-body">${m.introBody}</p>
+      </div>
+    </div>
+  `);
+  card.id = 'intro-card';
+  screen.appendChild(card);
+}
+
+function renderSlide(idx) {
+  STATE.phase = 'slides';
+  STATE.slideIdx = idx;
+  stepNum = 1 + idx;
+  const s = slides[idx];
+  clearScreen();
+  setPhase('Learning Content');
+  setProgress(stepNum, total);
+  setCounter(`Slide ${idx + 1} of ${slides.length}`);
+
+  if (CONFIG.allowBackNav) {
+    btnBack.classList.remove('hidden');
+    btnBack.disabled = (idx === 0);
+  }
+  btnNext.textContent = idx === slides.length - 1 ? 'Knowledge Check →' : 'Next →';
+  btnNext.disabled = false;
+
+  const bulletsHtml = s.bullets && s.bullets.length
+    ? `<ul class="card-bullets">${s.bullets.map(b => `<li>${b}</li>`).join('')}</ul>`
+    : '';
+  const noteHtml = s.note ? `<div class="card-note">${s.note}</div>` : '';
+
+  let imageHtml = '';
+  if (s.image) {
+    if (s.image.url) {
+      imageHtml = `<img class="slide-img" src="${s.image.url}" alt="${s.image.alt}" />`;
+    } else {
+      imageHtml = `
+        <div class="slide-img-placeholder">
+          <span class="slide-img-placeholder-icon">🖼️</span>
+          <span class="slide-img-placeholder-label">Image placeholder</span>
+          <span class="slide-img-placeholder-alt">${s.image.alt}</span>
+        </div>`;
+    }
+  }
+
+  const statHtml = s.stat && s.stat.value
+    ? `<div class="stat-callout">
+         <span class="stat-value">${s.stat.value}</span>
+         <span class="stat-label">${s.stat.label}</span>
+       </div>`
+    : '';
+
+  const card = el('div', 'card', `
+    ${s.icon ? `<span class="card-icon">${s.icon}</span>` : ''}
+    <div class="card-title">${s.title}</div>
+    <div class="title-accent"></div>
+    <p class="card-body">${s.body}</p>
+    ${statHtml}
+    ${bulletsHtml}
+    ${imageHtml}
+    ${noteHtml}
+  `);
+  screen.appendChild(card);
+}
+
+function renderQuiz(idx) {
+  STATE.phase = 'quiz';
+  STATE.quizIdx = idx;
+  STATE.quizAnswered = false;
+  stepNum = 1 + slides.length + idx;
+  const q = quiz[idx];
+  clearScreen();
+  setPhase('Knowledge Check');
+  setProgress(stepNum, total);
+  setCounter(`Question ${idx + 1} of ${quiz.length}`);
+
+  if (CONFIG.allowBackNav) {
+    btnBack.classList.remove('hidden');
+    btnBack.disabled = (idx === 0);
+  }
+  btnNext.textContent = idx === quiz.length - 1 ? 'See Results →' : 'Next Question →';
+  btnNext.disabled = true;
+
+  const letters = ['A','B','C','D','E'];
+  const optionsHtml = q.options.map((opt, i) => `
+    <button class="option" data-idx="${i}" type="button">
+      <span class="option-letter">${letters[i]}</span>
+      <span>${opt}</span>
+    </button>
+  `).join('');
+
+  const card = el('div', 'card', `
+    <div class="quiz-label">Question ${idx + 1} / ${quiz.length}</div>
+    <div class="quiz-question">${q.question}</div>
+    <div class="options">${optionsHtml}</div>
+  `);
+  screen.appendChild(card);
+
+  // Attach option listeners
+  card.querySelectorAll('.option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (STATE.quizAnswered) return;
+      STATE.quizAnswered = true;
+      const chosen  = parseInt(btn.dataset.idx);
+      const correct = q.correctIndex;
+      const isRight = chosen === correct;
+      if (isRight) STATE.score++;
+
+      card.querySelectorAll('.option').forEach((b, i) => {
+        b.classList.add('answered');
+        if (i === correct) b.classList.add('correct');
+        else if (i === chosen) b.classList.add('wrong');
+        else b.classList.add('dimmed');
+      });
+
+      const header = isRight
+        ? `<strong>✓ Correct!</strong> `
+        : `<strong>✗ Not quite.</strong> The correct answer was <strong>${letters[correct]}. ${q.options[correct]}</strong>.<br><br>`;
+      const expDiv = el('div', `explanation ${isRight ? 'correct' : 'wrong'}`, header + q.explanation);
+      card.appendChild(expDiv);
+      btnNext.disabled = false;
+
+      // Scroll to show explanation
+      setTimeout(() => expDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+    });
+  });
+}
+
+function renderResults() {
+  STATE.phase = 'results';
+  stepNum = total;
+  clearScreen();
+  setPhase(null);
+  setProgress(total, total);
+  setCounter('');
+  btnBack.classList.add('hidden');
+  btnNext.textContent = CONTENT.results.ctaLabel;
+  btnNext.disabled = false;
+
+  const r      = CONTENT.results;
+  const pct    = Math.round((STATE.score / quiz.length) * 100);
+  const pass   = pct >= r.passThreshold;
+  const title  = pass ? r.titlePass : r.titleFail;
+  const body   = pass ? r.bodyPass  : r.bodyFail;
+
+  const takeawaysHtml = r.takeaways
+    .map(t => `<li>${t}</li>`).join('');
+
+  const card = el('div', 'card');
+  card.id = 'results-card';
+  card.style.setProperty('--pct', pct + '%');
+  card.innerHTML = `
+    <div class="score-ring">
+      <div class="score-ring-inner">
+        <span class="score-pct">${pct}%</span>
+        <span class="score-sub">${STATE.score}/${quiz.length} correct</span>
+      </div>
+    </div>
+    <div class="results-title">${title}</div>
+    <p class="results-body">${body}</p>
+    <div class="takeaways-title">Key Takeaways</div>
+    <ul class="takeaways">${takeawaysHtml}</ul>
+  `;
+  screen.appendChild(card);
+}
+
+// ── Navigation logic ────────────────────────────────────────
+btnNext.addEventListener('click', () => {
+  if (STATE.phase === 'intro') {
+    renderSlide(0);
+  } else if (STATE.phase === 'slides') {
+    if (STATE.slideIdx < slides.length - 1) {
+      renderSlide(STATE.slideIdx + 1);
+    } else {
+      STATE.score = 0;
+      renderQuiz(0);
+    }
+  } else if (STATE.phase === 'quiz') {
+    if (STATE.quizIdx < quiz.length - 1) {
+      renderQuiz(STATE.quizIdx + 1);
+    } else {
+      renderResults();
+    }
+  } else if (STATE.phase === 'results') {
+    renderIntro();
+  }
+});
+
+btnBack.addEventListener('click', () => {
+  if (STATE.phase === 'slides') {
+    if (STATE.slideIdx > 0) renderSlide(STATE.slideIdx - 1);
+    else renderIntro();
+  } else if (STATE.phase === 'quiz') {
+    if (STATE.quizIdx > 0) renderQuiz(STATE.quizIdx - 1);
+    else renderSlide(slides.length - 1);
+  }
+});
+
+// ── Touch swipe support ─────────────────────────────────────
+let touchStartX = 0;
+screen.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+screen.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) < 50) return;
+  if (dx < 0 && !btnNext.disabled)  btnNext.click();   // swipe left → next
+  if (dx > 0 && !btnBack.classList.contains('hidden') && !btnBack.disabled) btnBack.click();
+}, { passive: true });
+
+// ── Boot ────────────────────────────────────────────────────
+renderIntro();
+</script>
+</body>
+</html>
