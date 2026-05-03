@@ -193,20 +193,27 @@
     display: flex;
     flex-direction: column;
     border-top: 1px solid var(--border);
+  }
+
+  #autoBars {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+
+  #barsList {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     scrollbar-width: none;
   }
-  #barsWrapper::-webkit-scrollbar { display: none; }
-
-  #autoBars,
-  #barsList {
-    display: contents;
-  }
+  #barsList::-webkit-scrollbar { display: none; }
 
   .bar-item {
     flex: 1;
     min-height: 52px;
-    container-type: size;
     border-bottom: 1px solid var(--border);
     display: flex;
     flex-direction: column;
@@ -376,9 +383,7 @@
     letter-spacing: 0.08em;
   }
 
-  @container (max-height: 68px) {
-    .bar-dates { display: none; }
-  }
+  .bar-item.far .bar-dates { display: none; }
 
   .delete-btn {
     position: absolute;
