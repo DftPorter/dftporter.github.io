@@ -1,7 +1,7 @@
-const CACHE = 'countdowns-v1';
+const CACHE = 'tminus-v2';
 const ASSETS = [
-  '/',
-  '/index.html',
+  '/tminus/',
+  '/tminus/index.html',
   'https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&display=swap'
 ];
 

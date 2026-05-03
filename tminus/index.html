@@ -34,7 +34,7 @@
     --bar-h-far: 2px;
   }
 
-  html { height: 100%; overflow: hidden; }
+  html { height: 100%; }
 
   body {
     background: var(--bg);
@@ -605,7 +605,7 @@
   <div class="header-right">
     <span id="syncDot" class="sync-dot" title="Sync not configured"></span>
     <span id="clock"></span>
-    <!-- <span id="lastRefreshed" title="Last time bars were recalculated"></span> -->
+    <!-- debug refresh <span id="lastRefreshed" title="Last time bars were recalculated"></span> -->
     <button id="vacationBtn" onclick="toggleVacationPanel()" title="Vacation mode" aria-label="Vacation mode">✈</button>
     <button id="settingsBtn" onclick="toggleSettings()" title="Sync settings" aria-label="Sync settings">⚙&#xFE0E;</button>
   </div>
