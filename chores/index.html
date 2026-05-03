@@ -184,6 +184,15 @@ header{text-align:center;padding:18px 0 22px;}
   72% {transform:scaleX(1);}
 }
 
+/* ── Month earnings ── */
+.month-earn{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 12px;margin-bottom:12px;
+  background:#0f0a00;border:2px solid #3a2800;
+}
+.month-earn-lbl{font-size:8px;color:#b09000;letter-spacing:2px;}
+.month-earn-val{font-size:13px;color:var(--gold);}
+
 /* ── History ── */
 .hist-section{border-top:2px solid #181848;padding-top:10px;}
 .hist-row{display:flex;align-items:center;gap:5px;margin-bottom:6px;}
@@ -384,11 +393,27 @@ function isAllDone(row) {
   return row && row.days.every(d => d) && row.trash;
 }
 
+// ── Past-30-day earnings ────────────────────────────────────
+function calcMonthEarnings(weeks, key) {
+  const cutoff = new Date(TODAY);
+  cutoff.setDate(cutoff.getDate() - 30);
+  let total = 0;
+  for (const w of weeks) {
+    const r = w[key];
+    if (!r || isEmptyRow(r)) continue;
+    const sat = parseWDate(w.date);
+    sat.setDate(sat.getDate() + 6);
+    if (sat >= cutoff && sat < TODAY) total += r.pay || 0;
+  }
+  return total;
+}
+
 // ── Card builder ────────────────────────────────────────────
 function buildCard(weeks, name, num) {
   const key = name.toLowerCase();
   const owed = calcOwed(weeks, key);
   const streak = calcStreak(weeks, key);
+  const monthEarned = calcMonthEarnings(weeks, key);
 
   // Completion rate (non-empty weeks only)
   let total = 0, done = 0;
@@ -483,6 +508,10 @@ function buildCard(weeks, name, num) {
     </div>
 
     ${histRows ? `
+    <div class="month-earn">
+      <span class="month-earn-lbl">PAST 30 DAYS</span>
+      <span class="month-earn-val">$${monthEarned.toFixed(2)}</span>
+    </div>
     <div class="hist-section">
       <div class="slbl">HISTORY &nbsp; SU MO TU WE TH FR SA TR</div>
       ${histRows}
