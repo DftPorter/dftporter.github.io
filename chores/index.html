@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Chore Quest">
+<meta name="theme-color" content="#0a0a1a">
+<link rel="manifest" href="manifest.json">
+<title>CHORE QUEST</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+:root{
+  --bg:#0a0a1a;
+  --surface:#0d0d2a;
+  --p1:#00c8ff;
+  --p1-glow:rgba(0,200,255,.12);
+  --p1-dim:#003a55;
+  --p2:#00ff88;
+  --p2-glow:rgba(0,255,136,.12);
+  --p2-dim:#003a25;
+  --gold:#ffd700;
+  --gold-dk:#7a4200;
+  --done-bg:#002800;
+  --done-bd:#00aa00;
+  --done-txt:#00ee00;
+  --miss-bg:#2a0000;
+  --miss-bd:#880000;
+  --miss-txt:#ff3333;
+  --pend-bg:#10102e;
+  --pend-bd:#4040a0;
+  --pend-txt:#8888cc;
+  --dim:#8888b8;
+  --font:'Press Start 2P',monospace;
+}
+
+body{
+  font-family:var(--font);
+  background:var(--bg);
+  background-image:repeating-linear-gradient(
+    0deg,transparent,transparent 3px,
+    rgba(0,0,0,.18) 3px,rgba(0,0,0,.18) 4px
+  );
+  color:#c8c8e8;
+  min-height:100vh;
+  padding:12px 10px 32px;
+  font-size:10px;
+  line-height:1.6;
+}
+
+/* ── Title ── */
+header{text-align:center;padding:18px 0 22px;}
+.title{
+  font-size:clamp(15px,5.5vw,24px);
+  color:var(--gold);
+  text-shadow:4px 4px 0 var(--gold-dk);
+  letter-spacing:4px;
+  margin-bottom:8px;
+}
+.subtitle{font-size:8px;color:var(--dim);letter-spacing:4px;}
+
+/* ── Season bar ── */
+.season-bar{
+  text-align:center;
+  font-size:9px;
+  color:#9090c8;
+  background:#0c0c26;
+  border:2px solid #181858;
+  padding:7px 12px;
+  margin-bottom:22px;
+  letter-spacing:1px;
+}
+
+/* ── Layout ── */
+.players{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:22px;
+  max-width:460px;
+  margin:0 auto;
+}
+@media(min-width:820px){
+  .players{grid-template-columns:1fr 1fr;max-width:900px;}
+}
+
+/* ── Card ── */
+.card{
+  background:var(--surface);
+  padding:16px 14px;
+  position:relative;
+}
+.card-p1{
+  border:3px solid var(--p1);
+  box-shadow:0 0 0 2px #0a0a1a,0 0 0 5px var(--p1-dim),
+             inset 0 0 30px var(--p1-glow);
+}
+.card-p2{
+  border:3px solid var(--p2);
+  box-shadow:0 0 0 2px #0a0a1a,0 0 0 5px var(--p2-dim),
+             inset 0 0 30px var(--p2-glow);
+}
+.card::before,.card::after{content:'';position:absolute;width:7px;height:7px;}
+.card-p1::before{top:-3px;right:-3px;background:var(--p1);}
+.card-p1::after {bottom:-3px;left:-3px;background:var(--p1);}
+.card-p2::before{top:-3px;right:-3px;background:var(--p2);}
+.card-p2::after {bottom:-3px;left:-3px;background:var(--p2);}
+
+/* ── Card header ── */
+.card-head{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:14px;padding-bottom:10px;
+  border-bottom:2px solid #181848;
+}
+.card-icon{font-size:20px;line-height:1;}
+.card-name{font-size:clamp(12px,4vw,15px);line-height:1;}
+.card-p1 .card-name{color:var(--p1);}
+.card-p2 .card-name{color:var(--p2);}
+
+/* ── Section label ── */
+.slbl{font-size:8px;color:var(--dim);letter-spacing:2px;margin-bottom:6px;}
+
+/* ── Pips ── */
+.pips{display:flex;gap:3px;margin-bottom:16px;flex-wrap:wrap;}
+.pip{width:13px;height:13px;background:#101030;border:1px solid #202060;flex-shrink:0;}
+.card-p1 .pip.on{background:var(--p1);border-color:#008aaa;}
+.card-p2 .pip.on{background:var(--p2);border-color:#00aa55;}
+
+/* ── Week grid ── */
+.week-lbl{font-size:9px;margin-bottom:8px;}
+.week-lbl.cur{color:var(--gold);}
+.week-lbl.past{color:#6060a0;}
+
+.chore-grid{
+  display:grid;
+  grid-template-columns:repeat(8,1fr);
+  gap:3px;
+  margin-bottom:8px;
+}
+.day-cell{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.day-lbl{font-size:7px;color:var(--dim);}
+.day-box{
+  width:100%;aspect-ratio:1;
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(10px,3.5vw,13px);
+  border:1px solid;
+}
+.day-box.done  {background:var(--done-bg);border-color:var(--done-bd);color:var(--done-txt);}
+.day-box.missed{background:var(--miss-bg);border-color:var(--miss-bd);color:var(--miss-txt);}
+.day-box.pend  {background:var(--pend-bg);border-color:var(--pend-bd);color:var(--pend-txt);}
+
+.week-pay{font-size:9px;color:var(--gold);margin-bottom:14px;}
+
+/* ── Money box ── */
+.money-box{
+  background:#110e00;
+  border:2px solid #4a3200;
+  padding:10px 14px;
+  margin-bottom:14px;
+}
+.money-lbl{font-size:8px;color:#b09000;letter-spacing:2px;margin-bottom:7px;}
+.money-val{
+  font-size:clamp(16px,5.5vw,22px);
+  color:var(--gold);
+  text-shadow:3px 3px 0 var(--gold-dk);
+  display:flex;align-items:center;gap:10px;
+}
+.coin{
+  display:inline-block;
+  font-size:clamp(18px,6vw,24px);
+  animation:cspin 1.4s linear infinite;
+}
+@keyframes cspin{
+  0%  {transform:scaleX(1);}
+  18% {transform:scaleX(.08);}
+  36% {transform:scaleX(1);}
+  54% {transform:scaleX(.08);}
+  72% {transform:scaleX(1);}
+}
+
+/* ── History ── */
+.hist-section{border-top:2px solid #181848;padding-top:10px;}
+.hist-row{display:flex;align-items:center;gap:5px;margin-bottom:6px;}
+.hist-date{font-size:8px;color:#8080b8;min-width:50px;flex-shrink:0;}
+.hist-dots{display:flex;gap:2px;flex:1;}
+.hdot{width:11px;height:11px;flex-shrink:0;}
+.hdot.done  {background:#006600;}
+.hdot.missed{background:#2a0000;border:1px solid #660000;}
+.hdot.pend  {background:#101030;border:1px solid #3030a0;}
+.hdot.tr.done  {background:#556600;}
+.hdot.tr.missed{background:#2a1800;border:1px solid #5a3000;}
+.hist-pay{font-size:8px;color:#aa8800;min-width:36px;text-align:right;flex-shrink:0;}
+
+/* ── Streak ── */
+.streak{
+  margin-bottom:14px;padding:8px 10px;
+  background:#120800;border:2px solid #3a1800;
+  display:flex;align-items:center;gap:10px;
+}
+.streak-fire{font-size:16px;line-height:1;}
+.streak-num{font-size:14px;color:#ff6600;text-shadow:2px 2px 0 #7a3000;}
+.streak-lbl{font-size:8px;color:#994400;line-height:1.4;}
+.streak-go{margin-bottom:14px;padding:8px 10px;font-size:8px;color:#505088;background:#0e0e20;border:2px solid #252550;}
+
+/* ── Celebration ── */
+.cel-box{
+  text-align:center;padding:18px 10px 16px;
+  margin-bottom:14px;
+  animation:celPulse .8s steps(1) infinite;
+}
+.card-p1 .cel-box{background:#001a00;border:3px solid var(--p1);}
+.card-p2 .cel-box{background:#001a00;border:3px solid var(--p2);}
+@keyframes celPulse{0%{filter:brightness(1);}50%{filter:brightness(1.35);}}
+.cel-stars{font-size:20px;color:var(--gold);letter-spacing:10px;margin-bottom:12px;}
+.cel-msg{
+  font-size:clamp(15px,5vw,20px);color:var(--gold);
+  text-shadow:3px 3px 0 var(--gold-dk);
+  line-height:1.9;margin-bottom:12px;letter-spacing:2px;
+}
+.cel-earn{font-size:9px;color:var(--done-txt);letter-spacing:1px;}
+
+/* ── Loading / Error ── */
+#app{min-height:200px;}
+.loading{
+  text-align:center;padding:50px 20px;
+  color:var(--dim);font-size:9px;
+  animation:blink .9s step-start infinite;
+}
+@keyframes blink{50%{opacity:0;}}
+.err-box{
+  border:2px solid #660000;background:#110000;
+  padding:18px;color:#ff5555;font-size:8px;
+  text-align:center;max-width:380px;
+  margin:40px auto;line-height:2.2;
+}
+
+/* ── Footer ── */
+footer{
+  text-align:center;font-size:7px;color:#505080;
+  margin-top:30px;padding-top:12px;
+  border-top:2px solid #0e0e30;letter-spacing:1px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1 class="title">★ CHORE QUEST ★</h1>
+  <p class="subtitle">HOUSEHOLD HEROES</p>
+</header>
+
+<div id="app"><div class="loading">LOADING DATA...</div></div>
+
+<footer>INSERT COIN TO CONTINUE &nbsp;·&nbsp; LIVE DATA FROM HEADQUARTERS</footer>
+
+<script>
+const SHEET_ID = '1dAmlZqyuLw1SSuRTHwXO0fXBnTWLvB-Hb79ImoAtXLg';
+const DAY_LABELS = ['SU','MO','TU','WE','TH','FR','SA'];
+const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+
+const TODAY = new Date();
+TODAY.setHours(0,0,0,0);
+
+// ── CSV parser ──────────────────────────────────────────────
+function parseCSV(text) {
+  return text.split('\n').map(raw => {
+    const line = raw.replace(/\r$/, '');
+    const cols = [];
+    let field = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === '"') { inQ = !inQ; }
+      else if (line[i] === ',' && !inQ) { cols.push(field.trim()); field = ''; }
+      else { field += line[i]; }
+    }
+    cols.push(field.trim());
+    return cols;
+  });
+}
+
+function money(s) {
+  if (!s) return null;
+  const c = s.replace(/[\s$,]/g, '');
+  if (!c || c === '-') return null;
+  const n = parseFloat(c);
+  return isNaN(n) ? null : n;
+}
+
+// ── Sheet parser ────────────────────────────────────────────
+// Column layout (0-indexed):
+//  0=week date  2=name  3-9=S/M/T/W/T/F/S  10=trash  11=pay
+//  13=simonOwed  14=simonAdj  18=desOwed  19=desAdj  20=desNote
+function parseSheet(rows) {
+  const weeks = [];
+  let cur = null;
+  for (const c of rows) {
+    if (!c.length) continue;
+    if (c[0] && /^\d{2}\/\d{2}\/\d{2}$/.test(c[0])) {
+      cur = { date: c[0], simon: null, desmond: null };
+      weeks.push(cur);
+      continue;
+    }
+    if (!cur) continue;
+    const nm = (c[2] || '').trim().toLowerCase();
+    if (nm !== 'simon' && nm !== 'desmond') continue;
+    cur[nm] = {
+      days: DAY_LABELS.map((_, i) => { const v = money(c[3+i]); return v != null && v > 0; }),
+      trash: (() => { const v = money(c[10]); return v != null && v > 0; })(),
+      pay:   money(c[11]) || 0,
+      simonOwed: money(c[13]),
+      desOwed:   money(c[18]),
+      desAdj:    money(c[19]),
+    };
+  }
+  return weeks.filter(w => w.simon || w.desmond);
+}
+
+// ── Money calculation ───────────────────────────────────────
+// Strategy: take first snapshot found (in Simon's row for both players),
+// then add all weekly pays. Desmond's row may carry a payout adjustment.
+function calcOwed(weeks, key) {
+  // The "Owed" columns in the sheet are the authoritative running balance —
+  // just return the most recent non-null value found.
+  let last = 0;
+  for (const w of weeks) {
+    if (w.simon) {
+      const snap = key === 'simon' ? w.simon.simonOwed : w.simon.desOwed;
+      if (snap !== null) last = snap;
+    }
+    if (key === 'desmond' && w.desmond && w.desmond.desOwed !== null)
+      last = w.desmond.desOwed;
+  }
+  return last;
+}
+
+// ── Date helpers ────────────────────────────────────────────
+function parseWDate(str) {
+  const [m,d,y] = str.split('/').map(Number);
+  return new Date(2000+y, m-1, d);
+}
+function fmtDate(str) {
+  const [m,,] = str.split('/').map(Number);
+  const d = parseInt(str.split('/')[1]);
+  return `${MONTHS[m-1]} ${d}`;
+}
+function dayState(weekStr, dayIdx, done) {
+  if (done) return 'done';
+  const dt = parseWDate(weekStr);
+  dt.setDate(dt.getDate() + dayIdx);
+  return dt > TODAY ? 'pend' : 'missed';
+}
+function trashState(weekStr, done) {
+  if (done) return 'done';
+  const sat = parseWDate(weekStr);
+  sat.setDate(sat.getDate() + 6);
+  return sat > TODAY ? 'pend' : 'missed';
+}
+const SYM = { done:'✓', missed:'✗', pend:'?' };
+
+function isEmptyRow(r) {
+  return !r || (r.pay === 0 && !r.days.some(Boolean) && !r.trash);
+}
+
+function calcStreak(weeks, key) {
+  let streak = 0;
+  for (let i = weeks.length - 1; i >= 0; i--) {
+    const row = weeks[i][key];
+    if (!row || isEmptyRow(row)) continue;
+    const sat = parseWDate(weeks[i].date);
+    sat.setDate(sat.getDate() + 6);
+    if (sat >= TODAY) continue; // skip current/future week
+    if (isAllDone(row)) streak++;
+    else break;
+  }
+  return streak;
+}
+
+function isAllDone(row) {
+  return row && row.days.every(d => d) && row.trash;
+}
+
+// ── Card builder ────────────────────────────────────────────
+function buildCard(weeks, name, num) {
+  const key = name.toLowerCase();
+  const owed = calcOwed(weeks, key);
+  const streak = calcStreak(weeks, key);
+
+  // Completion rate (non-empty weeks only)
+  let total = 0, done = 0;
+  for (const w of weeks) {
+    const r = w[key];
+    if (!r || isEmptyRow(r)) continue;
+    [...r.days, r.trash].forEach(d => { total++; if (d) done++; });
+  }
+  const pct = total ? done / total : 0;
+  const pips = Array.from({length:10}, (_,i) =>
+    `<div class="pip${i < Math.round(pct*10) ? ' on' : ''}"></div>`
+  ).join('');
+
+  // Most recent non-empty week
+  const filled = weeks.filter(w => w[key] && !isEmptyRow(w[key]));
+  const curW = filled[filled.length - 1];
+
+  // Streak badge
+  const streakHtml = streak > 0
+    ? `<div class="streak">
+        <span class="streak-fire">🔥</span>
+        <span class="streak-num">${streak}</span>
+        <span class="streak-lbl">WEEK${streak !== 1 ? 'S' : ''}<br>STREAK</span>
+       </div>`
+    : `<div class="streak-go">&#9733; DO YOUR CHORES AND START A STREAK!</div>`;
+
+  // Current week: celebration or normal grid
+  let gridHtml = '';
+  if (curW) {
+    const r = curW[key];
+    if (isAllDone(r)) {
+      gridHtml = `
+        <div class="cel-box">
+          <div class="cel-stars">&#9733; &#9733; &#9733;</div>
+          <div class="cel-msg">QUEST<br>COMPLETE!</div>
+          <div class="cel-earn">ALL CHORES DONE &mdash; $${r.pay.toFixed(2)} EARNED</div>
+        </div>`;
+    } else {
+      const cells = r.days.map((d,i) => {
+        const st = dayState(curW.date, i, d);
+        return `<div class="day-cell">
+          <span class="day-lbl">${DAY_LABELS[i]}</span>
+          <div class="day-box ${st}">${SYM[st]}</div>
+        </div>`;
+      }).join('');
+      const tst = trashState(curW.date, r.trash);
+      const trCell = `<div class="day-cell">
+        <span class="day-lbl">TR</span>
+        <div class="day-box ${tst}">${SYM[tst]}</div>
+      </div>`;
+      gridHtml = `
+        <div class="slbl">CURRENT WEEK</div>
+        <div class="week-lbl cur">&#9658; WEEK OF ${fmtDate(curW.date)}</div>
+        <div class="chore-grid">${cells}${trCell}</div>
+        <div class="week-pay">EARNED THIS WEEK: $${r.pay.toFixed(2)}</div>`;
+    }
+  }
+
+  // History (all filled weeks, newest first, skip current)
+  const histRows = [...filled].reverse().slice(1).map(w => {
+    const r = w[key];
+    const dots = r.days.map(d => `<div class="hdot ${d?'done':'missed'}"></div>`).join('');
+    const tr = `<div class="hdot tr ${r.trash?'done':'missed'}"></div>`;
+    return `<div class="hist-row">
+      <span class="hist-date">${fmtDate(w.date)}</span>
+      <div class="hist-dots">${dots}${tr}</div>
+      <span class="hist-pay">$${r.pay.toFixed(2)}</span>
+    </div>`;
+  }).join('');
+
+  const icon = num === 1 ? '🎮' : '🕹️';
+  return `
+  <div class="card card-p${num}">
+    <div class="card-head">
+      <span class="card-icon">${icon}</span>
+      <span class="card-name">${name.toUpperCase()}</span>
+    </div>
+
+    <div class="slbl">COMPLETION RATE — ${Math.round(pct*100)}%</div>
+    <div class="pips">${pips}</div>
+
+    ${streakHtml}
+
+    ${gridHtml}
+
+    <div class="money-box">
+      <div class="money-lbl">COINS OWED</div>
+      <div class="money-val">
+        <span class="coin">🪙</span>
+        $${owed.toFixed(2)}
+      </div>
+    </div>
+
+    ${histRows ? `
+    <div class="hist-section">
+      <div class="slbl">HISTORY &nbsp; SU MO TU WE TH FR SA TR</div>
+      ${histRows}
+    </div>` : ''}
+  </div>`;
+}
+
+// ── Main ────────────────────────────────────────────────────
+async function init() {
+  const app = document.getElementById('app');
+  try {
+    const res = await fetch(
+      `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&t=${Date.now()}`
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    const weeks = parseSheet(parseCSV(text));
+    if (!weeks.length) throw new Error('No data found in sheet');
+
+    const season = `${fmtDate(weeks[0].date)} &#8212; ${fmtDate(weeks[weeks.length-1].date)}`;
+    app.innerHTML = `
+      <div class="season-bar">&#128197; SEASON: ${season}</div>
+      <div class="players">
+        ${buildCard(weeks, 'Simon', 1)}
+        ${buildCard(weeks, 'Desmond', 2)}
+      </div>`;
+  } catch (err) {
+    app.innerHTML = `
+      <div class="err-box">
+        &#9888; LOAD ERROR<br><br>
+        ${err.message}<br><br>
+        SHEET MUST BE SET TO<br>"ANYONE WITH LINK CAN VIEW"
+      </div>`;
+  }
+}
+
+init();
+</script>
+</body>
+</html>
