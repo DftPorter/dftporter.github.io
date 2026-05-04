@@ -344,10 +344,13 @@ function parseSheet(rows) {
 // Strategy: take first snapshot found (in Simon's row for both players),
 // then add all weekly pays. Desmond's row may carry a payout adjustment.
 function calcOwed(weeks, key) {
-  // The "Owed" columns in the sheet are the authoritative running balance —
-  // just return the most recent non-null value found.
+  // Use the sheet's authoritative running balance, but only from completed weeks
+  // (Saturday must have passed — trash on Sunday evening doesn't extend the week).
   let last = 0;
   for (const w of weeks) {
+    const sat = parseWDate(w.date);
+    sat.setDate(sat.getDate() + 6);
+    if (sat >= TODAY) continue;
     if (w.simon) {
       const snap = key === 'simon' ? w.simon.simonOwed : w.simon.desOwed;
       if (snap !== null) last = snap;
@@ -426,12 +429,21 @@ function buildCard(weeks, name, num) {
   const streak = calcStreak(weeks, key);
   const monthEarned = calcMonthEarnings(weeks, key);
 
-  // Completion rate (non-empty weeks only)
+  // Completion rate — only count days that have already occurred
   let total = 0, done = 0;
   for (const w of weeks) {
     const r = w[key];
     if (!r || isEmptyRow(r)) continue;
-    [...r.days, r.trash].forEach(d => { total++; if (d) done++; });
+    r.days.forEach((d, i) => {
+      const dt = parseWDate(w.date);
+      dt.setDate(dt.getDate() + i);
+      if (dt > TODAY) return;
+      total++;
+      if (d) done++;
+    });
+    const sat = parseWDate(w.date);
+    sat.setDate(sat.getDate() + 6);
+    if (sat <= TODAY) { total++; if (r.trash) done++; }
   }
   const pct = total ? done / total : 0;
   const pips = Array.from({length:10}, (_,i) =>
@@ -479,7 +491,7 @@ function buildCard(weeks, name, num) {
         <div class="slbl">CURRENT WEEK</div>
         <div class="week-lbl cur">&#9658; WEEK OF ${fmtDate(curW.date)}</div>
         <div class="chore-grid">${cells}${trCell}</div>
-        <div class="week-pay">EARNED THIS WEEK: $${r.pay.toFixed(2)}</div>`;
+        <div class="week-pay">QUEST IN PROGRESS &nbsp;&middot;&nbsp; $${r.pay.toFixed(2)} SO FAR</div>`;
     }
   }
 
