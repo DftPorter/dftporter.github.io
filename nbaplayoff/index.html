@@ -383,7 +383,7 @@ async function fetchAllSeries() {
       const series = comp.series;
       if (!series || series.type !== 'playoff') continue;
       const headline = comp.notes?.[0]?.headline ?? '';
-      if (!headline.match(/\d(?:st|nd|rd|th) Round|Conference Finals|NBA Finals/i)) continue;
+      if (!headline.match(/\d(?:st|nd|rd|th) Round|Semifinals|Conference Finals|NBA Finals/i)) continue;
 
       const gc = comp.competitors;
       if (!gc || gc.length < 2 || !gc[0].team || !gc[1].team) continue;
@@ -402,6 +402,7 @@ async function fetchAllSeries() {
         const conf = confRaw.startsWith('west') ? 'west' : confRaw.startsWith('east') ? 'east' : 'finals';
         const roundNum = headline.match(/(\d)(?:st|nd|rd|th) Round/i)?.[1]
           ? parseInt(headline.match(/(\d)(?:st|nd|rd|th) Round/i)[1])
+          : headline.match(/Semifinals/i) ? 2
           : headline.match(/Conference Finals/i) ? 3
           : 4;
 
@@ -429,7 +430,7 @@ async function fetchAllSeries() {
       const series = comp.series;
       if (!series || series.type !== 'playoff') continue;
       const headline = comp.notes?.[0]?.headline ?? '';
-      if (!headline.match(/\d(?:st|nd|rd|th) Round|Conference Finals|NBA Finals/i)) continue;
+      if (!headline.match(/\d(?:st|nd|rd|th) Round|Semifinals|Conference Finals|NBA Finals/i)) continue;
 
       const gc = comp.competitors;
       if (!gc || gc.length < 2 || !gc[0].team || !gc[1].team) continue;
