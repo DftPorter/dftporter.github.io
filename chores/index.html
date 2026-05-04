@@ -390,14 +390,23 @@ function isEmptyRow(r) {
 }
 
 function calcStreak(weeks, key) {
+  // Flatten all past days (trash excluded) into a chronological list
+  const days = [];
+  for (const w of weeks) {
+    const r = w[key];
+    if (!r || isEmptyRow(r)) continue;
+    r.days.forEach((done, i) => {
+      const dt = parseWDate(w.date);
+      dt.setDate(dt.getDate() + i);
+      if (dt >= TODAY) return; // skip today and future
+      days.push({ dt, done });
+    });
+  }
+  // Sort most-recent first, then count consecutive done days
+  days.sort((a, b) => b.dt - a.dt);
   let streak = 0;
-  for (let i = weeks.length - 1; i >= 0; i--) {
-    const row = weeks[i][key];
-    if (!row || isEmptyRow(row)) continue;
-    const sat = parseWDate(weeks[i].date);
-    sat.setDate(sat.getDate() + 6);
-    if (sat >= TODAY) continue; // skip current/future week
-    if (isAllDone(row)) streak++;
+  for (const { done } of days) {
+    if (done) streak++;
     else break;
   }
   return streak;
@@ -459,7 +468,7 @@ function buildCard(weeks, name, num) {
     ? `<div class="streak">
         <span class="streak-fire">🔥</span>
         <span class="streak-num">${streak}</span>
-        <span class="streak-lbl">WEEK${streak !== 1 ? 'S' : ''}<br>STREAK</span>
+        <span class="streak-lbl">DAY${streak !== 1 ? 'S' : ''}<br>STREAK</span>
        </div>`
     : `<div class="streak-go">&#9733; DO YOUR CHORES AND START A STREAK!</div>`;
 
