@@ -249,10 +249,19 @@ header{text-align:center;padding:18px 0 22px;}
   margin:40px auto;line-height:2.2;
 }
 
+/* ── Refresh button ── */
+.refresh-btn{
+  display:block;margin:24px auto 0;
+  background:none;border:2px solid #303060;
+  color:#505088;font-family:var(--font);font-size:8px;
+  letter-spacing:2px;padding:10px 20px;cursor:pointer;
+}
+.refresh-btn:active{background:#0d0d2a;color:#8080c0;border-color:#5050a0;}
+
 /* ── Footer ── */
 footer{
   text-align:center;font-size:7px;color:#505080;
-  margin-top:30px;padding-top:12px;
+  margin-top:20px;padding-top:12px;
   border-top:2px solid #0e0e30;letter-spacing:1px;
 }
 </style>
@@ -265,6 +274,8 @@ footer{
 </header>
 
 <div id="app"><div class="loading">LOADING DATA...</div></div>
+
+<button class="refresh-btn" onclick="location.reload()">&#8635; REFRESH</button>
 
 <footer>INSERT COIN TO CONTINUE &nbsp;·&nbsp; LIVE DATA FROM HEADQUARTERS</footer>
 
