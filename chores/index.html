@@ -204,6 +204,11 @@ header{text-align:center;padding:18px 0 22px;}
 .hdot.pend  {background:#101030;border:1px solid #3030a0;}
 .hdot.tr.done  {background:#556600;}
 .hdot.tr.missed{background:#2a1800;border:1px solid #5a3000;}
+.hdot.tr       {margin-right:6px;}
+
+/* TR cell — dashed border + gap to separate from weekdays */
+.tr-cell{margin-right:6px;}
+.tr-cell .day-box{border-style:dashed;}
 .hist-pay{font-size:8px;color:#aa8800;min-width:36px;text-align:right;flex-shrink:0;}
 
 /* ── Streak ── */
@@ -499,14 +504,14 @@ function buildCard(weeks, name, num) {
         </div>`;
       }).join('');
       const tst = trashState(curW.date, r.trash);
-      const trCell = `<div class="day-cell">
-        <span class="day-lbl">TR</span>
+      const trCell = `<div class="day-cell tr-cell">
+        <span class="day-lbl">TRASH</span>
         <div class="day-box ${tst}">${SYM[tst]}</div>
       </div>`;
       gridHtml = `
         <div class="slbl">CURRENT WEEK</div>
         <div class="week-lbl cur">&#9658; WEEK OF ${fmtDate(curW.date)}</div>
-        <div class="chore-grid">${cells}${trCell}</div>
+        <div class="chore-grid">${trCell}${cells}</div>
         <div class="week-pay">QUEST IN PROGRESS &nbsp;&middot;&nbsp; $${r.pay.toFixed(2)} SO FAR</div>`;
     }
   }
@@ -518,7 +523,7 @@ function buildCard(weeks, name, num) {
     const tr = `<div class="hdot tr ${r.trash?'done':'missed'}"></div>`;
     return `<div class="hist-row">
       <span class="hist-date">${fmtDate(w.date)}</span>
-      <div class="hist-dots">${dots}${tr}</div>
+      <div class="hist-dots">${tr}${dots}</div>
       <span class="hist-pay">$${r.pay.toFixed(2)}</span>
     </div>`;
   }).join('');
@@ -552,7 +557,7 @@ function buildCard(weeks, name, num) {
       <span class="month-earn-val">$${monthEarned.toFixed(2)}</span>
     </div>
     <div class="hist-section">
-      <div class="slbl">HISTORY &nbsp; SU MO TU WE TH FR SA TR</div>
+      <div class="slbl">HISTORY &nbsp; TR &middot; SU MO TU WE TH FR SA</div>
       ${histRows}
     </div>` : ''}
   </div>`;
