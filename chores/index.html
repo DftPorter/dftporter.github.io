@@ -284,8 +284,10 @@ const SHEET_ID = '1dAmlZqyuLw1SSuRTHwXO0fXBnTWLvB-Hb79ImoAtXLg';
 const DAY_LABELS = ['SU','MO','TU','WE','TH','FR','SA'];
 const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
-const TODAY = new Date();
+const NOW   = new Date();
+const TODAY = new Date(NOW);
 TODAY.setHours(0,0,0,0);
+const BEFORE_NOON = NOW.getHours() < 12;
 
 // ── CSV parser ──────────────────────────────────────────────
 function parseCSV(text) {
@@ -375,7 +377,9 @@ function dayState(weekStr, dayIdx, done) {
   if (done) return 'done';
   const dt = parseWDate(weekStr);
   dt.setDate(dt.getDate() + dayIdx);
-  return dt > TODAY ? 'pend' : 'missed';
+  if (dt > TODAY) return 'pend';
+  if (dt.getTime() === TODAY.getTime() && BEFORE_NOON) return 'pend';
+  return 'missed';
 }
 function trashState(weekStr, done) {
   if (done) return 'done';
@@ -390,7 +394,8 @@ function isEmptyRow(r) {
 }
 
 function calcStreak(weeks, key) {
-  // Flatten all past days (trash excluded) into a chronological list
+  // Flatten past days (trash excluded) — before noon today is still pending,
+  // after noon today is gradeable (a miss after noon breaks the streak).
   const days = [];
   for (const w of weeks) {
     const r = w[key];
@@ -398,7 +403,8 @@ function calcStreak(weeks, key) {
     r.days.forEach((done, i) => {
       const dt = parseWDate(w.date);
       dt.setDate(dt.getDate() + i);
-      if (dt >= TODAY) return; // skip today and future
+      if (dt > TODAY) return;
+      if (dt.getTime() === TODAY.getTime() && BEFORE_NOON && !done) return;
       days.push({ dt, done });
     });
   }
@@ -447,6 +453,7 @@ function buildCard(weeks, name, num) {
       const dt = parseWDate(w.date);
       dt.setDate(dt.getDate() + i);
       if (dt > TODAY) return;
+      if (dt.getTime() === TODAY.getTime() && BEFORE_NOON) return;
       total++;
       if (d) done++;
     });
