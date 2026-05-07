@@ -254,6 +254,15 @@ header{text-align:center;padding:18px 0 22px;}
   margin:40px auto;line-height:2.2;
 }
 
+/* ── Extras (one-off credits/debits) ── */
+.extras-section{border-top:2px solid #181848;padding-top:10px;margin-top:10px;}
+.extra-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.extra-date{font-size:8px;color:#8080b8;min-width:50px;flex-shrink:0;}
+.extra-note{font-size:8px;color:#c8c8e8;flex:1;letter-spacing:1px;}
+.extra-amt{font-size:9px;min-width:48px;text-align:right;flex-shrink:0;}
+.extra-amt.pos{color:var(--done-txt);}
+.extra-amt.neg{color:var(--miss-txt);}
+
 /* ── Refresh button ── */
 .refresh-btn{
   display:block;margin:24px auto 0;
@@ -339,9 +348,14 @@ function parseSheet(rows) {
       days: DAY_LABELS.map((_, i) => { const v = money(c[3+i]); return v != null && v > 0; }),
       trash: (() => { const v = money(c[10]); return v != null && v > 0; })(),
       pay:   money(c[11]) || 0,
-      simonOwed: money(c[13]),
-      desOwed:   money(c[18]),
-      desAdj:    money(c[19]),
+      simonOwed:     money(c[13]),
+      simonAdj:      money(c[14]),
+      simonNote:     (c[15] || '').trim(),
+      simonAdjDate:  (c[16] || '').trim(),
+      desOwed:       money(c[18]),
+      desAdj:        money(c[19]),
+      desNote:       (c[20] || '').trim(),
+      desAdjDate:    (c[21] || '').trim(),
     };
   }
   return weeks.filter(w => w.simon || w.desmond);
@@ -351,13 +365,22 @@ function parseSheet(rows) {
 // Strategy: take first snapshot found (in Simon's row for both players),
 // then add all weekly pays. Desmond's row may carry a payout adjustment.
 function calcOwed(weeks, key) {
-  // Use the sheet's authoritative running balance, but only from completed weeks
-  // (Saturday must have passed — trash on Sunday evening doesn't extend the week).
+  // Use the sheet's authoritative running balance from completed weeks only,
+  // then add any one-off adjustments (e.g. mowing bonus) from the current week.
   let last = 0;
+  let adj = 0;
   for (const w of weeks) {
     const sat = parseWDate(w.date);
     sat.setDate(sat.getDate() + 6);
-    if (sat >= TODAY) continue;
+    if (sat >= TODAY) {
+      // Current/future week — only pick up one-off adjustments
+      if (w.simon) {
+        if (key === 'simon' && w.simon.simonAdj) adj += w.simon.simonAdj;
+        if (key === 'desmond' && w.simon.desAdj)  adj += w.simon.desAdj;
+      }
+      if (key === 'desmond' && w.desmond && w.desmond.desAdj) adj += w.desmond.desAdj;
+      continue;
+    }
     if (w.simon) {
       const snap = key === 'simon' ? w.simon.simonOwed : w.simon.desOwed;
       if (snap !== null) last = snap;
@@ -365,7 +388,7 @@ function calcOwed(weeks, key) {
     if (key === 'desmond' && w.desmond && w.desmond.desOwed !== null)
       last = w.desmond.desOwed;
   }
-  return last;
+  return last + adj;
 }
 
 // ── Date helpers ────────────────────────────────────────────
@@ -560,6 +583,30 @@ function buildCard(weeks, name, num) {
       <div class="slbl">HISTORY &nbsp; TR &middot; SU MO TU WE TH FR SA</div>
       ${histRows}
     </div>` : ''}
+
+    ${(() => {
+      const entries = [];
+      for (const w of weeks) {
+        const adjAmt  = key === 'simon'
+          ? (w.simon  ? w.simon.simonAdj  : null)
+          : (w.simon  ? w.simon.desAdj    : null) ?? (w.desmond ? w.desmond.desAdj : null);
+        const adjNote = key === 'simon'
+          ? (w.simon  ? w.simon.simonNote    : '')
+          : (w.simon  ? w.simon.desNote      : '') || (w.desmond ? w.desmond.desNote : '');
+        const adjDate = key === 'simon'
+          ? (w.simon  ? w.simon.simonAdjDate : '') || w.date
+          : (w.simon  ? w.simon.desAdjDate   : '') || (w.desmond ? w.desmond.desAdjDate : '') || w.date;
+        if (adjAmt) entries.push({ date: adjDate, amt: adjAmt, note: adjNote });
+      }
+      if (!entries.length) return '';
+      const rows = entries.map(e => `
+        <div class="extra-row">
+          <span class="extra-date">${fmtDate(e.date)}</span>
+          <span class="extra-note">${e.note || '—'}</span>
+          <span class="extra-amt ${e.amt > 0 ? 'pos' : 'neg'}">${e.amt > 0 ? '+' : '−'}$${Math.abs(e.amt).toFixed(2)}</span>
+        </div>`).join('');
+      return '<div class="extras-section"><div class="slbl">EXTRAS</div>' + rows + '</div>';
+    })()}
   </div>`;
 }
 
