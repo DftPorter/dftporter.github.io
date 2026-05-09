@@ -1092,10 +1092,14 @@ function render() {
         item.completedAt = null;
         dirty = true;
       } else if (!item.completedAt) {
-        item.completedAt = new Date().toISOString(); dirty = true;
+        item.completedAt = end.toISOString(); dirty = true;
       }
     }
-    if (item.completedAt && now - new Date(item.completedAt) > PRUNE_MS) { dirty = true; return false; }
+    // Fix incorrectly-stamped completedAt (was set to "now" instead of end time)
+    if (item.completedAt && new Date(item.completedAt) > end) {
+      item.completedAt = end.toISOString(); dirty = true;
+    }
+    if (item.completedAt && new Date() - new Date(item.completedAt) > PRUNE_MS) { dirty = true; return false; }
     return true;
   });
 
@@ -1131,7 +1135,7 @@ function render() {
     let pct = 0, label = '';
     if (isDone) {
       pct = 100;
-      const daysAgo = Math.round((now - new Date(item.completedAt)) / 864e5);
+      const daysAgo = Math.round((new Date() - new Date(item.completedAt)) / 864e5);
       label = daysAgo === 0 ? 'Complete' : daysAgo === 1 ? 'Completed yesterday' : `Completed ${daysAgo}d ago`;
     } else {
       pct = Math.max(0, Math.min(100, (new Date() - start) / (end - start) * 100));
