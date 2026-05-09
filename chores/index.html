@@ -330,33 +330,36 @@ function money(s) {
 // ── Sheet parser ────────────────────────────────────────────
 // Column layout (0-indexed):
 //  0=week date  2=name  3-9=S/M/T/W/T/F/S  10=trash  11=pay
-//  13=simonOwed  14=simonAdj  18=desOwed  19=desAdj  20=desNote
+//  13=simonOwed  O(14)=simonAdj  P(15)=simonNote  Q(16)=simonAdjDate
+//  18=desOwed    T(19)=desAdj    U(20)=desNote    V(21)=desAdjDate
+// Extras are collected from EVERY row in a week section (named or not),
+// so additional credit/debit rows can be added freely in the sheet.
 function parseSheet(rows) {
   const weeks = [];
   let cur = null;
   for (const c of rows) {
     if (!c.length) continue;
     if (c[0] && /^\d{2}\/\d{2}\/\d{2}$/.test(c[0])) {
-      cur = { date: c[0], simon: null, desmond: null };
+      cur = { date: c[0], simon: null, desmond: null, extras: [] };
       weeks.push(cur);
       continue;
     }
     if (!cur) continue;
     const nm = (c[2] || '').trim().toLowerCase();
-    if (nm !== 'simon' && nm !== 'desmond') continue;
-    cur[nm] = {
-      days: DAY_LABELS.map((_, i) => { const v = money(c[3+i]); return v != null && v > 0; }),
-      trash: (() => { const v = money(c[10]); return v != null && v > 0; })(),
-      pay:   money(c[11]) || 0,
-      simonOwed:     money(c[13]),
-      simonAdj:      money(c[14]),
-      simonNote:     (c[15] || '').trim(),
-      simonAdjDate:  (c[16] || '').trim(),
-      desOwed:       money(c[18]),
-      desAdj:        money(c[19]),
-      desNote:       (c[20] || '').trim(),
-      desAdjDate:    (c[21] || '').trim(),
-    };
+    if (nm === 'simon' || nm === 'desmond') {
+      cur[nm] = {
+        days:      DAY_LABELS.map((_, i) => { const v = money(c[3+i]); return v != null && v > 0; }),
+        trash:     (() => { const v = money(c[10]); return v != null && v > 0; })(),
+        pay:       money(c[11]) || 0,
+        simonOwed: money(c[13]),
+        desOwed:   money(c[18]),
+      };
+    }
+    // Scan O/P/Q (Simon) and T/U/V (Desmond) on every row
+    const sa = money(c[14]);
+    if (sa != null) cur.extras.push({ player:'simon',   amt:sa, note:(c[15]||'').trim(), date:(c[16]||'').trim() });
+    const da = money(c[19]);
+    if (da != null) cur.extras.push({ player:'desmond', amt:da, note:(c[20]||'').trim(), date:(c[21]||'').trim() });
   }
   return weeks.filter(w => w.simon || w.desmond);
 }
@@ -372,13 +375,12 @@ function calcOwed(weeks, key) {
   for (const w of weeks) {
     const sat = parseWDate(w.date);
     sat.setDate(sat.getDate() + 6);
-    if (sat >= TODAY) {
-      // Current/future week — only pick up one-off adjustments
-      if (w.simon) {
-        if (key === 'simon' && w.simon.simonAdj) adj += w.simon.simonAdj;
-        if (key === 'desmond' && w.simon.desAdj)  adj += w.simon.desAdj;
-      }
-      if (key === 'desmond' && w.desmond && w.desmond.desAdj) adj += w.desmond.desAdj;
+    if (sat > TODAY) {
+      // Week still in progress — pick up one-off adjustments only
+      for (const e of w.extras) if (e.player === key) adj += e.amt;
+      // Quest complete mid-week? Pay is earned — add it now
+      const r = w[key];
+      if (r && isAllDone(r)) adj += r.pay;
       continue;
     }
     if (w.simon) {
@@ -460,7 +462,7 @@ function calcMonthEarnings(weeks, key) {
     if (!r || isEmptyRow(r)) continue;
     const sat = parseWDate(w.date);
     sat.setDate(sat.getDate() + 6);
-    if (sat >= cutoff && sat < TODAY) total += r.pay || 0;
+    if (sat >= cutoff && sat <= TODAY) total += r.pay || 0;
   }
   return total;
 }
@@ -587,16 +589,9 @@ function buildCard(weeks, name, num) {
     ${(() => {
       const entries = [];
       for (const w of weeks) {
-        const adjAmt  = key === 'simon'
-          ? (w.simon  ? w.simon.simonAdj  : null)
-          : (w.simon  ? w.simon.desAdj    : null) ?? (w.desmond ? w.desmond.desAdj : null);
-        const adjNote = key === 'simon'
-          ? (w.simon  ? w.simon.simonNote    : '')
-          : (w.simon  ? w.simon.desNote      : '') || (w.desmond ? w.desmond.desNote : '');
-        const adjDate = key === 'simon'
-          ? (w.simon  ? w.simon.simonAdjDate : '') || w.date
-          : (w.simon  ? w.simon.desAdjDate   : '') || (w.desmond ? w.desmond.desAdjDate : '') || w.date;
-        if (adjAmt) entries.push({ date: adjDate, amt: adjAmt, note: adjNote });
+        for (const e of w.extras) {
+          if (e.player === key) entries.push({ date: e.date || w.date, amt: e.amt, note: e.note });
+        }
       }
       if (!entries.length) return '';
       const rows = entries.map(e => `
