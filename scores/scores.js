@@ -267,6 +267,20 @@ async function fetchTeamData(key){
     }
   }
 
+  // Scoreboard override: if today's scoreboard has a completed game that is
+  // more recent than what the schedule cache knows about, the cache is stale
+  // (game finished while the 1-hour TTL was still active). Promote the
+  // scoreboard result to lastCompleted and bust the stale cache entry so the
+  // next refresh fetches a fresh schedule.
+  const sbCompleted=liveGame?.completed?liveGame:null;
+  if(sbCompleted&&(!lastCompleted||sbCompleted.dateMs>lastCompleted.dateMs)){
+    lastCompleted=sbCompleted;
+    if(!recentGames.some(g=>g.dateMs===sbCompleted.dateMs)) recentGames.push(sbCompleted);
+    try{ sessionStorage.removeItem('sched:'+key); }catch(e){}
+    // If the cached nextGame was actually this just-finished game, clear it
+    if(nextGame&&Math.abs(nextGame.dateMs-sbCompleted.dateMs)<2*60*60*1000) nextGame=null;
+  }
+
   const activeLive=liveGame?.featuredStatus==='live'?liveGame:null;
   const nextIsClose=nextGame&&(nextGame.dateMs-now)<=2*60*60*1000;
   const featured=isOffseason?null:
