@@ -428,21 +428,21 @@ function isEmptyRow(r) {
 }
 
 function calcStreak(weeks, key) {
-  // Flatten past days (trash excluded) — before noon today is still pending,
-  // after noon today is gradeable (a miss after noon breaks the streak).
+  // Iterate every week's daily slots directly — a missing row (no data yet)
+  // counts as all-missed, so a new week with no entries breaks the streak.
   const days = [];
   for (const w of weeks) {
-    const r = w[key];
-    if (!r || isEmptyRow(r)) continue;
-    r.days.forEach((done, i) => {
+    const r = w[key]; // null if player has no row this week
+    for (let i = 0; i < DAY_LABELS.length; i++) {
       const dt = parseWDate(w.date);
       dt.setDate(dt.getDate() + i);
-      if (dt > TODAY) return;
-      if (dt.getTime() === TODAY.getTime() && BEFORE_NOON && !done) return;
+      if (dt > TODAY) continue; // future — skip
+      const done = r ? r.days[i] : false;
+      // Before noon grace: skip today's undone tasks rather than penalising
+      if (dt.getTime() === TODAY.getTime() && BEFORE_NOON && !done) continue;
       days.push({ dt, done });
-    });
+    }
   }
-  // Sort most-recent first, then count consecutive done days
   days.sort((a, b) => b.dt - a.dt);
   let streak = 0;
   for (const { done } of days) {
