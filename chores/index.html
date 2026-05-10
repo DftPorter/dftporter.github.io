@@ -301,7 +301,11 @@ const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV
 const NOW   = new Date();
 const TODAY = new Date(NOW);
 TODAY.setHours(0,0,0,0);
-const BEFORE_NOON = NOW.getHours() < 12;
+// Noon cutoff locked to ET so it's consistent regardless of the viewer's device timezone
+const ET_HOUR = parseInt(new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/New_York', hour: 'numeric', hour12: false
+}).format(NOW), 10);
+const BEFORE_NOON = ET_HOUR < 12;
 
 // ── CSV parser ──────────────────────────────────────────────
 function parseCSV(text) {
@@ -496,9 +500,19 @@ function buildCard(weeks, name, num) {
     `<div class="pip${i < Math.round(pct*10) ? ' on' : ''}"></div>`
   ).join('');
 
-  // Most recent non-empty week
+  // The calendar week that contains today (may have no data yet for this player)
+  const thisWeek = weeks.find(w => {
+    const start = parseWDate(w.date);
+    const sat = new Date(start); sat.setDate(sat.getDate() + 6);
+    return TODAY >= start && TODAY <= sat;
+  });
+
+  // Non-empty weeks for this player (used for history)
   const filled = weeks.filter(w => w[key] && !isEmptyRow(w[key]));
-  const curW = filled[filled.length - 1];
+
+  // Always show the current calendar week — avoids stale "Quest Complete"
+  // from last week when the new week has no entries yet
+  const curW = thisWeek || (filled.length ? filled[filled.length - 1] : null);
 
   // Streak badge
   const streakHtml = streak > 0
@@ -512,8 +526,8 @@ function buildCard(weeks, name, num) {
   // Current week: celebration or normal grid
   let gridHtml = '';
   if (curW) {
-    const r = curW[key];
-    if (isAllDone(r)) {
+    const r = curW[key]; // null if player has no entries yet this week
+    if (r && isAllDone(r)) {
       gridHtml = `
         <div class="cel-box">
           <div class="cel-stars">&#9733; &#9733; &#9733;</div>
@@ -521,14 +535,15 @@ function buildCard(weeks, name, num) {
           <div class="cel-earn">ALL CHORES DONE &mdash; $${r.pay.toFixed(2)} EARNED</div>
         </div>`;
     } else {
-      const cells = r.days.map((d,i) => {
+      const days = r ? r.days : Array(7).fill(false);
+      const cells = days.map((d,i) => {
         const st = dayState(curW.date, i, d);
         return `<div class="day-cell">
           <span class="day-lbl">${DAY_LABELS[i]}</span>
           <div class="day-box ${st}">${SYM[st]}</div>
         </div>`;
       }).join('');
-      const tst = trashState(curW.date, r.trash);
+      const tst = trashState(curW.date, r ? r.trash : false);
       const trCell = `<div class="day-cell tr-cell">
         <span class="day-lbl">TRASH</span>
         <div class="day-box ${tst}">${SYM[tst]}</div>
@@ -537,12 +552,12 @@ function buildCard(weeks, name, num) {
         <div class="slbl">CURRENT WEEK</div>
         <div class="week-lbl cur">&#9658; WEEK OF ${fmtDate(curW.date)}</div>
         <div class="chore-grid">${trCell}${cells}</div>
-        <div class="week-pay">QUEST IN PROGRESS &nbsp;&middot;&nbsp; $${r.pay.toFixed(2)} SO FAR</div>`;
+        ${r ? `<div class="week-pay">QUEST IN PROGRESS &nbsp;&middot;&nbsp; $${r.pay.toFixed(2)} SO FAR</div>` : ''}`;
     }
   }
 
-  // History (all filled weeks, newest first, skip current)
-  const histRows = [...filled].reverse().slice(1).map(w => {
+  // History (all filled weeks, newest first, excluding curW)
+  const histRows = [...filled].reverse().filter(w => w !== curW).map(w => {
     const r = w[key];
     const dots = r.days.map(d => `<div class="hdot ${d?'done':'missed'}"></div>`).join('');
     const tr = `<div class="hdot tr ${r.trash?'done':'missed'}"></div>`;
