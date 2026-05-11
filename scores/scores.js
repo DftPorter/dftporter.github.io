@@ -350,7 +350,7 @@ async function fetchTeamData(key){
 
 // ── News ──
 const RSS_PROXY='https://api.rss2json.com/v1/api.json?rss_url=';
-let newsCache={items:[],fetchedAt:0};
+let newsCache={items:[],byTeam:{},fetchedAt:0};
 const NEWS_TTL=5*60*1000;
 function parseRssDate(str){ if(!str) return 0; return new Date(str.replace(' ','T')+'Z').getTime()||0; }
 function escHtml(s){ const d=document.createElement('div'); d.textContent=String(s||''); return d.innerHTML; }
@@ -378,8 +378,11 @@ async function fetchNews(){
       const d=await fetch(RSS_PROXY+encodeURIComponent(feed.url)+'&_='+Math.floor(Date.now()/300000)).then(r=>r.json()).catch(()=>null);
       return (d?.items||[]).slice(0,5).map(item=>({title:item.title?.trim(),link:item.link,pubDate:item.pubDate,team:feed.team,color:feed.color}));
     }));
-    const merged=results.flat().filter(i=>i.title&&i.pubDate).sort((a,b)=>parseRssDate(b.pubDate)-parseRssDate(a.pubDate)).slice(0,5);
-    newsCache={items:merged,fetchedAt:Date.now()};
+    const allItems=results.flat().filter(i=>i.title&&i.pubDate);
+    const byTeam={};
+    allItems.forEach(item=>{ if(!byTeam[item.team]) byTeam[item.team]=[]; if(byTeam[item.team].length<3) byTeam[item.team].push(item); });
+    const merged=allItems.sort((a,b)=>parseRssDate(b.pubDate)-parseRssDate(a.pubDate)).slice(0,5);
+    newsCache={items:merged,byTeam,fetchedAt:Date.now()};
     return merged;
   } catch(err){ console.warn('News fetch failed',err); return newsCache.items; }
 }
@@ -543,7 +546,14 @@ function renderCard(key,data){
   }
   const recentHtml=data.recentGames?.length?data.recentGames.map(g=>{ const r=g.phiScore>g.oppScore?{c:'win',l:'W'}:g.phiScore<g.oppScore?{c:'loss',l:'L'}:{c:'draw',l:'D'}; return '<div class="result-row"><div class="result-matchup">'+(g.home?'vs':'@')+' <span>'+g.opp+'</span></div><div class="result-score">'+g.phiScore+'&ndash;'+g.oppScore+'</div><div class="result-wl '+r.c+'">'+r.l+'</div><div class="result-date">'+g.date+'</div></div>'; }).join(''):'<div class="no-recent">No recent games</div>';
   const nextHtml=data.nextGame?'<div class="next-game-row'+(data.nextGameToday?' today':'')+(data.nextGameIsPlayoff?' playoffs':'')+'"><div class="next-game-label">'+(data.nextGameIsPlayoff?'Playoffs &#9654;':'Next &#9654;')+'</div><div class="next-game-info">'+data.nextGame+(data.nextGameToday?'<span class="today-badge">TODAY</span>':'')+'</div></div>':'';
-  return '<div class="team-card'+(isLive?' is-live':'')+'" data-team="'+key+'" style="--team-color:'+color+'"'+clickAttr+'><div class="card-header"><div class="team-icon">'+icon+'</div><div class="team-meta"><div class="team-name">'+name+'</div><div class="team-sport">'+sport+'</div>'+(data.standing?'<div class="team-sport" style="margin-top:2px">'+data.standing+'</div>':'')+'</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px"><span class="card-status '+statusCls+'">'+statusLabel+'</span>'+(data.streak?'<span class="streak '+streakCls+'">'+data.streak+'</span>':'')+'</div></div>'+featuredHtml+'<div class="recent-results"><div class="results-label">Recent Games</div>'+recentHtml+nextHtml+'</div>'+(isLive?'<div class="live-expand-hint">⛶ Click to expand</div>':'')+'</div>';
+  // During offseason, swap Recent Games for team-specific Recent Headlines
+  const NEWS_TEAM_KEY={eagles:'Eagles',sixers:'Sixers',flyers:'Flyers',phillies:'Phillies'};
+  const teamNewsKey=NEWS_TEAM_KEY[key];
+  const teamNews=(fs==='offseason'&&teamNewsKey)?(newsCache.byTeam?.[teamNewsKey]||[]):[];
+  const recentSection=teamNews.length
+    ?'<div class="recent-results"><div class="results-label">Recent Headlines</div>'+teamNews.map(item=>'<a class="card-news-item" href="'+safeUrl(item.link)+'" target="_blank" rel="noopener noreferrer"><div class="card-news-title">'+escHtml(item.title)+'</div><div class="card-news-time">'+timeAgo(item.pubDate)+'</div></a>').join('')+'</div>'
+    :'<div class="recent-results"><div class="results-label">Recent Games</div>'+recentHtml+nextHtml+'</div>';
+  return '<div class="team-card'+(isLive?' is-live':'')+'" data-team="'+key+'" style="--team-color:'+color+'"'+clickAttr+'><div class="card-header"><div class="team-icon">'+icon+'</div><div class="team-meta"><div class="team-name">'+name+'</div><div class="team-sport">'+sport+'</div>'+(data.standing?'<div class="team-sport" style="margin-top:2px">'+data.standing+'</div>':'')+'</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px"><span class="card-status '+statusCls+'">'+statusLabel+'</span>'+(data.streak?'<span class="streak '+streakCls+'">'+data.streak+'</span>':'')+'</div></div>'+featuredHtml+recentSection+(isLive?'<div class="live-expand-hint">⛶ Click to expand</div>':'')+'</div>';
 }
 
 // ── Theme ──
