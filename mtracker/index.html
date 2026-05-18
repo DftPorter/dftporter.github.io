@@ -309,6 +309,17 @@
     }
     .card-sub strong { color: var(--text-sec); }
 
+    .card-delta {
+      display: none; /* shown by JS once prev-season data is available */
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      margin-top: 9px;
+    }
+    .card-delta.up   { color: var(--accent); }
+    .card-delta.down { color: var(--danger); }
+    .card-delta.flat { color: var(--text-dim); }
+
     .card-bar {
       height: 2px;
       background: var(--border);
@@ -955,24 +966,28 @@
       <div class="card-label">Exfil Rate</div>
       <div class="card-value" id="totalExfils">—</div>
       <div class="card-sub" id="exfilSub">— successful exfils</div>
+      <div class="card-delta" id="exfilDelta"></div>
       <div class="card-bar"><div class="card-bar-fill" id="exfilBarFill"></div></div>
     </div>
     <div class="card">
       <div class="card-label">Contract Rate</div>
       <div class="card-value" id="totalContracts">—</div>
       <div class="card-sub" id="contractSub">— contracts completed</div>
+      <div class="card-delta" id="contractDelta"></div>
       <div class="card-bar"><div class="card-bar-fill" id="contractBarFill"></div></div>
     </div>
     <div class="card">
       <div class="card-label">Elims / Run</div>
       <div class="card-value" id="totalKills">—</div>
       <div class="card-sub" id="killsSub">— total elims</div>
+      <div class="card-delta" id="killsDelta"></div>
       <div class="card-bar"><div class="card-bar-fill" id="killsBarFill"></div></div>
     </div>
     <div class="card">
       <div class="card-label">Total Runs</div>
       <div class="card-value" id="totalRuns">—</div>
-      <div class="card-sub">Lifetime operations</div>
+      <div class="card-sub" id="totalRunsSub">Lifetime operations</div>
+      <div class="card-delta" id="runsDelta"></div>
     </div>
   </div>
 
@@ -1184,6 +1199,18 @@
     const start = parseGvizDate(cfg['Season Start']);
     const end   = parseGvizDate(cfg['Season End']);
 
+    // Store for use in render() — season dates filter the stat cards
+    curSeasonStart = start;
+    curSeasonEnd   = end;
+    curSeasonNum   = num ? Number(num) : null;
+
+    // Previous season — for delta comparison on the stat cards
+    prevSeasonStart = parseGvizDate(cfg['Prev Season Start']);
+    prevSeasonEnd   = parseGvizDate(cfg['Prev Season End']);
+    prevSeasonNum   = cfg['Prev Season Number']
+      ? Number(cfg['Prev Season Number'])
+      : (curSeasonNum != null ? curSeasonNum - 1 : null);
+
     if (!start || !end) return;
 
     const now     = new Date();
@@ -1207,6 +1234,10 @@
 
     document.getElementById('seasonBar').classList.add('visible');
   }
+
+  /* ── Season date ranges (set from Config, used in render) ── */
+  let curSeasonStart = null, curSeasonEnd = null, curSeasonNum = null;
+  let prevSeasonStart = null, prevSeasonEnd = null, prevSeasonNum = null;
 
   /* ── Filter state ── */
   let allRows = [];
@@ -1692,58 +1723,97 @@
 
   /* ── Render full dashboard ── */
   function render(rows) {
-    // Filter out empty rows
     const validRows = rows.filter(r => r['Run Type']);
 
-    // Totals
-    let totRuns = 0, totExfils = 0, totContracts = 0, totKills = 0, contractEligibleRuns = 0;
-    validRows.forEach(r => {
-      const isRook = (r['Run Type'] || '').trim() === 'Rook';
-      totRuns++;
-      if (toBool(r['Successful Exfil']))   totExfils++;
-      if (!isRook) {
-        contractEligibleRuns++;
-        if (toBool(r['Contract Completed'])) totContracts++;
-      }
-      totKills += Number(r['PvP Elims']) || 0;
+    // Filter a row set to a date range (inclusive); rows with no timestamp are excluded
+    const byDateRange = (set, start, end) => set.filter(r => {
+      const ts = parseGvizDate(r['Timestamp']);
+      if (!ts) return false;
+      return ts >= start && (!end || ts <= end);
     });
 
-    const exfilRate    = pct(totExfils,    totRuns);
-    const contractRate = pct(totContracts, contractEligibleRuns);
-    const kpr          = totRuns ? totKills / totRuns : null;
+    // Rows powering the stat cards — current season only, or all-time if no season configured
+    const cardRows = curSeasonStart ? byDateRange(validRows, curSeasonStart, curSeasonEnd) : validRows;
 
-    /* Stat cards */
-    countUp(document.getElementById('totalExfils'),    exfilRate,    v => v.toFixed(1) + '<sup>%</sup>');
-    countUp(document.getElementById('totalContracts'), contractRate, v => v.toFixed(1) + '<sup>%</sup>');
-    countUp(document.getElementById('totalKills'),     kpr,          v => v.toFixed(2));
-    countUp(document.getElementById('totalRuns'),      totRuns || null);
+    // Previous season rows for delta comparison (null = no comparison available)
+    const prevRows = prevSeasonStart
+      ? byDateRange(validRows, prevSeasonStart, prevSeasonEnd)
+      : null;
 
-    document.getElementById('exfilSub').textContent    = totExfils    ? `${totExfils} successful exfils`    : '— successful exfils';
-    document.getElementById('contractSub').textContent = totContracts ? `${totContracts} contracts completed` : '— contracts completed';
-    document.getElementById('killsSub').textContent    = totKills     ? `${totKills} total elims`            : '— total elims';
+    // Compute summary stats for any row set
+    const computeStats = set => {
+      let runs = 0, exfils = 0, contracts = 0, kills = 0, eligible = 0;
+      set.forEach(r => {
+        const isRook = (r['Run Type'] || '').trim() === 'Rook';
+        runs++;
+        if (toBool(r['Successful Exfil']))    exfils++;
+        if (!isRook) { eligible++; if (toBool(r['Contract Completed'])) contracts++; }
+        kills += Number(r['PvP Elims']) || 0;
+      });
+      return {
+        runs, exfils, contracts, kills, eligible,
+        exfilRate:    runs     ? (exfils    / runs)     * 100 : null,
+        contractRate: eligible ? (contracts / eligible) * 100 : null,
+        kpr:          runs     ? kills / runs : null,
+      };
+    };
+
+    const cur  = computeStats(cardRows);
+    const prev = prevRows ? computeStats(prevRows) : null;
+
+    // Show or hide a delta indicator under a stat card
+    const showDelta = (elId, curVal, prevVal, fmtAbs) => {
+      const el = document.getElementById(elId);
+      if (curVal === null || !prev || prevVal === null) { el.style.display = 'none'; return; }
+      const diff  = curVal - prevVal;
+      if (diff === 0) { el.style.display = 'none'; return; } // nothing to report
+      const arrow = diff > 0 ? '▲' : diff < 0 ? '▼' : '—';
+      const sign  = diff > 0 ? '+' : diff < 0 ? '−' : '';
+      const vs    = prevSeasonNum != null ? `vs S${prevSeasonNum}` : 'vs prev';
+      el.textContent = `${arrow} ${sign}${fmtAbs(Math.abs(diff))}  ${vs}`;
+      el.className   = `card-delta ${diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat'}`;
+      el.style.display = '';
+    };
+
+    /* ── Stat cards (season-scoped) ── */
+    countUp(document.getElementById('totalExfils'),    cur.exfilRate,    v => v.toFixed(1) + '<sup>%</sup>');
+    countUp(document.getElementById('totalContracts'), cur.contractRate, v => v.toFixed(1) + '<sup>%</sup>');
+    countUp(document.getElementById('totalKills'),     cur.kpr,          v => v.toFixed(2));
+    countUp(document.getElementById('totalRuns'),      cur.runs || null);
+
+    document.getElementById('exfilSub').textContent    = cur.exfils    ? `${cur.exfils} successful exfils`    : '— successful exfils';
+    document.getElementById('contractSub').textContent = cur.contracts ? `${cur.contracts} contracts completed` : '— contracts completed';
+    document.getElementById('killsSub').textContent    = cur.kills     ? `${cur.kills} total elims`            : '— total elims';
+    document.getElementById('totalRunsSub').textContent = curSeasonNum
+      ? `Season ${curSeasonNum} operations`
+      : 'Lifetime operations';
+
+    showDelta('exfilDelta',    cur.exfilRate,    prev?.exfilRate,    v => v.toFixed(1) + '%');
+    showDelta('contractDelta', cur.contractRate, prev?.contractRate, v => v.toFixed(1) + '%');
+    showDelta('killsDelta',    cur.kpr,          prev?.kpr,          v => v.toFixed(2));
+    showDelta('runsDelta',     cur.runs,         prev?.runs,         v => Math.round(v).toString());
 
     setTimeout(() => {
-      document.getElementById('exfilBarFill').style.width    = exfilRate    !== null ? `${Math.min(exfilRate,    100)}%` : '0%';
-      document.getElementById('contractBarFill').style.width = contractRate !== null ? `${Math.min(contractRate, 100)}%` : '0%';
-      document.getElementById('killsBarFill').style.width    = kpr          !== null ? `${Math.min(kpr * 20, 100)}%`    : '0%';
+      document.getElementById('exfilBarFill').style.width    = cur.exfilRate    !== null ? `${Math.min(cur.exfilRate,    100)}%` : '0%';
+      document.getElementById('contractBarFill').style.width = cur.contractRate !== null ? `${Math.min(cur.contractRate, 100)}%` : '0%';
+      document.getElementById('killsBarFill').style.width    = cur.kpr          !== null ? `${Math.min(cur.kpr * 20, 100)}%`    : '0%';
     }, 150);
 
-    /* Rates strip */
+    /* ── Rates strip + tables (all-time, filter-bar scoped) ── */
+    const overall = computeStats(validRows);
     const { byType, byMap, byRunner } = aggregate(validRows);
     const hasData = validRows.length > 0;
-    document.getElementById('exfilRate').textContent    = hasData ? totRuns - totExfils : '—';
-    document.getElementById('contractRate').textContent = hasData ? contractEligibleRuns : '—';
-    document.getElementById('kprRate').textContent      = hasData ? totKills : '—';
-    document.getElementById('activeTypes').textContent  = hasData ? byType.length : '—';
+    document.getElementById('exfilRate').textContent    = hasData ? overall.runs - overall.exfils : '—';
+    document.getElementById('contractRate').textContent = hasData ? overall.eligible  : '—';
+    document.getElementById('kprRate').textContent      = hasData ? overall.kills     : '—';
+    document.getElementById('activeTypes').textContent  = hasData ? byType.length     : '—';
 
-    /* Tables */
     buildBreakdownTable('typeTableBody',    byType, true);
-    buildBreakdownTable('mapTableBody',    byMap);
-    buildBreakdownTable('runnerTableBody', byRunner);
+    buildBreakdownTable('mapTableBody',     byMap);
+    buildBreakdownTable('runnerTableBody',  byRunner);
     buildCharts(validRows);
     buildRecentTable(validRows);
 
-    /* Timestamp */
     const now = new Date();
     document.getElementById('lastUpdated').textContent =
       `UPDATED ${now.toLocaleDateString('en-CA')} ${now.toLocaleTimeString('en-US', { hour12: false })}`;
