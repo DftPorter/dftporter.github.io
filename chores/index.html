@@ -515,7 +515,7 @@ function buildCard(weeks, name, num) {
   const curW = thisWeek || (filled.length ? filled[filled.length - 1] : null);
 
   // Streak badge
-  const streakHtml = streak > 0
+  const streakHtml = streak > 1
     ? `<div class="streak">
         <span class="streak-fire">🔥</span>
         <span class="streak-num">${streak}</span>
