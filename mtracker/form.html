@@ -378,8 +378,31 @@
 
     .success-actions {
       display: flex;
+      flex-direction: column;
       gap: 10px;
     }
+    .success-actions-secondary {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-same-crew {
+      width: 100%;
+      padding: 13px;
+      font-family: var(--display);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      background: var(--accent-subtle);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.12s;
+    }
+    .btn-same-crew:hover { background: var(--accent-dim); }
     .btn-another, .btn-dashboard {
       flex: 1;
       padding: 12px;
@@ -440,7 +463,7 @@
     @media (max-width: 560px) {
       .page { padding: 0 16px 48px; }
       header { flex-direction: column; align-items: flex-start; gap: 12px; }
-      .success-actions { flex-direction: column; }
+      .success-actions-secondary { flex-direction: column; }
       /* 16px prevents iOS auto-zoom on input focus */
       select, input[type="number"] { font-size: 16px; padding: 12px 14px; }
       .toggle-btn { padding: 13px 10px; font-size: 13px; }
@@ -597,8 +620,11 @@
       <div class="success-summary" id="successSummary"></div>
 
       <div class="success-actions">
-        <button class="btn-another" id="logAnotherBtn" type="button">LOG ANOTHER</button>
-        <a class="btn-dashboard" href="index.html">DASHBOARD →</a>
+        <button class="btn-same-crew" id="sameCrewBtn" type="button">↺ LOG SAME CREW</button>
+        <div class="success-actions-secondary">
+          <button class="btn-another" id="logAnotherBtn" type="button">LOG ANOTHER</button>
+          <a class="btn-dashboard" href="index.html">DASHBOARD →</a>
+        </div>
       </div>
     </div>
 
@@ -843,7 +869,10 @@
     }
   });
 
+  let lastCrew = null;
+
   function showSuccess(payload, players) {
+    lastCrew = { runType: payload.run_type, players: [...players] };
     const yesNo = v => v ? 'YES' : 'NO';
     const summaryRows = [
       ['Squad Type',       payload.run_type],
@@ -868,20 +897,34 @@
   //  LOG ANOTHER
   // ════════════════════════════════════════════════════════════════
 
-  document.getElementById('logAnotherBtn').addEventListener('click', () => {
+  function resetForm() {
     document.getElementById('runForm').reset();
     document.getElementById('contractCompleted').value = '';
     document.getElementById('successfulExfil').value = '';
     document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active-yes', 'active-no'));
     document.querySelectorAll('.field-error').forEach(el => el.classList.remove('show'));
-    updateRunnerSlots();
-
     const btn = document.getElementById('submitBtn');
     btn.disabled = false;
     btn.textContent = 'SUBMIT RUN';
-
     document.getElementById('successScreen').classList.remove('show');
     document.getElementById('formBody').classList.remove('hidden');
+  }
+
+  document.getElementById('logAnotherBtn').addEventListener('click', () => {
+    resetForm();
+    updateRunnerSlots();
+  });
+
+  document.getElementById('sameCrewBtn').addEventListener('click', () => {
+    resetForm();
+    if (lastCrew) {
+      document.getElementById('runType').value = lastCrew.runType;
+      updateRunnerSlots();
+      lastCrew.players.forEach((name, i) => {
+        const sel = document.getElementById(`player${i}`);
+        if (sel) sel.value = name;
+      });
+    }
   });
 
   // ════════════════════════════════════════════════════════════════
