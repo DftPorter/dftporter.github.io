@@ -155,6 +155,7 @@
   .modal-vs-text{font-family:'DM Mono',monospace;font-size:clamp(13px,2vw,18px);color:#374151;letter-spacing:.1em;}
   .modal-vs-line{width:1px;height:clamp(80px,12vw,160px);background:var(--border);}
   #modal-game-note{margin-top:clamp(16px,3vh,36px);font-family:'DM Mono',monospace;font-size:clamp(14px,2.2vw,22px);color:#9ca3af;letter-spacing:.08em;text-transform:uppercase;}
+  #modal-situation{margin-top:10px;font-family:'DM Mono',monospace;font-size:clamp(12px,1.6vw,18px);color:#fbbf24;letter-spacing:.08em;text-transform:uppercase;}
   #modal-status-bar{margin-top:20px;display:flex;align-items:center;gap:14px;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;flex-wrap:wrap;justify-content:center;}
   @media(max-width:768px){#live-modal{display:none !important;}}
 
@@ -271,6 +272,7 @@
         </div>
       </div>
       <div id="modal-game-note"></div>
+      <div id="modal-situation" style="display:none"></div>
       <div id="modal-status-bar">
         <div style="display:flex;align-items:center;gap:8px;">
           <span class="pulse-dot" id="modal-status-dot" aria-hidden="true"></span>

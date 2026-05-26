@@ -26,9 +26,13 @@ function parseScore(s){
   return parseInt(s)||0;
 }
 async function espnFetch(url){
-  const r = await fetch(url);
-  if(!r.ok) throw new Error('ESPN '+r.status);
-  return r.json();
+  const ctrl=new AbortController();
+  const t=setTimeout(()=>ctrl.abort(),8000);
+  try{
+    const r=await fetch(url,{signal:ctrl.signal});
+    if(!r.ok) throw new Error('ESPN '+r.status);
+    return r.json();
+  } finally{ clearTimeout(t); }
 }
 
 function parseEvent(ev, teamId){
@@ -54,6 +58,10 @@ function parseEvent(ev, teamId){
   const venue     = comp.venue ? comp.venue.fullName+', '+comp.venue.address?.city : null;
   const gameNote  = comp.notes?.[0]?.headline||null;
   const isPlayoff = gameNote ? /playoff|play.?in|postseason|round|series/i.test(gameNote) : false;
+  const seriesSummary = comp.series?.summary||ev.series?.summary||null;
+  const broadcast = (comp.geoBroadcasts?.map(b=>b.media?.shortName).filter(Boolean)||comp.broadcasts?.flatMap(b=>b.names||[]).filter(Boolean)||[]).slice(0,2).join(', ')||null;
+  const situation = state==='in' ? (comp.situation?.shortDownDistanceText||null) : null;
+  const possession = state==='in' ? (comp.situation?.possessionText||null) : null;
   const featuredStatus =
     state==='in'                              ? 'live'     :
     completed                                 ? 'final'    :
@@ -65,7 +73,7 @@ function parseEvent(ev, teamId){
     featuredStatus==='starting' ? 'Starting now…' :
     state==='pre'               ? fmtFull(dateMs) :
                                   detail||'Final';
-  return { featuredStatus, isHome, oppAbbr, oppId, phiScore, oppScore, phiRecord, oppRecord, venue, dateMs, note, completed, gameNote, isPlayoff };
+  return { featuredStatus, isHome, oppAbbr, oppId, phiScore, oppScore, phiRecord, oppRecord, venue, dateMs, note, completed, gameNote, isPlayoff, seriesSummary, broadcast, situation, possession };
 }
 
 function nextSeasonNote(path){
@@ -153,10 +161,12 @@ function oppLogoUrl(path, oppId, oppAbbr){
   return url;
 }
 
-// Opponent record cache
+// Opponent record cache — keyed as "sport:oppId" to prevent cross-sport collisions
 const oppRecordCache = {};
 async function fetchOppRecord(path, oppId){
-  if(!oppId||oppRecordCache[oppId]!==undefined) return oppRecordCache[oppId]||null;
+  const sport=path.split('/')[0]; // e.g. 'football', 'basketball', 'hockey', 'baseball', 'soccer'
+  const cacheKey=sport+':'+oppId;
+  if(!oppId||oppRecordCache[cacheKey]!==undefined) return oppRecordCache[cacheKey]||null;
   try{
     const base='https://site.api.espn.com/apis/site/v2/sports/'+path;
     const d=await espnFetch(base+'/teams/'+oppId+'/schedule').catch(()=>null);
@@ -165,22 +175,28 @@ async function fetchOppRecord(path, oppId){
     const comp=last?.competitions?.[0];
     const them=comp?.competitors?.find(c=>String(c.team?.id)===String(oppId));
     const getRecord=c=>{ if(!c?.record) return null; if(typeof c.record==='string') return c.record||null; return (c.record.find(r=>r.type==='total')||c.record.find(r=>r.type==='ytd')||c.record[0])?.displayValue||null; };
-    oppRecordCache[oppId]=getRecord(them);
-  } catch(e){ oppRecordCache[oppId]=null; }
-  return oppRecordCache[oppId]||null;
+    oppRecordCache[cacheKey]=getRecord(them);
+  } catch(e){ oppRecordCache[cacheKey]=null; }
+  return oppRecordCache[cacheKey]||null;
 }
 
 let mlsRecords = {};
-(async()=>{
+let mlsRecordsFetchedAt = 0;
+const MLS_RECORDS_TTL = 30 * 60 * 1000; // refresh standings every 30 min
+async function fetchMlsRecords(){
   try{
     const d=await espnFetch('https://site.api.espn.com/apis/v2/sports/soccer/usa.1/standings');
     const entries=d.children?.flatMap(c=>c.standings?.entries||[])||[];
+    const updated={};
     entries.forEach(e=>{
       const overall=e.stats?.find(s=>s.name==='overall')?.displayValue;
-      if(e.team?.id&&overall) mlsRecords[String(e.team.id)]=overall;
+      if(e.team?.id&&overall) updated[String(e.team.id)]=overall;
     });
+    mlsRecords=updated;
+    mlsRecordsFetchedAt=Date.now();
   } catch(err){ console.warn('MLS standings fetch failed',err); }
-})();
+}
+fetchMlsRecords();
 
 async function fetchTeamData(key){
   const {path,teamId}=TEAMS[key];
@@ -332,6 +348,10 @@ async function fetchTeamData(key){
       venue:     featured.venue||null,
       gameNote:  featured.gameNote||null,
       isPlayoff: featured.isPlayoff||false,
+      seriesSummary: featured.seriesSummary||null,
+      broadcast: featured.broadcast||null,
+      situation: featured.situation||null,
+      possession: featured.possession||null,
       phiRecord: showRecords?(soccerPhiRecord||featured.phiRecord||phiRecordFallback||null):null,
       oppRecord: showRecords?(soccerOppRecord||featured.oppRecord||oppRecordFallback||null):null,
     }:null,
@@ -378,10 +398,10 @@ async function fetchNews(){
       const d=await fetch(RSS_PROXY+encodeURIComponent(feed.url)+'&_='+Math.floor(Date.now()/300000)).then(r=>r.json()).catch(()=>null);
       return (d?.items||[]).slice(0,5).map(item=>({title:item.title?.trim(),link:item.link,pubDate:item.pubDate,team:feed.team,color:feed.color}));
     }));
-    const allItems=results.flat().filter(i=>i.title&&i.pubDate);
+    const allItems=results.flat().filter(i=>i.title&&i.pubDate).sort((a,b)=>parseRssDate(b.pubDate)-parseRssDate(a.pubDate));
     const byTeam={};
     allItems.forEach(item=>{ if(!byTeam[item.team]) byTeam[item.team]=[]; if(byTeam[item.team].length<3) byTeam[item.team].push(item); });
-    const merged=allItems.sort((a,b)=>parseRssDate(b.pubDate)-parseRssDate(a.pubDate)).slice(0,5);
+    const merged=allItems.slice(0,5);
     newsCache={items:merged,byTeam,fetchedAt:Date.now()};
     return merged;
   } catch(err){ console.warn('News fetch failed',err); return newsCache.items; }
@@ -417,6 +437,17 @@ function updateModalScores(key){
   if(oppEl){ oppEl.textContent=oppS; oppEl.className='modal-team-score'; }
   const noteEl=document.getElementById('modal-game-note');
   if(noteEl) noteEl.textContent=f.note||'';
+  const sitEl=document.getElementById('modal-situation');
+  if(sitEl){
+    if(f.situation){
+      const posStr=f.possession?' · 🏈 '+f.possession:'';
+      sitEl.textContent=f.situation+posStr;
+      sitEl.style.display='';
+    } else {
+      sitEl.textContent='';
+      sitEl.style.display='none';
+    }
+  }
   syncModalStatus();
 }
 
@@ -536,11 +567,14 @@ function renderCard(key,data){
     const oppSide='<div class="team-side"><div class="team-abv">'+f.oppAbbr+'</div>'+oppImg+scoreHtml(f.oppScore,oppWins,upcoming,false,f.oppAbbr)+(f.oppRecord?'<div class="team-record">'+f.oppRecord+'</div>':'')+'</div>';
     const div='<div class="vs-divider"><div class="vs-line"></div><div class="vs-text">VS</div><div class="vs-line"></div></div>';
     const matchup=f.isHome?oppSide+div+phiSide:phiSide+div+oppSide;
-    const playoffBadge = f.isPlayoff ? '<div class="playoff-badge">'+fmtPlayoffNote(f.gameNote)+'</div>' : '';
+    const seriesStr=f.isPlayoff&&f.seriesSummary?' · '+f.seriesSummary:'';
+    const playoffBadge=f.isPlayoff?'<div class="playoff-badge">'+fmtPlayoffNote(f.gameNote)+seriesStr+'</div>':'';
+    const datePrefix=fs==='final'&&data.featuredDateMs?fmtShort(data.featuredDateMs)+' · ':'';
+    const broadcastStr=fs!=='final'&&f.broadcast?' · 📺 '+f.broadcast:'';
     featuredHtml='<div class="featured-game">'
       +playoffBadge
       +(f.label?'<div class="game-label">'+f.label+'</div>':'')
-      +'<div class="matchup">'+matchup+'</div><div class="game-info-row">'+f.note+(f.venue?' · '+f.venue:'')+'</div></div>';
+      +'<div class="matchup">'+matchup+'</div><div class="game-info-row">'+datePrefix+f.note+(f.venue?' · '+f.venue:'')+broadcastStr+'</div></div>';
   } else {
     featuredHtml='<div class="featured-game" style="text-align:center;padding:24px 20px"><div style="font-size:36px;margin-bottom:8px">🏆</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:18px;color:#4b5563;letter-spacing:.08em">Season Complete</div>'+(data.offseasonNote?'<div style="font-size:11px;color:#6b7280;margin-top:6px;font-family:\'DM Mono\',monospace">'+data.offseasonNote+'</div>':'')+'</div>';
   }
@@ -611,13 +645,14 @@ function scheduleNextRefresh(scores){
   clearTimeout(refreshTimeout);
   const secs=getRefreshInterval(scores);
   startCountdown(secs);
-  refreshTimeout=setTimeout(fetchScores,secs*1000);
+  refreshTimeout=setTimeout(()=>fetchScores(true),secs*1000);
 }
 
-async function fetchScores(){
+async function fetchScores(silent=false){
   const btn=document.getElementById('refresh-btn');
-  btn.disabled=true; btn.classList.add('spinning');
-  hideError(); setStatus('loading','Fetching live scores…'); showSkeletons();
+  if(!silent){ btn.disabled=true; btn.classList.add('spinning'); hideError(); setStatus('loading','Fetching live scores…'); showSkeletons(); }
+  // Refresh MLS standings in the background if they've gone stale
+  if(Date.now()-mlsRecordsFetchedAt>MLS_RECORDS_TTL) fetchMlsRecords();
   try{
     const [results,newsItems]=await Promise.all([
       Promise.allSettled(TEAM_ORDER.map(k=>fetchTeamData(k))),
@@ -655,9 +690,9 @@ async function fetchScores(){
   } catch(err){
     console.error(err);
     setStatus('error','Update failed');
-    showError('Could not fetch scores: '+err.message);
+    if(!silent) showError('Could not fetch scores: '+err.message);
   } finally{
-    btn.disabled=false; btn.classList.remove('spinning');
+    if(!silent){ btn.disabled=false; btn.classList.remove('spinning'); }
   }
 }
 
