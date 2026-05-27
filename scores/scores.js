@@ -59,7 +59,9 @@ function parseEvent(ev, teamId){
   const gameNote  = comp.notes?.[0]?.headline||null;
   const isPlayoff = gameNote ? /playoff|play.?in|postseason|round|series/i.test(gameNote) : false;
   const seriesSummary = comp.series?.summary||ev.series?.summary||null;
-  const broadcast = (comp.geoBroadcasts?.map(b=>b.media?.shortName).filter(Boolean)||comp.broadcasts?.flatMap(b=>b.names||[]).filter(Boolean)||[]).slice(0,2).join(', ')||null;
+  // Sort TV-type entries before Streaming so RSNs/cable channels aren't pushed out by MLB.TV etc.
+  const geoBcasts=(comp.geoBroadcasts||[]).slice().sort((a,b)=>(a.type?.shortName==='TV'?0:1)-(b.type?.shortName==='TV'?0:1));
+  const broadcast=(geoBcasts.length?geoBcasts.map(b=>b.media?.shortName).filter(Boolean):comp.broadcasts?.flatMap(b=>b.names||[]).filter(Boolean)||[]).slice(0,3).join(', ')||null;
   const situation = state==='in' ? (comp.situation?.shortDownDistanceText||null) : null;
   const possession = state==='in' ? (comp.situation?.possessionText||null) : null;
   const featuredStatus =
@@ -570,11 +572,11 @@ function renderCard(key,data){
     const seriesStr=f.isPlayoff&&f.seriesSummary?' · '+f.seriesSummary:'';
     const playoffBadge=f.isPlayoff?'<div class="playoff-badge">'+fmtPlayoffNote(f.gameNote)+seriesStr+'</div>':'';
     const datePrefix=fs==='final'&&data.featuredDateMs?fmtShort(data.featuredDateMs)+' · ':'';
-    const broadcastStr=fs!=='final'&&f.broadcast?' · 📺 '+f.broadcast:'';
+    const broadcastRow=fs!=='final'&&f.broadcast?'<div class="broadcast-row">📺 '+f.broadcast+'</div>':'';
     featuredHtml='<div class="featured-game">'
       +playoffBadge
       +(f.label?'<div class="game-label">'+f.label+'</div>':'')
-      +'<div class="matchup">'+matchup+'</div><div class="game-info-row">'+datePrefix+f.note+(f.venue?' · '+f.venue:'')+broadcastStr+'</div></div>';
+      +'<div class="matchup">'+matchup+'</div><div class="game-info-row">'+datePrefix+f.note+(f.venue?' · '+f.venue:'')+'</div>'+broadcastRow+'</div>';
   } else {
     featuredHtml='<div class="featured-game" style="text-align:center;padding:24px 20px"><div style="font-size:36px;margin-bottom:8px">🏆</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:18px;color:#4b5563;letter-spacing:.08em">Season Complete</div>'+(data.offseasonNote?'<div style="font-size:11px;color:#6b7280;margin-top:6px;font-family:\'DM Mono\',monospace">'+data.offseasonNote+'</div>':'')+'</div>';
   }
