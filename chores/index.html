@@ -346,6 +346,11 @@ function parseSheet(rows) {
     if (c[0] && /^\d{2}\/\d{2}\/\d{2}$/.test(c[0])) {
       cur = { date: c[0], simon: null, desmond: null, extras: [] };
       weeks.push(cur);
+      // Still scan for extras on the week-header row itself before moving on
+      const sa0 = money(c[14]);
+      if (sa0 != null) cur.extras.push({ player:'simon',   amt:sa0, note:(c[15]||'').trim(), date:(c[16]||'').trim() });
+      const da0 = money(c[19]);
+      if (da0 != null) cur.extras.push({ player:'desmond', amt:da0, note:(c[20]||'').trim(), date:(c[21]||'').trim() });
       continue;
     }
     if (!cur) continue;
