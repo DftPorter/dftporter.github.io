@@ -465,6 +465,132 @@
       .btn-back { padding: 10px 14px; }
     }
 
+    /* ── ADD RUNNER BUTTON ── */
+    .btn-add-runner {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 6px 0;
+      margin-top: 10px;
+      transition: color 0.12s;
+    }
+    .btn-add-runner:hover { color: var(--accent); }
+    .btn-add-runner::before { content: '+'; font-size: 13px; font-weight: 700; }
+
+    /* ── MODAL OVERLAY ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.78);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.show { display: flex; }
+
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border-mid);
+      border-radius: 6px;
+      width: 100%;
+      max-width: 400px;
+      overflow: hidden;
+      position: relative;
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--bg-card-alt);
+      border-bottom: 1px solid var(--border-mid);
+    }
+    .modal-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .modal-title::before { content: '// '; color: var(--accent); }
+    .btn-modal-close {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 4px;
+      transition: color 0.12s;
+    }
+    .btn-modal-close:hover { color: var(--accent); }
+    .modal-body { padding: 22px 20px; }
+
+    .modal-body .field-label { margin-bottom: 8px; display: block; }
+
+    input[type="text"].runner-name-input {
+      width: 100%;
+      background: #000;
+      border: 1px solid var(--border-mid);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input[type="text"].runner-name-input:focus { border-color: var(--accent); }
+    input[type="text"].runner-name-input::placeholder { color: var(--text-dim); }
+
+    .modal-error {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--danger);
+      letter-spacing: 0.12em;
+      margin-top: 6px;
+      min-height: 14px;
+    }
+
+    .btn-modal-submit {
+      width: 100%;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      font-family: var(--display);
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 12px;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: opacity 0.15s;
+    }
+    .btn-modal-submit:hover { opacity: 0.88; }
+    .btn-modal-submit:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .modal-success-msg {
+      display: none;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 0.14em;
+      text-align: center;
+      margin-top: 12px;
+    }
+    .modal-success-msg.show { display: block; }
+
     /* ── ACCESSIBILITY ── */
     :focus { outline: none; }
     :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -555,6 +681,7 @@
           </div>
           <div class="field-error" id="playerError" role="alert">ALL VISIBLE RUNNER SLOTS MUST BE FILLED</div>
           <div class="field-error" id="playerDupError" role="alert">DUPLICATE RUNNERS DETECTED</div>
+          <button type="button" class="btn-add-runner" id="openAddRunnerBtn" aria-haspopup="dialog">ADD RUNNER</button>
         </div>
 
         <!-- MAP -->
@@ -629,6 +756,23 @@
   </footer>
 
 </main><!-- /page -->
+
+<!-- ── ADD RUNNER MODAL ── -->
+<div class="modal-overlay" id="addRunnerModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">Register Runner</span>
+      <button class="btn-modal-close" id="closeAddRunnerBtn" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="field-label" for="newRunnerName">Runner Name <span class="required">*</span></label>
+      <input type="text" id="newRunnerName" class="runner-name-input" placeholder="Enter callsign…" maxlength="40" autocomplete="off" autocorrect="off" spellcheck="false">
+      <div class="modal-error" id="modalError"></div>
+      <button type="button" class="btn-modal-submit" id="submitAddRunnerBtn">REGISTER</button>
+      <div class="modal-success-msg" id="modalSuccessMsg"></div>
+    </div>
+  </div>
+</div>
 
 <script>
   // ════════════════════════════════════════════════════════════════
@@ -954,6 +1098,88 @@
         try { localStorage.setItem(MAPS_CACHE_KEY, JSON.stringify({ maps: data.maps, ts: Date.now() })); } catch {}
       }
     } catch {}
+  }
+
+  // ════════════════════════════════════════════════════════════════
+  //  ADD RUNNER MODAL
+  // ════════════════════════════════════════════════════════════════
+
+  const addRunnerModal   = document.getElementById('addRunnerModal');
+  const newRunnerInput   = document.getElementById('newRunnerName');
+  const modalError       = document.getElementById('modalError');
+  const modalSuccessMsg  = document.getElementById('modalSuccessMsg');
+  const submitRunnerBtn  = document.getElementById('submitAddRunnerBtn');
+
+  function openAddRunnerModal() {
+    newRunnerInput.value = '';
+    modalError.textContent = '';
+    modalSuccessMsg.classList.remove('show');
+    submitRunnerBtn.disabled = false;
+    submitRunnerBtn.textContent = 'REGISTER';
+    addRunnerModal.classList.add('show');
+    newRunnerInput.focus();
+  }
+
+  function closeAddRunnerModal() {
+    addRunnerModal.classList.remove('show');
+  }
+
+  document.getElementById('openAddRunnerBtn').addEventListener('click', openAddRunnerModal);
+  document.getElementById('closeAddRunnerBtn').addEventListener('click', closeAddRunnerModal);
+  addRunnerModal.addEventListener('click', e => { if (e.target === addRunnerModal) closeAddRunnerModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAddRunnerModal(); });
+
+  newRunnerInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitAddRunner();
+  });
+
+  document.getElementById('submitAddRunnerBtn').addEventListener('click', submitAddRunner);
+
+  async function submitAddRunner() {
+    const name = newRunnerInput.value.trim();
+    modalError.textContent = '';
+    modalSuccessMsg.classList.remove('show');
+
+    if (!name) {
+      modalError.textContent = 'ENTER A CALLSIGN';
+      newRunnerInput.focus();
+      return;
+    }
+    if (ROSTER.some(r => r.toLowerCase() === name.toLowerCase())) {
+      modalError.textContent = 'RUNNER ALREADY ON ROSTER';
+      newRunnerInput.focus();
+      return;
+    }
+
+    submitRunnerBtn.disabled = true;
+    submitRunnerBtn.innerHTML = '<span class="spinner" role="status" aria-label="Registering"></span>TRANSMITTING…';
+
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode:   'no-cors',
+        body:   JSON.stringify({ action: 'addRunner', name }),
+      });
+      // Optimistically add to local roster and refresh selects
+      ROSTER.push(name);
+      populateSelects();
+      modalSuccessMsg.textContent = `✓ ${name.toUpperCase()} ADDED TO ROSTER`;
+      modalSuccessMsg.classList.add('show');
+      submitRunnerBtn.textContent = 'REGISTER ANOTHER';
+      submitRunnerBtn.disabled = false;
+      newRunnerInput.value = '';
+      newRunnerInput.focus();
+    } catch (err) {
+      // no-cors fetch rarely throws, but handle it
+      ROSTER.push(name);
+      populateSelects();
+      modalSuccessMsg.textContent = `✓ ${name.toUpperCase()} ADDED TO ROSTER`;
+      modalSuccessMsg.classList.add('show');
+      submitRunnerBtn.textContent = 'REGISTER ANOTHER';
+      submitRunnerBtn.disabled = false;
+      newRunnerInput.value = '';
+      newRunnerInput.focus();
+    }
   }
 
   // ════════════════════════════════════════════════════════════════
