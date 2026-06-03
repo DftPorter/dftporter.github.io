@@ -36,7 +36,12 @@
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; overflow-x: hidden; }
+    html {
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+      width: 100%;
+      max-width: 100%;
+    }
 
     /* ── CUSTOM CURSOR ── */
     /* Default: small crosshair with accent-green centre dot */
@@ -65,13 +70,16 @@
       font-family: var(--display);
       min-height: 100vh;
       overflow-x: hidden;
+      width: 100%;
+      max-width: 100%;
+      position: relative;
     }
 
     /* ── SCANLINE OVERLAY ── */
     body::before {
       content: '';
       position: fixed;
-      inset: 0;
+      top: 0; right: 0; bottom: 0; left: 0;
       background: repeating-linear-gradient(
         0deg,
         transparent, transparent 2px,
@@ -84,7 +92,7 @@
     /* ── GRID DECORATION ── */
     .bg-grid {
       position: fixed;
-      inset: 0;
+      top: 0; right: 0; bottom: 0; left: 0;
       background-image:
         repeating-linear-gradient(90deg,  rgba(255,255,255,0.018) 0, rgba(255,255,255,0.018) 1px, transparent 1px, transparent 80px),
         repeating-linear-gradient(0deg,   rgba(255,255,255,0.018) 0, rgba(255,255,255,0.018) 1px, transparent 1px, transparent 80px);
