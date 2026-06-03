@@ -12,12 +12,12 @@
   <link rel="apple-touch-icon" href="images/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,600;0,700;1,700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg:            #000000;
-      --bg-card:       #060606;
-      --bg-card-alt:   #0b0b0b;
+      --bg-card:       #181818;
+      --bg-card-alt:   #1e1e1e;
       --border:        #222222;
       --border-mid:    #2e2e2e;
       --border-bright: #404040;
@@ -32,7 +32,7 @@
       --danger:        #ff3b30;
       --danger-dim:    rgba(255,59,48,0.08);
       --mono:          'Share Tech Mono', 'Courier New', monospace;
-      --display:       'Barlow Condensed', 'Impact', sans-serif;
+      --display:       'Chakra Petch', 'Impact', sans-serif;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -155,16 +155,9 @@
     /* ── FORM CARD ── */
     .form-card {
       background: var(--bg-card);
-      border: 1px solid var(--border-mid);
+      border-radius: 6px;
+      overflow: hidden;
       position: relative;
-    }
-
-    .form-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: var(--accent);
     }
 
     .form-header {
@@ -348,7 +341,7 @@
     }
     .success-summary {
       background: var(--bg-card-alt);
-      border: 1px solid var(--border-mid);
+      border-radius: 6px;
       padding: 16px 20px;
       margin-bottom: 28px;
       text-align: left;
@@ -932,6 +925,8 @@
   // ════════════════════════════════════════════════════════════════
 
   const FALLBACK_MAPS = ['Perimeter', 'Dire Marsh', 'Outpost', 'Cryo Archive'];
+  const MAPS_CACHE_KEY = 'dd_maps';
+  const MAPS_CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
   function populateMaps(maps) {
     const sel = document.getElementById('map');
@@ -940,17 +935,25 @@
   }
 
   async function loadMaps() {
+    // Serve from cache immediately if still fresh
+    try {
+      const cached = JSON.parse(localStorage.getItem(MAPS_CACHE_KEY) || 'null');
+      if (cached && Date.now() - cached.ts < MAPS_CACHE_TTL) {
+        populateMaps(cached.maps);
+        return;
+      }
+    } catch {}
+
+    // No fresh cache — show fallback instantly, then replace with live data
+    populateMaps(FALLBACK_MAPS);
     try {
       const res  = await fetch(APPS_SCRIPT_URL);
       const data = await res.json();
       if (data.status === 'ok' && Array.isArray(data.maps) && data.maps.length > 0) {
         populateMaps(data.maps);
-      } else {
-        populateMaps(FALLBACK_MAPS);
+        try { localStorage.setItem(MAPS_CACHE_KEY, JSON.stringify({ maps: data.maps, ts: Date.now() })); } catch {}
       }
-    } catch {
-      populateMaps(FALLBACK_MAPS);
-    }
+    } catch {}
   }
 
   // ════════════════════════════════════════════════════════════════

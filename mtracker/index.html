@@ -12,12 +12,12 @@
   <link rel="apple-touch-icon" href="images/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,600;0,700;1,700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg:           #000000;
-      --bg-card:      #060606;
-      --bg-card-alt:  #0b0b0b;
+      --bg-card:      #181818;
+      --bg-card-alt:  #1e1e1e;
       --border:       #222222;
       --border-mid:   #2e2e2e;
       --border-bright:#404040;
@@ -32,7 +32,7 @@
       --danger:       #ff3b30;
       --danger-dim:   rgba(255,59,48,0.08);
       --mono:         'Share Tech Mono', 'Courier New', monospace;
-      --display:      'Barlow Condensed', 'Impact', sans-serif;
+      --display:      'Chakra Petch', 'Impact', sans-serif;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -232,53 +232,23 @@
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 0;
-      outline: 1px solid var(--border-mid);
-      margin-bottom: 1px;
+      margin-bottom: 16px;
+      border-radius: 6px;
+      overflow: hidden;
     }
 
     .card {
       background-color: var(--bg-card);
-      background-image:
-        linear-gradient(var(--border-bright), var(--border-bright)),
-        linear-gradient(var(--border-bright), var(--border-bright));
-      background-size: 1px 14px, 14px 1px;
-      background-position: 9px 9px, 9px 9px;
-      background-repeat: no-repeat;
       padding: 26px 22px 20px;
-      border-right: 1px solid var(--border-mid);
       position: relative;
       overflow: hidden;
     }
-    .card:last-child { border-right: none; }
-
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: var(--border-mid);
-      transition: background 0.3s;
-    }
-    .card.primary::before { background: var(--accent); }
     .card.primary {
       background-color: var(--bg-card);
       background-image:
-        linear-gradient(var(--accent), var(--accent)),
-        linear-gradient(var(--accent), var(--accent)),
         repeating-linear-gradient(-45deg, transparent, transparent 8px, rgba(200,244,0,0.028) 8px, rgba(200,244,0,0.028) 9px);
-      background-size: 1px 14px, 14px 1px, 100% 100%;
-      background-position: 9px 9px, 9px 9px, 0 0;
-      background-repeat: no-repeat, no-repeat, repeat;
     }
-
-    .card::after {
-      content: '';
-      position: absolute;
-      bottom: 9px; right: 9px;
-      width: 14px; height: 14px;
-      border-right: 1px solid var(--border-mid);
-      border-bottom: 1px solid var(--border-mid);
-    }
+    .card-corner-mark { display: none; }
 
     .card-label {
       font-family: var(--mono);
@@ -338,11 +308,12 @@
       display: none;
       flex-direction: column;
       gap: 10px;
-      outline: 1px solid var(--border-mid);
+      outline: none;
       background: var(--bg-card);
       padding: 16px 22px 18px;
-      margin-bottom: 1px;
+      margin-bottom: 16px;
       position: relative;
+      border-radius: 6px;
     }
     .season-bar.visible { display: flex; }
     .season-bar-top {
@@ -404,39 +375,20 @@
     .rates {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      outline: 1px solid var(--border-mid);
+      outline: none;
       margin-bottom: 32px;
       background: var(--bg-card-alt);
       position: relative;
+      border-radius: 6px;
+      overflow: hidden;
     }
-    .rates::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0;
-      width: 10px; height: 10px;
-      border-top: 1px solid var(--accent);
-      border-left: 1px solid var(--accent);
-      pointer-events: none;
-      z-index: 2;
-    }
-    .rates::after {
-      content: '';
-      position: absolute;
-      bottom: 0; right: 0;
-      width: 10px; height: 10px;
-      border-bottom: 1px solid var(--accent);
-      border-right: 1px solid var(--accent);
-      pointer-events: none;
-      z-index: 2;
-    }
+    .rates::before, .rates::after { content: none; }
     .rate {
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 11px 22px;
-      border-right: 1px solid var(--border-mid);
     }
-    .rate:last-child { border-right: none; }
     .rate-label {
       font-family: var(--mono);
       font-size: 11px;
@@ -456,10 +408,10 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border: 1px solid var(--border-mid);
-      border-bottom: none;
+      border: none;
       padding: 12px 22px;
       background-color: var(--bg-card-alt);
+      border-radius: 6px 6px 0 0;
       background-image: repeating-linear-gradient(
         -45deg,
         transparent,
@@ -469,30 +421,14 @@
       );
       position: relative;
     }
-    .section-head::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0;
-      width: 10px; height: 10px;
-      border-top: 1px solid var(--accent);
-      border-left: 1px solid var(--accent);
-      pointer-events: none;
-    }
-    .section-head::after {
-      content: '';
-      position: absolute;
-      top: 0; right: 0;
-      width: 10px; height: 10px;
-      border-top: 1px solid var(--accent);
-      border-right: 1px solid var(--accent);
-      pointer-events: none;
-    }
+    .section-head::before, .section-head::after { content: none; }
     .section-head-title {
       font-size: 14px;
       font-weight: 700;
       letter-spacing: 0.22em;
       text-transform: uppercase;
       color: var(--text);
+      margin: 0; /* reset h2 default margin */
     }
     .section-head-title::before { content: '// '; color: var(--accent); }
     .section-meta {
@@ -503,9 +439,10 @@
     }
 
     .table-wrap {
-      border: 1px solid var(--border-mid);
+      border: none;
       overflow-x: auto;
       margin-bottom: 32px;
+      border-radius: 0 0 6px 6px;
     }
 
     table { width: 100%; border-collapse: collapse; }
@@ -571,14 +508,15 @@
     td.worst .inline-bar-fill { background: #ff3b30; }
 
     /* ── FILTER BAR ── */
-    .rates { margin-bottom: 1px; }
-    .rates.no-filter { margin-bottom: 32px; }
+    .rates { margin-bottom: 16px; }
+    .rates.no-filter { margin-bottom: 16px; }
     .filter-bar {
       display: none;
-      outline: 1px solid var(--border-mid);
+      outline: none;
       background: var(--bg-card-alt);
       padding: 12px 22px;
       margin-bottom: 32px;
+      border-radius: 6px;
     }
     .filter-bar.visible { display: block; }
     .filter-bar-inner {
@@ -596,7 +534,7 @@
       font-family: var(--mono);
       font-size: 10px;
       letter-spacing: 0.22em;
-      color: var(--text-dim);
+      color: var(--text-muted); /* was --text-dim (#505050, 3.0:1) — bumped to #808080 (5.3:1) */
       text-transform: uppercase;
       white-space: nowrap;
       min-width: 64px;
@@ -690,29 +628,20 @@
       display: flex;
       align-items: stretch;
       margin-bottom: 32px;
+      border-radius: 6px;
+      overflow: hidden;
     }
     .table-donut-side {
       width: 160px;
       flex-shrink: 0;
       background: var(--bg-card);
-      border: 1px solid var(--border-mid);
-      border-right: none;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 18px;
       position: relative;
     }
-    /* Top-left accent corner bracket — mirrors the section-head treatment */
-    .table-donut-side::after {
-      content: '';
-      position: absolute;
-      top: 0; left: 0;
-      width: 10px; height: 10px;
-      border-top: 1px solid var(--accent);
-      border-left: 1px solid var(--accent);
-      pointer-events: none;
-    }
+    .table-donut-side::after { content: none; }
     .table-main-side {
       flex: 1;
       min-width: 0;
@@ -721,7 +650,7 @@
     }
     /* Donut panel owns the left border — remove it from inner elements */
     .table-with-donut .section-head { border-left: none; }
-    .table-with-donut .section-head::before { display: none; }
+    /* .section-head accent corners removed — bg elevation does the work now */
     .table-with-donut .table-wrap { border-left: none; margin-bottom: 0; flex: 1; }
     .donut-svg { width: 140px; height: 140px; overflow: visible; }
     /* Collapse donut panel on small screens — table alone is sufficient */
@@ -922,7 +851,7 @@
         LIVE DATA
       </div>
       <a href="form.html" class="btn-log" aria-label="Log a run">
-        <span aria-hidden="true">+</span> <span>LOG A RUN</span>
+        <span aria-hidden="true">+</span> <span>LOG A RUN</span> <span aria-hidden="true" style="font-size:9px;letter-spacing:0;opacity:0.7;">[↗]</span>
       </a>
       <button class="btn-refresh" id="refreshBtn" onclick="loadData()" aria-label="Refresh dashboard data">
         <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true">
@@ -963,6 +892,7 @@
   <!-- ═══════════════ STAT CARDS ═══════════════ -->
   <div class="cards">
     <div class="card primary">
+      <div class="card-corner-mark" aria-hidden="true"></div>
       <div class="card-label">Exfil Rate</div>
       <div class="card-value" id="totalExfils">—</div>
       <div class="card-sub" id="exfilSub">— successful exfils</div>
@@ -970,6 +900,7 @@
       <div class="card-bar"><div class="card-bar-fill" id="exfilBarFill"></div></div>
     </div>
     <div class="card">
+      <div class="card-corner-mark" aria-hidden="true"></div>
       <div class="card-label">Contract Rate</div>
       <div class="card-value" id="totalContracts">—</div>
       <div class="card-sub" id="contractSub">— contracts completed</div>
@@ -977,6 +908,7 @@
       <div class="card-bar"><div class="card-bar-fill" id="contractBarFill"></div></div>
     </div>
     <div class="card">
+      <div class="card-corner-mark" aria-hidden="true"></div>
       <div class="card-label">Elims / Run</div>
       <div class="card-value" id="totalKills">—</div>
       <div class="card-sub" id="killsSub">— total elims</div>
@@ -984,6 +916,7 @@
       <div class="card-bar"><div class="card-bar-fill" id="killsBarFill"></div></div>
     </div>
     <div class="card">
+      <div class="card-corner-mark" aria-hidden="true"></div>
       <div class="card-label">Total Runs</div>
       <div class="card-value" id="totalRuns">—</div>
       <div class="card-sub" id="totalRunsSub">Lifetime operations</div>
@@ -1021,7 +954,7 @@
     </div>
     <div class="table-main-side">
       <div class="section-head">
-        <span class="section-head-title">Squad Type Breakdown</span>
+        <h2 class="section-head-title">Squad Type Breakdown</h2>
         <span class="section-meta" id="lastUpdated" aria-live="polite" aria-atomic="true">LOADING…</span>
       </div>
       <div class="table-wrap" role="region" aria-label="Squad type breakdown" tabindex="0">
@@ -1053,7 +986,7 @@
     </div>
     <div class="table-main-side">
       <div class="section-head">
-        <span class="section-head-title">Map Breakdown</span>
+        <h2 class="section-head-title">Map Breakdown</h2>
       </div>
       <div class="table-wrap" role="region" aria-label="Map breakdown" tabindex="0">
         <table>
@@ -1078,7 +1011,7 @@
 
   <!-- ═══════════════ RUNNER BREAKDOWN ═══════════════ -->
   <div class="section-head">
-    <span class="section-head-title">Runner Breakdown</span>
+    <h2 class="section-head-title">Runner Breakdown</h2>
   </div>
   <div class="table-wrap" role="region" aria-label="Runner breakdown" tabindex="0">
     <table>
@@ -1101,7 +1034,7 @@
 
   <!-- ═══════════════ RECENT RUNS ═══════════════ -->
   <div class="section-head">
-    <span class="section-head-title">Recent Operations</span>
+    <h2 class="section-head-title">Recent Operations</h2>
     <span class="section-meta">LAST 15 RUNS</span>
   </div>
   <div class="table-wrap" role="region" aria-label="Recent operations" tabindex="0">
@@ -1532,6 +1465,15 @@
   function buildBreakdownTable(tbodyId, aggRows, showRunners = false) {
     const tbody = document.getElementById(tbodyId);
     const cols  = showRunners ? 8 : 7;
+    // Add sr-only caption if not already present
+    const table = tbody.closest('table');
+    if (table && !table.querySelector('caption')) {
+      const cap = document.createElement('caption');
+      cap.className = 'sr-only';
+      const labels = { typeTableBody: 'Squad type breakdown statistics', mapTableBody: 'Map breakdown statistics', runnerTableBody: 'Runner breakdown statistics' };
+      cap.textContent = labels[tbodyId] || 'Breakdown statistics';
+      table.prepend(cap);
+    }
 
     if (!aggRows.length) {
       tbody.innerHTML = `<tr><td colspan="${cols}" style="text-align:center;padding:32px;font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:0.2em;">NO OPERATIONS DATA FOUND</td></tr>`;
@@ -1552,7 +1494,8 @@
     const cell = (v, key, decimals) => {
       if (v === null) return `<td class="nil">—</td>`;
       const cls = isBest(key, v) ? 'best' : isWorst(key, v) ? 'worst' : '';
-      return `<td class="${cls}">${decimals !== undefined ? v.toFixed(decimals) : Math.round(v)}</td>`;
+      const srHint = cls === 'best' ? ' <span class="sr-only">(best)</span>' : cls === 'worst' ? ' <span class="sr-only">(worst)</span>' : '';
+      return `<td class="${cls}">${decimals !== undefined ? v.toFixed(decimals) : Math.round(v)}${srHint}</td>`;
     };
 
     tbody.innerHTML = sorted.map(d => {
