@@ -1211,6 +1211,13 @@
       ? Number(cfg['Prev Season Number'])
       : (curSeasonNum != null ? curSeasonNum - 1 : null);
 
+    // Build the known-seasons list for the season filter chips
+    knownSeasons = [];
+    if (prevSeasonNum != null && prevSeasonStart && prevSeasonEnd)
+      knownSeasons.push({ num: prevSeasonNum, label: `S${prevSeasonNum}`, start: prevSeasonStart, end: prevSeasonEnd });
+    if (num != null && start && end)
+      knownSeasons.push({ num: Number(num), label: `S${Number(num)}`, start, end });
+
     if (!start || !end) return;
 
     const now     = new Date();
@@ -1238,13 +1245,14 @@
   /* ── Season date ranges (set from Config, used in render) ── */
   let curSeasonStart = null, curSeasonEnd = null, curSeasonNum = null;
   let prevSeasonStart = null, prevSeasonEnd = null, prevSeasonNum = null;
+  let knownSeasons = []; // [{ num, label, start, end }] — populated by renderSeason()
 
   /* ── Filter state ── */
   let allRows = [];
-  const activeFilters = { maps: new Map(), runners: new Map(), types: new Map() };
+  const activeFilters = { maps: new Map(), runners: new Map(), types: new Map(), seasons: new Map() };
 
   function applyFilters(rows) {
-    const { maps, runners, types } = activeFilters;
+    const { maps, runners, types, seasons } = activeFilters;
     return rows.filter(r => {
       // Maps
       if (maps.size > 0) {
@@ -1272,6 +1280,19 @@
         if (incs.length && !names.some(n => incs.includes(n))) return false;
         if (excs.length &&  names.some(n => excs.includes(n))) return false;
       }
+      // Seasons
+      if (seasons.size > 0) {
+        const ts   = parseGvizDate(r['Timestamp']);
+        if (!ts) return false;
+        const incs = [...seasons].filter(([,s]) => s === 'include').map(([k]) => k);
+        const excs = [...seasons].filter(([,s]) => s === 'exclude').map(([k]) => k);
+        const inSeason = label => {
+          const s = knownSeasons.find(s => s.label === label);
+          return s && ts >= s.start && ts <= s.end;
+        };
+        if (incs.length && !incs.some(inSeason))  return false;
+        if (excs.length &&  excs.some(inSeason))   return false;
+      }
       return true;
     });
   }
@@ -1296,7 +1317,7 @@
       return;
     }
 
-    const hasActive = activeFilters.maps.size > 0 || activeFilters.runners.size > 0 || activeFilters.types.size > 0;
+    const hasActive = activeFilters.maps.size > 0 || activeFilters.runners.size > 0 || activeFilters.types.size > 0 || activeFilters.seasons.size > 0;
     ratesEl.classList.remove('no-filter'); // filter bar visible → use 1px gap
 
     const makeChips = (items, group) => items.map(label => {
@@ -1313,6 +1334,7 @@
         if      (!cur)              activeFilters[group].set(label, 'include');
         else if (cur === 'include') activeFilters[group].set(label, 'exclude');
         else                        activeFilters[group].delete(label);
+        saveFilters();
         buildFilterBar(allRows);
         render(applyFilters(allRows));
       };
@@ -1337,10 +1359,12 @@
       </div>`;
     inner.appendChild(header);
 
+    const seasonItems = knownSeasons.map(s => s.label); // e.g. ['S1', 'S2']
     const groups = [
-      { label: 'Map',    key: 'maps',    items: maps    },
-      { label: 'Runner', key: 'runners', items: runners },
-      { label: 'Squad',  key: 'types',   items: types   },
+      { label: 'Season', key: 'seasons', items: seasonItems },
+      { label: 'Map',    key: 'maps',    items: maps        },
+      { label: 'Runner', key: 'runners', items: runners     },
+      { label: 'Squad',  key: 'types',   items: types       },
     ];
 
     groups.forEach(({ label, key, items }) => {
@@ -1363,7 +1387,8 @@
       clearBtn.className = 'filter-clear';
       clearBtn.textContent = '× CLEAR';
       clearBtn.onclick = () => {
-        activeFilters.maps.clear(); activeFilters.runners.clear(); activeFilters.types.clear();
+        activeFilters.maps.clear(); activeFilters.runners.clear(); activeFilters.types.clear(); activeFilters.seasons.clear();
+        saveFilters();
         buildFilterBar(allRows);
         render(applyFilters(allRows));
       };
@@ -1732,12 +1757,24 @@
       return ts >= start && (!end || ts <= end);
     });
 
-    // Rows powering the stat cards — current season only, or all-time if no season configured
-    const cardRows = curSeasonStart ? byDateRange(validRows, curSeasonStart, curSeasonEnd) : validRows;
+    // When a season filter is active the applyFilters pass already scoped the
+    // rows, so use them directly for the stat cards.  Otherwise fall back to
+    // the normal current-season date window.
+    const hasSeasonFilter = activeFilters.seasons.size > 0;
+    const cardRows = (!hasSeasonFilter && curSeasonStart)
+      ? byDateRange(validRows, curSeasonStart, curSeasonEnd)
+      : validRows;
 
-    // Previous season rows for delta comparison (null = no comparison available)
-    const prevRows = prevSeasonStart
-      ? byDateRange(validRows, prevSeasonStart, prevSeasonEnd)
+    // Show deltas when the view is the current season — either no filter, or only S<cur> included with no excludes
+    const seasonIncludes = [...activeFilters.seasons].filter(([,s]) => s === 'include').map(([k]) => k);
+    const seasonExcludes = [...activeFilters.seasons].filter(([,s]) => s === 'exclude').map(([k]) => k);
+    const viewingCurrentSeason = !hasSeasonFilter ||
+      (seasonIncludes.length === 1 && seasonIncludes[0] === `S${curSeasonNum}` && seasonExcludes.length === 0);
+
+    // Always pull prevRows from the full unfiltered set — a S2-only filter would wipe out S1 rows otherwise
+    const allValidRows = allRows.filter(r => r['Run Type']);
+    const prevRows = (viewingCurrentSeason && prevSeasonStart)
+      ? byDateRange(allValidRows, prevSeasonStart, prevSeasonEnd)
       : null;
 
     // Compute summary stats for any row set
@@ -1772,7 +1809,7 @@
       const vs    = prevSeasonNum != null ? `vs S${prevSeasonNum}` : 'vs prev';
       el.textContent = `${arrow} ${sign}${fmtAbs(Math.abs(diff))}  ${vs}`;
       el.className   = `card-delta ${diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat'}`;
-      el.style.display = '';
+      el.style.display = 'block';
     };
 
     /* ── Stat cards (season-scoped) ── */
@@ -1784,9 +1821,15 @@
     document.getElementById('exfilSub').textContent    = cur.exfils    ? `${cur.exfils} successful exfils`    : '— successful exfils';
     document.getElementById('contractSub').textContent = cur.contracts ? `${cur.contracts} contracts completed` : '— contracts completed';
     document.getElementById('killsSub').textContent    = cur.kills     ? `${cur.kills} total elims`            : '— total elims';
-    document.getElementById('totalRunsSub').textContent = curSeasonNum
-      ? `Season ${curSeasonNum} operations`
-      : 'Lifetime operations';
+    const seasonIncs = [...activeFilters.seasons].filter(([,s]) => s === 'include').map(([k]) => k);
+    document.getElementById('totalRunsSub').textContent =
+      hasSeasonFilter && seasonIncs.length === 1
+        ? `${seasonIncs[0]} operations`
+        : hasSeasonFilter
+          ? 'Filtered operations'
+          : curSeasonNum
+            ? `Season ${curSeasonNum} operations`
+            : 'Lifetime operations';
 
     showDelta('exfilDelta',    cur.exfilRate,    prev?.exfilRate,    v => v.toFixed(1) + '%');
     showDelta('contractDelta', cur.contractRate, prev?.contractRate, v => v.toFixed(1) + '%');
@@ -1820,6 +1863,27 @@
     document.getElementById('alertBanner').classList.remove('show');
   }
 
+  /* ── Filter persistence ── */
+  function saveFilters() {
+    try {
+      const obj = {};
+      for (const [key, map] of Object.entries(activeFilters))
+        obj[key] = [...map.entries()];
+      localStorage.setItem('dd_filters', JSON.stringify(obj));
+    } catch {}
+  }
+
+  function loadFilters() {
+    try {
+      const raw = localStorage.getItem('dd_filters');
+      if (!raw) return;
+      const obj = JSON.parse(raw);
+      for (const [key, entries] of Object.entries(obj))
+        if (activeFilters[key] && Array.isArray(entries))
+          activeFilters[key] = new Map(entries);
+    } catch {}
+  }
+
   /* ── Load & refresh ── */
   async function loadData() {
     const btn = document.getElementById('refreshBtn');
@@ -1830,18 +1894,21 @@
         fetchTab(CONFIG_TAB),
       ]);
 
+      // Config must be applied BEFORE render() so prev-season dates are
+      // available when showDelta() runs. Both fetches complete in parallel;
+      // we just process config first here.
+      if (cfgResult.status === 'fulfilled') {
+        renderSeason(parseConfig(cfgResult.value));
+      } else {
+        console.warn('[Dead Drop] Config fetch failed:', cfgResult.reason);
+      }
+
       if (logResult.status === 'fulfilled') {
         allRows = parseSheet(logResult.value);
         buildFilterBar(allRows);
         render(applyFilters(allRows));
       } else {
         throw logResult.reason;
-      }
-
-      if (cfgResult.status === 'fulfilled') {
-        renderSeason(parseConfig(cfgResult.value));
-      } else {
-        console.warn('[Dead Drop] Config fetch failed:', cfgResult.reason);
       }
     } catch (err) {
       console.error('[Dead Drop] fetch failed:', err);
@@ -1853,6 +1920,7 @@
     }
   }
 
+  loadFilters();
   loadData();
   setInterval(loadData, 60_000);
 </script>
