@@ -790,13 +790,9 @@
   // Paste your Apps Script Web App URL here after deploying Code.gs
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQE8xKyWwOB7B1Z67-FudAN1wRVwADlMpTye7WchzpzEQqRcXvZNUz2ewcHAUYLIFKNA/exec';
 
-  // Add or remove player names here. The form will populate dropdowns from this list.
-  const ROSTER = [
-    'DaftPorter',
-    'Midnight',
-    'Viper',
-    // 'Player4',  ← uncomment and rename to add more players
-  ];
+  // Runner names are loaded from the Roster tab in the spreadsheet.
+  // This array is populated at startup and updated when a new runner is added.
+  let ROSTER = [];
 
   // ════════════════════════════════════════════════════════════════
   //  PLAYER SLOT LOGIC
@@ -1073,12 +1069,12 @@
   });
 
   // ════════════════════════════════════════════════════════════════
-  //  MAP OPTIONS — fetched from the "Maps" tab in the spreadsheet
+  //  CONFIG — fetched from the spreadsheet (Maps + Roster tabs)
   // ════════════════════════════════════════════════════════════════
 
-  const FALLBACK_MAPS = ['Perimeter', 'Dire Marsh', 'Outpost', 'Cryo Archive'];
-  const MAPS_CACHE_KEY = 'dd_maps';
-  const MAPS_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+  const FALLBACK_MAPS   = ['Perimeter', 'Dire Marsh', 'Outpost', 'Cryo Archive'];
+  const CONFIG_CACHE_KEY = 'dd_config';
+  const CONFIG_CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
   function populateMaps(maps) {
     const sel = document.getElementById('map');
@@ -1086,24 +1082,42 @@
       maps.map(m => `<option value="${m}">${m}</option>`).join('');
   }
 
-  async function loadMaps() {
+  async function loadConfig() {
     // Serve from cache immediately if still fresh
     try {
-      const cached = JSON.parse(localStorage.getItem(MAPS_CACHE_KEY) || 'null');
-      if (cached && Date.now() - cached.ts < MAPS_CACHE_TTL) {
-        populateMaps(cached.maps);
+      const cached = JSON.parse(localStorage.getItem(CONFIG_CACHE_KEY) || 'null');
+      if (cached && Date.now() - cached.ts < CONFIG_CACHE_TTL) {
+        if (cached.roster && cached.roster.length > 0) {
+          ROSTER = cached.roster;
+          populateSelects();
+        }
+        if (cached.maps && cached.maps.length > 0) {
+          populateMaps(cached.maps);
+        }
         return;
       }
     } catch {}
 
-    // No fresh cache — show fallback instantly, then replace with live data
+    // No fresh cache — show map fallback instantly, then replace with live data
     populateMaps(FALLBACK_MAPS);
     try {
       const res  = await fetch(APPS_SCRIPT_URL);
       const data = await res.json();
-      if (data.status === 'ok' && Array.isArray(data.maps) && data.maps.length > 0) {
-        populateMaps(data.maps);
-        try { localStorage.setItem(MAPS_CACHE_KEY, JSON.stringify({ maps: data.maps, ts: Date.now() })); } catch {}
+      if (data.status === 'ok') {
+        if (Array.isArray(data.maps) && data.maps.length > 0) {
+          populateMaps(data.maps);
+        }
+        if (Array.isArray(data.roster) && data.roster.length > 0) {
+          ROSTER = data.roster;
+          populateSelects();
+        }
+        try {
+          localStorage.setItem(CONFIG_CACHE_KEY, JSON.stringify({
+            maps:   data.maps   || [],
+            roster: data.roster || [],
+            ts:     Date.now(),
+          }));
+        } catch {}
       }
     } catch {}
   }
@@ -1168,8 +1182,9 @@
         mode:   'no-cors',
         body:   JSON.stringify({ action: 'addRunner', name }),
       });
-      // Optimistically add to local roster and refresh selects
+      // Optimistically add to local roster, bust cache, and refresh selects
       ROSTER.push(name);
+      try { localStorage.removeItem(CONFIG_CACHE_KEY); } catch {}
       populateSelects();
       modalSuccessMsg.textContent = `✓ ${name.toUpperCase()} ADDED TO ROSTER`;
       modalSuccessMsg.classList.add('show');
@@ -1193,8 +1208,8 @@
   // ════════════════════════════════════════════════════════════════
   //  INIT
   // ════════════════════════════════════════════════════════════════
-  populateSelects();
-  loadMaps();
+  populateSelects(); // renders empty dropdowns immediately while fetch is in-flight
+  loadConfig();      // fetches roster + maps from the spreadsheet, then repopulates
 </script>
 </body>
 </html>
