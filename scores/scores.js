@@ -301,12 +301,25 @@ async function fetchTeamData(key){
 
   const activeLive=liveGame?.featuredStatus==='live'?liveGame:null;
   const nextIsClose=nextGame&&(nextGame.dateMs-now)<=2*60*60*1000;
-  const featured=isOffseason?null:
+
+  // Detect season-ending states ESPN doesn't immediately flag as type=4
+  const seasonTypeNum=typeof seasonType==='object'?seasonType?.type:seasonType;
+  const isPlayoffSeason=seasonTypeNum===3;
+  // Eliminated: playoff season with no upcoming games found and last game was a playoff game.
+  // Edge case: may briefly trigger in the 1-2 day window between rounds before ESPN schedules
+  // the next series — self-corrects on the next refresh once games are posted.
+  const isEliminated=!isOffseason&&isPlayoffSeason&&!nextGame&&!!lastCompleted?.isPlayoff;
+  // Missed playoffs: regular season wrapped up with no upcoming games (ESPN sometimes lags on type→4)
+  const isRegularSeason=seasonTypeNum===2;
+  const missedPlayoffs=!isOffseason&&isRegularSeason&&!nextGame&&!!lastCompleted&&!lastCompleted.isPlayoff;
+  const effectiveOffseason=isOffseason||isEliminated||missedPlayoffs;
+
+  const featured=effectiveOffseason?null:
     activeLive?activeLive:
     nextIsClose?nextGame:
     lastCompleted?lastCompleted:
     nextGame?nextGame:null;
-  const fs=isOffseason?'offseason':
+  const fs=effectiveOffseason?'offseason':
     !featured?'offseason':
     activeLive?'live':
     nextIsClose&&nextGame?'upcoming':
@@ -331,7 +344,7 @@ async function fetchTeamData(key){
   }
 
   const completedDateMs=lastCompleted?.dateMs||0;
-  const recentFiltered=isOffseason?[]:recentGames
+  const recentFiltered=effectiveOffseason?[]:recentGames
     .slice(-4).filter(g=>g.dateMs!==(featured?.dateMs||-1))
     .slice(-3).reverse();
 
@@ -364,9 +377,14 @@ async function fetchTeamData(key){
     nextGameToday:nextGame?new Date(nextGame.dateMs).toDateString()===new Date().toDateString():false,
     featuredDateMs:featured?.dateMs||0,
     nextGameDateMs:nextGame?.dateMs||0,
-    streak:isOffseason?null:streak,
-    standing:isOffseason?null:(schRes?.team?.standingSummary||null),
-    offseasonNote:fs==='offseason'?(isOffseason?nextSeasonNote(path):'No upcoming schedule found'):null,
+    streak:effectiveOffseason?null:streak,
+    standing:effectiveOffseason?null:(schRes?.team?.standingSummary||null),
+    offseasonNote:fs==='offseason'?(
+      isEliminated?'Season complete · eliminated from playoffs':
+      missedPlayoffs?'Season complete · regular season has ended':
+      isOffseason?nextSeasonNote(path):
+      'No upcoming schedule found'
+    ):null,
   };
 }
 
