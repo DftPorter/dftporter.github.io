@@ -264,7 +264,17 @@
       letter-spacing: 0.22em;
       color: var(--text-muted);
       text-transform: uppercase;
-      margin-bottom: 12px;
+      margin-bottom: 6px;
+    }
+    .card-season-tag {
+      display: block;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      opacity: 0.55;
+      margin-bottom: 8px;
     }
     .card-value {
       font-size: clamp(40px, 6.5vw, 110px);
@@ -902,6 +912,7 @@
     <div class="card primary">
       <div class="card-corner-mark" aria-hidden="true"></div>
       <div class="card-label">Exfil Rate</div>
+      <span class="card-season-tag" id="exfilSeasonTag">This Season</span>
       <div class="card-value" id="totalExfils">—</div>
       <div class="card-sub" id="exfilSub">— successful exfils</div>
       <div class="card-delta" id="exfilDelta"></div>
@@ -910,6 +921,7 @@
     <div class="card">
       <div class="card-corner-mark" aria-hidden="true"></div>
       <div class="card-label">Contract Rate</div>
+      <span class="card-season-tag" id="contractSeasonTag">This Season</span>
       <div class="card-value" id="totalContracts">—</div>
       <div class="card-sub" id="contractSub">— contracts completed</div>
       <div class="card-delta" id="contractDelta"></div>
@@ -918,6 +930,7 @@
     <div class="card">
       <div class="card-corner-mark" aria-hidden="true"></div>
       <div class="card-label">Elims / Run</div>
+      <span class="card-season-tag" id="killsSeasonTag">This Season</span>
       <div class="card-value" id="totalKills">—</div>
       <div class="card-sub" id="killsSub">— total elims</div>
       <div class="card-delta" id="killsDelta"></div>
@@ -926,6 +939,7 @@
     <div class="card">
       <div class="card-corner-mark" aria-hidden="true"></div>
       <div class="card-label">Total Runs</div>
+      <span class="card-season-tag" id="runsSeasonTag">This Season</span>
       <div class="card-value" id="totalRuns">—</div>
       <div class="card-sub" id="totalRunsSub">Lifetime operations</div>
       <div class="card-delta" id="runsDelta"></div>
@@ -1781,6 +1795,19 @@
           : curSeasonNum
             ? `Season ${curSeasonNum} operations`
             : 'Lifetime operations';
+
+    // Season badge on all four stat cards
+    const seasonBadgeText =
+      hasSeasonFilter && seasonIncs.length === 1
+        ? seasonIncs[0]
+        : hasSeasonFilter
+          ? 'Filtered'
+          : curSeasonNum
+            ? `Season ${curSeasonNum}`
+            : 'All Time';
+    ['runsSeasonTag', 'exfilSeasonTag', 'contractSeasonTag', 'killsSeasonTag'].forEach(id => {
+      document.getElementById(id).textContent = seasonBadgeText;
+    });
 
     showDelta('exfilDelta',    cur.exfilRate,    prev?.exfilRate,    v => v.toFixed(1) + '%');
     showDelta('contractDelta', cur.contractRate, prev?.contractRate, v => v.toFixed(1) + '%');
