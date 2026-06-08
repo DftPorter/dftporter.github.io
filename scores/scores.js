@@ -12,6 +12,7 @@ const NEWS_FEEDS = [
   { team:'Eagles',   color:'#004C54', url:'https://www.bleedinggreennation.com/rss/index.xml' },
   { team:'Flyers',   color:'#F74902', url:'https://www.broadstreethockey.com/rss/index.xml'   },
   { team:'Phillies', color:'#E81828', url:'https://www.thegoodphight.com/rss/index.xml'       },
+  { team:'Union',    color:'#8b6914', url:'https://phillysoccerpage.net/feed/'                },
 ];
 
 function fmtShort(ms){ return new Date(ms).toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
@@ -79,20 +80,33 @@ function parseEvent(ev, teamId){
 }
 
 function nextSeasonNote(path){
-  const yr = new Date().getFullYear();
+  const now=new Date(), yr=now.getFullYear(), m=now.getMonth(); // m: 0=Jan…11=Dec
   if(path.startsWith('football/nfl')){
-    const sep1 = new Date(yr,8,1);
-    const ft = new Date(sep1);
-    ft.setDate(1+(4-sep1.getDay()+7)%7);
-    return 'Next season starts ~'+ft.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+    // First Thursday after Labor Day (first Monday of September)
+    const sep1=new Date(yr,8,1);
+    const thu=new Date(sep1);
+    thu.setDate(1+(4-sep1.getDay()+7)%7);
+    return 'Next season starts ~'+thu.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   }
   if(path.startsWith('baseball/mlb')){
-    const m=new Date().getMonth(); // 0=Jan
-    if(m>=2&&m<=9) return 'Regular season underway';
-    if(m>=10) return 'Season complete · Spring Training starts February';
-    return 'Spring Training underway · Regular season starts late March';
+    if(m>=10||m===0) return 'Spring Training starts February';   // Nov–Jan
+    if(m===1)        return 'Spring Training underway';           // Feb
+    if(m===2)        return 'Regular season starts late March';   // Mar
+    return null;                                                  // Apr–Oct: in-season
   }
-  return 'Season has ended';
+  if(path.startsWith('basketball/nba')){
+    // Regular season opens mid-October
+    return 'Next season starts ~October '+(m>=9?yr+1:yr);
+  }
+  if(path.startsWith('hockey/nhl')){
+    // Regular season opens mid-October
+    return 'Next season starts ~October '+(m>=9?yr+1:yr);
+  }
+  if(path.startsWith('soccer')){
+    // MLS regular season opens late February
+    return 'Next season starts ~February '+(m>=1?yr+1:yr);
+  }
+  return null;
 }
 
 // Schedule cache — sessionStorage with 1-hour TTL
@@ -380,12 +394,7 @@ async function fetchTeamData(key){
     nextGameDateMs:nextGame?.dateMs||0,
     streak:effectiveOffseason?null:streak,
     standing:effectiveOffseason?null:(schRes?.team?.standingSummary||null),
-    offseasonNote:fs==='offseason'?(
-      isEliminated?(lastCompleted?.isPlayoff?'Season complete · eliminated from playoffs':'Season complete · season has ended'):
-      missedPlayoffs?'Season complete · season has ended':
-      isOffseason?nextSeasonNote(path):
-      'No upcoming schedule found'
-    ):null,
+    offseasonNote:fs==='offseason'?nextSeasonNote(path):null,
   };
 }
 
@@ -597,12 +606,12 @@ function renderCard(key,data){
       +(f.label?'<div class="game-label">'+f.label+'</div>':'')
       +'<div class="matchup">'+matchup+'</div><div class="game-info-row">'+datePrefix+f.note+(f.venue?' · '+f.venue:'')+'</div>'+broadcastRow+'</div>';
   } else {
-    featuredHtml='<div class="featured-game" style="text-align:center;padding:24px 20px"><div style="font-size:36px;margin-bottom:8px">🏆</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:18px;color:#4b5563;letter-spacing:.08em">Season Complete</div>'+(data.offseasonNote?'<div style="font-size:11px;color:#6b7280;margin-top:6px;font-family:\'DM Mono\',monospace">'+data.offseasonNote+'</div>':'')+'</div>';
+    featuredHtml='<div class="offseason-banner"><img class="offseason-logo" src="'+TEAMS[key].logo+'" alt="'+name+'">'+(data.offseasonNote?'<div class="offseason-note">'+data.offseasonNote+'</div>':'')+'</div>';
   }
   const recentHtml=data.recentGames?.length?data.recentGames.map(g=>{ const r=g.phiScore>g.oppScore?{c:'win',l:'W'}:g.phiScore<g.oppScore?{c:'loss',l:'L'}:{c:'draw',l:'D'}; return '<div class="result-row"><div class="result-matchup">'+(g.home?'vs':'@')+' <span>'+g.opp+'</span></div><div class="result-score">'+g.phiScore+'&ndash;'+g.oppScore+'</div><div class="result-wl '+r.c+'">'+r.l+'</div><div class="result-date">'+g.date+'</div></div>'; }).join(''):'<div class="no-recent">No recent games</div>';
   const nextHtml=data.nextGame?'<div class="next-game-row'+(data.nextGameToday?' today':'')+(data.nextGameIsPlayoff?' playoffs':'')+'"><div class="next-game-label">'+(data.nextGameIsPlayoff?'Playoffs &#9654;':'Next &#9654;')+'</div><div class="next-game-info">'+data.nextGame+(data.nextGameToday?'<span class="today-badge">TODAY</span>':'')+'</div></div>':'';
   // During offseason, swap Recent Games for team-specific Recent Headlines
-  const NEWS_TEAM_KEY={eagles:'Eagles',sixers:'Sixers',flyers:'Flyers',phillies:'Phillies'};
+  const NEWS_TEAM_KEY={eagles:'Eagles',sixers:'Sixers',flyers:'Flyers',phillies:'Phillies',union:'Union'};
   const teamNewsKey=NEWS_TEAM_KEY[key];
   const teamNews=(fs==='offseason'&&teamNewsKey)?(newsCache.byTeam?.[teamNewsKey]||[]):[];
   const recentSection=teamNews.length

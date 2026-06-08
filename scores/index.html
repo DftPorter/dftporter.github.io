@@ -94,6 +94,9 @@
   .game-info-row{margin-top:10px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;text-align:center;flex-wrap:wrap;}
   .broadcast-row{margin-top:6px;font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);text-align:center;letter-spacing:.04em;}
   [data-theme="light"] .broadcast-row{color:#374151 !important;}
+  .offseason-banner{display:flex;flex-direction:column;align-items:center;padding:14px 20px 12px;gap:8px;}
+  .offseason-logo{width:52px;height:52px;object-fit:contain;opacity:.35;filter:grayscale(40%);}
+  .offseason-note{font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);text-align:center;letter-spacing:.04em;}
   .recent-results{padding:14px 20px 16px;}
   .results-label{font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--muted);margin-bottom:10px;font-family:'DM Mono',monospace;}
   .result-row{display:flex;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:13px;gap:6px;}
@@ -111,10 +114,10 @@
   .next-game-info{font-size:12px;color:#d1d5db;letter-spacing:.02em;flex:1;}
   .today-badge{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.08em;color:#f59e0b;background:rgba(251,191,36,.2);border:1px solid rgba(251,191,36,.4);border-radius:100px;padding:1px 7px;margin-left:6px;vertical-align:middle;}
   .no-recent{padding:10px 0;font-size:12px;color:#4b5563;font-family:'DM Mono',monospace;text-align:center;}
-  .card-news-item{display:block;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.03);text-decoration:none;transition:opacity .15s;}
+  .card-news-item{display:block;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.03);text-decoration:none;transition:opacity .15s;}
   .card-news-item:last-child{border-bottom:none;}
   .card-news-item:hover{opacity:.75;}
-  .card-news-title{font-size:12px;color:#e5e7eb;line-height:1.35;letter-spacing:.01em;}
+  .card-news-title{font-size:13px;color:#e5e7eb;line-height:1.4;letter-spacing:.01em;}
   .card-news-time{font-family:'DM Mono',monospace;font-size:10px;color:#4b5563;margin-top:3px;}
   @keyframes scoreFlash{0%{box-shadow:0 0 0 0 rgba(255,255,255,0);}20%{box-shadow:0 0 24px 6px rgba(255,215,0,.5);}100%{box-shadow:0 0 0 0 rgba(255,215,0,0);}}
   .score-changed{animation:scoreFlash 1.5s ease-out;}
