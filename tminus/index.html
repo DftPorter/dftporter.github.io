@@ -806,8 +806,14 @@ async function syncFromGist() {
   if (!token || !gistId) { setSyncStatus('off', 'Sync not configured — click ⚙ to set up'); return; }
   setSyncStatus('syncing', 'Fetching from Gist…');
   try {
-    const items = await fetchFromGist(token, gistId);
-    save(items);
+    const gistItems = await fetchFromGist(token, gistId);
+    const localItems = load();
+    // Merge: keep any local items not present in the Gist (added between syncs on this device)
+    const gistIds = new Set(gistItems.map(i => i.id));
+    const localOnly = localItems.filter(i => !gistIds.has(i.id));
+    const merged = [...gistItems, ...localOnly];
+    save(merged);
+    if (localOnly.length > 0) syncToGist(merged); // push merged state so other devices get it too
     render();
     fillBars();
     setSyncStatus('ok', `Synced ${new Date().toLocaleTimeString()}`);
