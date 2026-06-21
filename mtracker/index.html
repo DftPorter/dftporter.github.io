@@ -540,13 +540,17 @@
     .filter-bar-inner {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 14px;
     }
     .filter-group {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 7px;
+    }
+    .filter-chips {
+      display: flex;
       flex-wrap: wrap;
+      gap: 7px;
     }
     .filter-group-label {
       font-family: var(--mono);
@@ -1204,11 +1208,20 @@
 
   /* ── Filter state ── */
   let allRows = [];
-  const activeFilters = { maps: new Map(), runners: new Map(), types: new Map(), seasons: new Map() };
+  const activeFilters = { maps: new Map(), runners: new Map(), types: new Map(), seasons: new Map(), today: false };
 
   function applyFilters(rows) {
-    const { maps, runners, types, seasons } = activeFilters;
+    const { maps, runners, types, seasons, today } = activeFilters;
+    const todayDate = new Date();
     return rows.filter(r => {
+      // Today only
+      if (today) {
+        const ts = parseGvizDate(r['Timestamp']);
+        if (!ts) return false;
+        if (ts.getFullYear() !== todayDate.getFullYear() ||
+            ts.getMonth()    !== todayDate.getMonth()    ||
+            ts.getDate()     !== todayDate.getDate())     return false;
+      }
       // Maps
       if (maps.size > 0) {
         const val  = (r['Map'] || '').trim();
@@ -1272,7 +1285,7 @@
       return;
     }
 
-    const hasActive = activeFilters.maps.size > 0 || activeFilters.runners.size > 0 || activeFilters.types.size > 0 || activeFilters.seasons.size > 0;
+    const hasActive = activeFilters.maps.size > 0 || activeFilters.runners.size > 0 || activeFilters.types.size > 0 || activeFilters.seasons.size > 0 || activeFilters.today;
     ratesEl.classList.remove('no-filter'); // filter bar visible → use 1px gap
 
     const makeChips = (items, group) => items.map(label => {
@@ -1314,6 +1327,30 @@
       </div>`;
     inner.appendChild(header);
 
+    // TODAY quick-filter (toggle chip)
+    const todayGrp = document.createElement('div');
+    todayGrp.className = 'filter-group';
+    const todayLbl = document.createElement('span');
+    todayLbl.className = 'filter-group-label';
+    todayLbl.textContent = 'Date';
+    todayGrp.appendChild(todayLbl);
+    const todayChip = document.createElement('button');
+    todayChip.className = 'filter-chip' + (activeFilters.today ? ' include' : '');
+    todayChip.textContent = "TODAY";
+    todayChip.setAttribute('aria-pressed', activeFilters.today ? 'true' : 'false');
+    todayChip.setAttribute('aria-label', `Today only${activeFilters.today ? ' — active' : ''}. Press to toggle.`);
+    todayChip.onclick = () => {
+      activeFilters.today = !activeFilters.today;
+      saveFilters();
+      buildFilterBar(allRows);
+      render(applyFilters(allRows));
+    };
+    const todayChipsWrap = document.createElement('div');
+    todayChipsWrap.className = 'filter-chips';
+    todayChipsWrap.appendChild(todayChip);
+    todayGrp.appendChild(todayChipsWrap);
+    inner.appendChild(todayGrp);
+
     const seasonItems = knownSeasons.map(s => s.label); // e.g. ['S1', 'S2']
     const groups = [
       { label: 'Season', key: 'seasons', items: seasonItems },
@@ -1330,7 +1367,10 @@
       lbl.className = 'filter-group-label';
       lbl.textContent = label;
       grp.appendChild(lbl);
-      makeChips(items, key).forEach(c => grp.appendChild(c));
+      const chipsWrap = document.createElement('div');
+      chipsWrap.className = 'filter-chips';
+      makeChips(items, key).forEach(c => chipsWrap.appendChild(c));
+      grp.appendChild(chipsWrap);
       inner.appendChild(grp);
     });
 
@@ -1342,7 +1382,7 @@
       clearBtn.className = 'filter-clear';
       clearBtn.textContent = '× CLEAR';
       clearBtn.onclick = () => {
-        activeFilters.maps.clear(); activeFilters.runners.clear(); activeFilters.types.clear(); activeFilters.seasons.clear();
+        activeFilters.maps.clear(); activeFilters.runners.clear(); activeFilters.types.clear(); activeFilters.seasons.clear(); activeFilters.today = false;
         saveFilters();
         buildFilterBar(allRows);
         render(applyFilters(allRows));
@@ -1788,23 +1828,27 @@
     document.getElementById('killsSub').textContent    = cur.kills     ? `${cur.kills} total elims`            : '— total elims';
     const seasonIncs = [...activeFilters.seasons].filter(([,s]) => s === 'include').map(([k]) => k);
     document.getElementById('totalRunsSub').textContent =
-      hasSeasonFilter && seasonIncs.length === 1
-        ? `${seasonIncs[0]} operations`
-        : hasSeasonFilter
-          ? 'Filtered operations'
-          : curSeasonNum
-            ? `Season ${curSeasonNum} operations`
-            : 'Lifetime operations';
+      activeFilters.today
+        ? "Today's operations"
+        : hasSeasonFilter && seasonIncs.length === 1
+          ? `${seasonIncs[0]} operations`
+          : hasSeasonFilter
+            ? 'Filtered operations'
+            : curSeasonNum
+              ? `Season ${curSeasonNum} operations`
+              : 'Lifetime operations';
 
     // Season badge on all four stat cards
     const seasonBadgeText =
-      hasSeasonFilter && seasonIncs.length === 1
-        ? seasonIncs[0]
-        : hasSeasonFilter
-          ? 'Filtered'
-          : curSeasonNum
-            ? `Season ${curSeasonNum}`
-            : 'All Time';
+      activeFilters.today
+        ? 'Today'
+        : hasSeasonFilter && seasonIncs.length === 1
+          ? seasonIncs[0]
+          : hasSeasonFilter
+            ? 'Filtered'
+            : curSeasonNum
+              ? `Season ${curSeasonNum}`
+              : 'All Time';
     ['runsSeasonTag', 'exfilSeasonTag', 'contractSeasonTag', 'killsSeasonTag'].forEach(id => {
       document.getElementById(id).textContent = seasonBadgeText;
     });
@@ -1812,7 +1856,21 @@
     showDelta('exfilDelta',    cur.exfilRate,    prev?.exfilRate,    v => v.toFixed(1) + '%');
     showDelta('contractDelta', cur.contractRate, prev?.contractRate, v => v.toFixed(1) + '%');
     showDelta('killsDelta',    cur.kpr,          prev?.kpr,          v => v.toFixed(2));
-    showDelta('runsDelta',     cur.runs,         prev?.runs,         v => Math.round(v).toString());
+    // Runs delta: pace (runs/day) vs prev season — suppressed for today-only view
+    if (!activeFilters.today && viewingCurrentSeason && prev && curSeasonStart) {
+      const msPerDay    = 1000 * 60 * 60 * 24;
+      const now         = new Date();
+      const curEndCap   = (curSeasonEnd && curSeasonEnd < now) ? curSeasonEnd : now;
+      const daysCur     = Math.max(1, Math.round((curEndCap  - curSeasonStart)  / msPerDay));
+      const daysPrev    = (prevSeasonStart && prevSeasonEnd)
+        ? Math.max(1, Math.round((prevSeasonEnd - prevSeasonStart) / msPerDay))
+        : null;
+      const curRpd  = cur.runs  / daysCur;
+      const prevRpd = daysPrev  ? prev.runs / daysPrev : null;
+      showDelta('runsDelta', curRpd, prevRpd, v => v.toFixed(1) + '/day');
+    } else {
+      document.getElementById('runsDelta').style.display = 'none';
+    }
 
     setTimeout(() => {
       document.getElementById('exfilBarFill').style.width    = cur.exfilRate    !== null ? `${Math.min(cur.exfilRate,    100)}%` : '0%';
@@ -1844,9 +1902,9 @@
   /* ── Filter persistence ── */
   function saveFilters() {
     try {
-      const obj = {};
-      for (const [key, map] of Object.entries(activeFilters))
-        obj[key] = [...map.entries()];
+      const obj = { today: activeFilters.today };
+      for (const [key, val] of Object.entries(activeFilters))
+        if (val instanceof Map) obj[key] = [...val.entries()];
       localStorage.setItem('dd_filters', JSON.stringify(obj));
     } catch {}
   }
@@ -1856,8 +1914,9 @@
       const raw = localStorage.getItem('dd_filters');
       if (!raw) return;
       const obj = JSON.parse(raw);
+      if (typeof obj.today === 'boolean') activeFilters.today = obj.today;
       for (const [key, entries] of Object.entries(obj))
-        if (activeFilters[key] && Array.isArray(entries))
+        if (activeFilters[key] instanceof Map && Array.isArray(entries))
           activeFilters[key] = new Map(entries);
     } catch {}
   }
