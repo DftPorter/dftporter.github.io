@@ -1,1 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tides</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a1628">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tides">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { overflow-x: hidden; }
+  html, body { max-width: 100vw; overscroll-behavior-x: none; }
 
+  :root {
+    --bg: #0a1628;
+    --surface: #0f2040;
+    --card: #132a52;
+    --accent: #2dd4bf;
+    --accent2: #38bdf8;
+    --text: #e2f0ff;
+    --muted: #6b8db5;
+    --high: #34d399;
+    --low: #94a3b8;
+  }
+
+  body {
+    background: radial-gradient(ellipse 120% 40% at 50% 0%, #0e2444 0%, #0a1628 55%);
+    color: var(--text);
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 40px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  header {
+    width: 100%;
+    padding: 20px 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  h1 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: linear-gradient(120deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .refresh-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+  }
+  .refresh-btn:hover { color: var(--accent); }
+  .refresh-btn.spinning svg { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  select {
+    width: 100%;
+    background: linear-gradient(160deg, #14294e 0%, #0f2040 100%);
+    color: var(--text);
+    border: 1px solid rgba(56, 120, 180, 0.4);
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 1rem;
+    font-family: 'Space Grotesk', sans-serif;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b8db5' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 8px rgba(0,0,0,0.3);
+  }
+  select:focus { outline: 1px solid var(--accent); }
+  select option {
+    background: #0f2040;
+    color: #e2f0ff;
+  }
+
+  .main {
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* ---- current tide card ---- */
+  .current-card {
+    background: linear-gradient(155deg, #162f58 0%, #0f2040 55%, #0c1c38 100%);
+    border-radius: 18px;
+    padding: 24px 22px 20px;
+    border: 1px solid rgba(56, 120, 180, 0.35);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  .current-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+  }
+
+  .current-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .current-meta {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+  }
+
+  .current-time-display {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.1;
+    letter-spacing: 0.01em;
+  }
+
+  .current-temp-display {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .current-status {
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .current-status.rising  { color: var(--high);    text-shadow: 0 0 28px rgba(52, 211, 153, 0.45); }
+  .current-status.falling { color: var(--accent2); text-shadow: 0 0 28px rgba(56, 189, 248, 0.45); }
+
+  .current-sub {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 22px;
+  }
+
+  /* tide arc progress */
+  .arc-wrap {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .arc-svg { width: 100%; max-width: 320px; overflow: visible; }
+
+  .arc-labels {
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  /* ---- next tides row ---- */
+  .next-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .next-card {
+    background: linear-gradient(155deg, #162f58 0%, #0f2040 55%, #0c1c38 100%);
+    border-radius: 16px;
+    padding: 18px 16px;
+    border: 1px solid rgba(56, 120, 180, 0.35);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 4px 16px rgba(0,0,0,0.35);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .next-card-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .next-card-type {
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .next-card-type.high { color: var(--high); }
+  .next-card-type.low  { color: var(--accent2); }
+
+  .next-card-time {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+    background: linear-gradient(180deg, #ffffff 0%, #a8c8e8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .next-card-in {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  /* ---- full schedule ---- */
+  .schedule-card {
+    background: linear-gradient(155deg, #162f58 0%, #0f2040 55%, #0c1c38 100%);
+    border-radius: 16px;
+    padding: 18px 18px;
+    border: 1px solid rgba(56, 120, 180, 0.35);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 4px 16px rgba(0,0,0,0.35);
+  }
+
+  .schedule-title {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .schedule-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .schedule-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid #1a3254;
+  }
+  .schedule-row:last-child { border-bottom: none; }
+
+  .schedule-row.current-window {
+    background: #0d2040;
+    border-radius: 8px;
+    padding: 7px 8px;
+    margin: 0 -8px;
+  }
+
+  .sched-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .sched-dot.high { background: var(--high);  box-shadow: 0 0 6px rgba(52, 211, 153, 0.6); }
+  .sched-dot.low  { background: var(--muted); box-shadow: 0 0 6px rgba(107, 141, 181, 0.4); }
+
+  .sched-type {
+    font-size: 0.8rem;
+    font-weight: 500;
+    width: 34px;
+    flex-shrink: 0;
+  }
+  .sched-type.high { color: var(--high); }
+  .sched-type.low  { color: var(--muted); }
+
+  .sched-time {
+    font-size: 0.9rem;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .sched-past { opacity: 0.38; }
+
+  .now-badge {
+    font-size: 0.62rem;
+    background: linear-gradient(120deg, var(--accent) 0%, var(--accent2) 100%);
+    color: var(--bg);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    box-shadow: 0 0 8px rgba(45, 212, 191, 0.4);
+  }
+
+  /* ---- states ---- */
+  .loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .error-banner {
+    background: #2a1215;
+    border: 1px solid #7f1d1d;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+  .error-banner-icon { color: #f87171; flex-shrink: 0; margin-top: 1px; }
+  .error-banner-body { flex: 1; }
+  .error-banner-title { color: #f87171; font-weight: 600; margin-bottom: 2px; }
+  .error-banner-detail { color: #fca5a5; opacity: 0.8; font-size: 0.78rem; }
+  .error-banner-retry {
+    background: none;
+    border: 1px solid #7f1d1d;
+    color: #f87171;
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    margin-top: 8px;
+    display: inline-block;
+  }
+  .error-banner-retry:hover { background: #3b1215; }
+
+  .updated-at {
+    text-align: center;
+    font-size: 0.68rem;
+    color: var(--muted);
+    padding-top: 4px;
+  }
+
+  /* ---- theme toggle button ---- */
+  .theme-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+  }
+  .theme-btn:hover { color: var(--accent); }
+  .btn-group { display: flex; align-items: center; gap: 4px; }
+
+  /* ---- light mode ---- */
+  body.light {
+    --bg: #ddeaf5;
+    --surface: #ffffff;
+    --accent: #0d9488;
+    --accent2: #0369a1;
+    --text: #0b1e35;
+    --muted: #4a6a8a;
+    --high: #059669;
+    background: linear-gradient(160deg, #e6f2fb 0%, #d8e8f4 100%);
+    color: var(--text);
+  }
+
+  body.light h1 {
+    background: linear-gradient(120deg, #0d9488 0%, #0369a1 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  body.light select {
+    background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234a6a8a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 14px center;
+    color: var(--text);
+    border-color: rgba(13, 148, 136, 0.3);
+    box-shadow: 0 2px 8px rgba(0,60,100,0.08);
+  }
+
+  body.light .current-card,
+  body.light .next-card,
+  body.light .schedule-card {
+    background: linear-gradient(155deg, #ffffff 0%, #f2f8fd 100%);
+    border-color: rgba(13, 148, 136, 0.18);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 4px 20px rgba(0,60,100,0.09);
+  }
+
+  body.light .current-status.rising  { color: #059669; text-shadow: none; }
+  body.light .current-status.falling { color: #0369a1; text-shadow: none; }
+
+  body.light .next-card-type.high { color: #059669; }
+  body.light .next-card-type.low  { color: #0369a1; }
+
+  body.light .next-card-time {
+    background: linear-gradient(180deg, #0b1e35 0%, #1e3a5f 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  body.light .schedule-row        { border-bottom-color: #ccdded; }
+  body.light .schedule-row.current-window { background: #e4f2fb; }
+  body.light .sched-dot.high { background: #059669; box-shadow: 0 0 5px rgba(5,150,105,0.3); }
+  body.light .sched-dot.low  { background: #0369a1; box-shadow: 0 0 5px rgba(3,105,161,0.3); }
+  body.light .sched-type.high { color: #059669; }
+  body.light .sched-type.low  { color: #0369a1; }
+
+  body.light .now-badge {
+    background: linear-gradient(120deg, #0d9488 0%, #0369a1 100%);
+    color: #ffffff;
+    box-shadow: 0 0 8px rgba(13,148,136,0.2);
+  }
+
+  body.light .error-banner {
+    background: #fff0f0;
+    border-color: #fca5a5;
+  }
+  body.light select option {
+    background: #ffffff;
+    color: #0b1e35;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-row">
+    <h1>Tides</h1>
+    <div class="btn-group">
+      <button class="theme-btn" id="themeBtn" title="Toggle light/dark mode">
+        <svg id="themeBtnIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </button>
+      <button class="refresh-btn" id="refreshBtn" title="Refresh">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
+          <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="main" id="main">
+  <div class="loading">Loading tides…</div>
+</div>
+
+<div style="width:100%;padding:0 20px 8px;">
+  <select id="stationSelect">
+    <option value="8535101">Ocean City</option>
+    <option value="8535835">Wildwood Crest</option>
+    <option value="8536110">Cape May</option>
+  </select>
+</div>
+
+<script>
+const NOAA = 'https://api.tidesandcurrents.noaa.gov/api/prod/datagetter';
+
+// ---- theme ----
+function isLight() { return document.body.classList.contains('light'); }
+
+function themeColors() {
+  const light = isLight();
+  return {
+    high:          light ? '#059669' : '#34d399',
+    low:           light ? '#0369a1' : '#38bdf8',
+    grid:          light ? '#ccdded' : '#1a3254',
+    gridMid:       light ? '#d8e8f2' : '#1a3254',
+    area:          light ? [0.14, 0.01] : [0.22, 0.02],
+    pastDotFill:   light ? '#d0e6f4' : '#122038',
+    pastDotStroke: light ? '#b0cce0' : '#1e3a5f',
+    pastLabel:     light ? '#9ab8cc' : '#2a4460',
+    futureLabel:   light ? '#4a6a8a' : '#3d5f80',
+    timeLabel:     light ? '#9ab8cc' : '#3d5f80',
+    dimLabel:      light ? '#c0d4e4' : '#1e3a5f',
+    nowLine:       light ? '#0b1e35' : 'white',
+    levelPill:     light ? 0.2 : 0.18,
+  };
+}
+
+function updateThemeBtn() {
+  const light = isLight();
+  document.getElementById('themeBtnIcon').innerHTML = light
+    ? /* moon */ `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`
+    : /* sun  */ `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('tides_theme');
+  if (saved === 'light') document.body.classList.add('light');
+  updateThemeBtn();
+  updateThemeColor();
+}
+
+let _lastTides = null, _lastTemp = null;
+
+function updateThemeColor() {
+  document.querySelector('meta[name="theme-color"]')
+    .setAttribute('content', isLight() ? '#ddeaf5' : '#0a1628');
+}
+
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  localStorage.setItem('tides_theme', isLight() ? 'light' : 'dark');
+  updateThemeBtn();
+  updateThemeColor();
+  if (_lastTides) render(_lastTides, _lastTemp);
+}
+
+const STATION_META = {
+  '8535101': { lat: 39.274, lon: -74.574 },
+  '8535835': { lat: 38.984, lon: -74.868 },
+  '8536110': { lat: 38.968, lon: -74.960 },
+};
+
+async function fetchWeather(stationId) {
+  const { lat, lon } = STATION_META[stationId] || { lat: 39.1, lon: -74.7 };
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m&temperature_unit=fahrenheit&forecast_days=1`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return Math.round(data.current.temperature_2m);
+}
+
+function fmtTime(date) {
+  return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+}
+
+function relTime(date) {
+  const diff = date - Date.now();
+  const abs = Math.abs(diff);
+  const h = Math.floor(abs / 3600000);
+  const m = Math.floor((abs % 3600000) / 60000);
+  if (diff < 0) return 'passed';
+  if (h === 0) return `in ${m}m`;
+  if (m === 0) return `in ${h}h`;
+  return `in ${h}h ${m}m`;
+}
+
+function parseNoaaDate(str) {
+  // "2025-06-25 14:30" local time
+  const [datePart, timePart] = str.split(' ');
+  const [y, mo, d] = datePart.split('-').map(Number);
+  const [h, mi] = timePart.split(':').map(Number);
+  return new Date(y, mo - 1, d, h, mi);
+}
+
+async function fetchTides(stationId) {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const fmt = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
+
+  // fetch today + tomorrow to always have a "next" tide
+  const begin = fmt(now);
+  const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate() + 1);
+  const end = fmt(tomorrow);
+
+  const url = `${NOAA}?begin_date=${begin}&end_date=${end}` +
+    `&station=${stationId}&product=predictions&datum=MLLW` +
+    `&time_zone=lst_ldt&interval=hilo&units=english&application=nj_tides&format=json`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.predictions.map(p => ({
+    time: parseNoaaDate(p.t),
+    type: p.type === 'H' ? 'high' : 'low',
+    ft: parseFloat(p.v)
+  }));
+}
+
+function buildTideChart(tides, nowMs) {
+  const W = 280, H = 120;
+  const PAD = { top: 20, right: 14, bottom: 28, left: 14 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top - PAD.bottom;
+
+  // window: 1 event before now → 2 events after (≈18 hrs of context)
+  const nextIdx = tides.findIndex(t => t.time > nowMs);
+  if (nextIdx === -1) return '';
+  const startIdx = Math.max(0, nextIdx - 1);
+  const endIdx   = Math.min(tides.length - 1, nextIdx + 2);
+  const win = tides.slice(startIdx, endIdx + 1);
+  if (win.length < 2) return '';
+
+  const t0 = win[0].time, t1 = win[win.length - 1].time;
+  const fts = win.map(t => t.ft);
+  const minFt = Math.min(...fts), maxFt = Math.max(...fts);
+  const ftSpan = Math.max(maxFt - minFt, 1);
+
+  function tx(ms) { return PAD.left + (ms - t0) / (t1 - t0) * cW; }
+  function ty(ft) { return PAD.top + cH - (ft - minFt + 0.25) / (ftSpan + 0.5) * cH; }
+
+  // cosine-interpolated curve sampled at 60 pts per segment
+  const pts = [];
+  for (let i = 0; i < win.length - 1; i++) {
+    const a = win[i], b = win[i + 1];
+    const STEPS = 60;
+    for (let s = 0; s <= STEPS; s++) {
+      const f = s / STEPS;
+      pts.push([
+        tx(a.time + f * (b.time - a.time)),
+        ty(a.ft + (b.ft - a.ft) * (1 - Math.cos(Math.PI * f)) / 2)
+      ]);
+    }
+  }
+
+  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join('');
+  const area = `${line}L${pts[pts.length-1][0].toFixed(1)},${PAD.top+cH}L${pts[0][0].toFixed(1)},${PAD.top+cH}Z`;
+
+  // current water level via cosine interpolation
+  const prevT = nextIdx > 0 ? tides[nextIdx - 1] : null;
+  const nextT = tides[nextIdx];
+  const frac  = prevT ? (nowMs - prevT.time) / (nextT.time - prevT.time) : 0;
+  const nowFt = prevT ? prevT.ft + (nextT.ft - prevT.ft) * (1 - Math.cos(Math.PI * frac)) / 2 : nextT.ft;
+  const nowX  = tx(nowMs), nowY = ty(nowFt);
+  const isRisingNow = nextT.type === 'high';
+  const tc = themeColors();
+  const color = isRisingNow ? tc.high : tc.low;
+
+  // wave paths at nowY — two sine layers fill downward to chart bottom
+  const wSX = PAD.left - 5, wEX = PAD.left + cW + 10;
+  const wBot = PAD.top + cH + 6;
+  const period = 68;
+  function genWave(baseY, amp) {
+    let d = `M ${wSX},${baseY}`;
+    for (let x = wSX; x < wEX; x += period) {
+      d += ` C ${x+period*0.25},${baseY-amp} ${x+period*0.75},${baseY+amp} ${x+period},${baseY}`;
+    }
+    return d;
+  }
+  const w1 = genWave(nowY - 1, 3);
+  const w2 = genWave(nowY + 4, 4);
+  const w1Fill = `${w1} L ${wEX},${wBot} L ${wSX},${wBot} Z`;
+  const w2Fill = `${w2} L ${wEX},${wBot} L ${wSX},${wBot} Z`;
+
+  const markers = win.map(t => ({
+    x: tx(t.time), y: ty(t.ft),
+    type: t.type, ft: t.ft.toFixed(1),
+    label: fmtTime(t.time), isPast: t.time < nowMs
+  }));
+
+  const splitIdx = pts.findIndex(p => p[0] >= nowX);
+  const pastPts   = splitIdx > 0 ? pts.slice(0, splitIdx + 1) : [];
+  const futurePts = splitIdx >= 0 ? pts.slice(splitIdx) : pts;
+  const mkPath = arr => arr.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join('');
+  const pastLine   = mkPath(pastPts);
+  const futureLine = mkPath(futurePts);
+
+  return `<svg class="arc-svg" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="areaGrad" gradientUnits="userSpaceOnUse" x1="0" y1="${PAD.top}" x2="0" y2="${PAD.top+cH}">
+        <stop offset="0%"   stop-color="${color}" stop-opacity="${tc.area[0]}"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="${tc.area[1]}"/>
+      </linearGradient>
+      <clipPath id="chartClip">
+        <rect x="${PAD.left}" y="${PAD.top-4}" width="${cW}" height="${cH+4}"/>
+      </clipPath>
+      <pattern id="waveHatch" patternUnits="userSpaceOnUse" width="10" height="10">
+        <path d="M0,0 L10,10 M10,0 L0,10" stroke="${color}" stroke-width="0.8" stroke-linecap="round"/>
+      </pattern>
+      <linearGradient id="waveFillFade" gradientUnits="userSpaceOnUse" x1="0" y1="${nowY}" x2="0" y2="${wBot}">
+        <stop offset="0%"   stop-color="white" stop-opacity="1"/>
+        <stop offset="100%" stop-color="white" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="waveHatchFade" gradientUnits="userSpaceOnUse" x1="0" y1="${nowY}" x2="0" y2="${wBot}">
+        <stop offset="0%"   stop-color="white" stop-opacity="0"/>
+        <stop offset="55%"  stop-color="white" stop-opacity="1"/>
+        <stop offset="100%" stop-color="white" stop-opacity="0"/>
+      </linearGradient>
+      <mask id="waveFillMask">
+        <rect x="${wSX}" y="${nowY-8}" width="${wEX - wSX}" height="${wBot - nowY + 8}" fill="url(#waveFillFade)"/>
+      </mask>
+      <mask id="waveHatchMask">
+        <rect x="${wSX}" y="${nowY}" width="${wEX - wSX}" height="${wBot - nowY}" fill="url(#waveHatchFade)"/>
+      </mask>
+    </defs>
+
+    <line x1="${PAD.left}" y1="${PAD.top}"      x2="${PAD.left+cW}" y2="${PAD.top}"      stroke="${tc.grid}" stroke-width="1"/>
+    <line x1="${PAD.left}" y1="${PAD.top+cH/2}" x2="${PAD.left+cW}" y2="${PAD.top+cH/2}" stroke="${tc.gridMid}" stroke-width="0.5" stroke-dasharray="3,4"/>
+    <line x1="${PAD.left}" y1="${PAD.top+cH}"   x2="${PAD.left+cW}" y2="${PAD.top+cH}"   stroke="${tc.grid}" stroke-width="1"/>
+
+    <path d="${area}" fill="url(#areaGrad)" clip-path="url(#chartClip)"/>
+
+    <path d="${line}" stroke="${color}" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#chartClip)" opacity="0.07"/>
+    ${pastLine   ? `<path d="${pastLine}"   stroke="${color}" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#chartClip)" opacity="0.28"/>` : ''}
+    ${futureLine ? `<path d="${futureLine}" stroke="${color}" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#chartClip)" opacity="0.9"/>` : ''}
+
+    <!-- wave water body at current level -->
+    <g clip-path="url(#chartClip)" mask="url(#waveFillMask)">
+      <path d="${w1Fill}" fill="${color}" opacity="0.12"/>
+      <path d="${w2Fill}" fill="${color}" opacity="0.2"/>
+    </g>
+    <g clip-path="url(#chartClip)" mask="url(#waveHatchMask)">
+      <rect x="${wSX}" y="${nowY}" width="${wEX - wSX}" height="${wBot - nowY}" fill="url(#waveHatch)" opacity="0.45"/>
+    </g>
+    <g clip-path="url(#chartClip)">
+      <path d="${w2}" stroke="${color}" stroke-width="1.5" fill="none" opacity="0.55" stroke-linecap="round"/>
+    </g>
+    <!-- height label -->
+    <rect x="${PAD.left}" y="${nowY-9}" width="26" height="11" rx="3" fill="${color}" opacity="${tc.levelPill}"/>
+    <text x="${PAD.left+13}" y="${nowY+0.5}" text-anchor="middle" dominant-baseline="middle"
+      font-size="8" font-weight="700" font-family="Space Grotesk,sans-serif" fill="${color}">${nowFt.toFixed(1)}ft</text>
+
+    <line x1="${nowX}" y1="${PAD.top}" x2="${nowX}" y2="${PAD.top+cH}" stroke="${tc.nowLine}" stroke-width="1" stroke-dasharray="2,4" opacity="0.18" clip-path="url(#chartClip)"/>
+
+    ${markers.map(m => {
+      const mc = m.isPast ? tc.pastDotFill   : (m.type==='high' ? tc.high : tc.low);
+      const ms = m.isPast ? tc.pastDotStroke : mc;
+      const lc = m.isPast ? tc.pastLabel     : mc;
+      const tc2 = m.isPast ? tc.dimLabel : tc.futureLabel;
+      return `
+      <circle cx="${m.x}" cy="${m.y}" r="3.5" fill="${mc}" stroke="${ms}" stroke-width="1.5"/>
+      <text x="${m.x}" y="${m.type==='high' ? m.y-9 : m.y+16}"
+        text-anchor="middle" font-size="8.5" font-weight="600"
+        font-family="Space Grotesk,sans-serif" fill="${lc}">${m.ft}ft</text>
+      <text x="${m.x}" y="${H-4}" text-anchor="middle" font-size="8"
+        font-family="Space Grotesk,sans-serif" fill="${tc2}">${m.label}</text>`;
+    }).join('')}
+
+    <circle cx="${nowX}" cy="${nowY}" r="8" fill="${color}" opacity="0.15"/>
+    <circle cx="${nowX}" cy="${nowY}" r="5" fill="${color}"/>
+    <circle cx="${nowX}" cy="${nowY}" r="2.5" fill="white"/>
+  </svg>`;
+}
+
+function render(tides, tempF) {
+  _lastTides = tides; _lastTemp = tempF;
+  const now = Date.now();
+  const main = document.getElementById('main');
+
+  // find where we are in the schedule
+  const futureIdx = tides.findIndex(t => t.time > now);
+  if (futureIdx === -1) { main.innerHTML = '<div class="error-msg">No upcoming tide data.</div>'; return; }
+
+  const next = tides[futureIdx];
+  const prev = tides[futureIdx - 1] || null;
+
+  // current tide direction
+  const isRising = next.type === 'high';
+  const statusLabel = isRising ? 'Rising' : 'Falling';
+
+  // progress through current cycle
+  let pct = 0.5;
+  if (prev) {
+    const total = next.time - prev.time;
+    const elapsed = now - prev.time;
+    pct = Math.max(0, Math.min(1, elapsed / total));
+  }
+
+  // next high and next low
+  const nextHigh = tides.find(t => t.time > now && t.type === 'high');
+  const nextLow  = tides.find(t => t.time > now && t.type === 'low');
+
+  // build schedule (today's tides + a couple tomorrow)
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const showTides = tides.filter(t => t.time >= todayStart).slice(0, 8);
+
+  const chart = buildTideChart(tides, now);
+  const pctDisplay = Math.round(pct * 100);
+  const fromLabel = isRising ? 'Low' : 'High';
+  const toLabel   = isRising ? 'High' : 'Low';
+
+  main.innerHTML = `
+    <div class="current-card">
+      <div class="current-card-top">
+        <div class="current-label">Current Tide</div>
+        <div class="current-meta">
+          <div class="current-time-display" id="liveClock">${fmtTime(new Date())}</div>
+          <div class="current-temp-display">${tempF != null ? tempF + '°F' : '—'}</div>
+        </div>
+      </div>
+      <div class="current-status ${isRising ? 'rising' : 'falling'}">${statusLabel}</div>
+      <div class="current-sub">${pctDisplay}% of the way from ${fromLabel} → ${toLabel}</div>
+      <div class="arc-wrap">
+        ${chart}
+      </div>
+    </div>
+
+    <div class="next-row">
+      <div class="next-card">
+        <div class="next-card-label">Next High</div>
+        <div class="next-card-type high">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
+          High Tide
+        </div>
+        <div class="next-card-time">${nextHigh ? fmtTime(nextHigh.time) : '—'}</div>
+        <div class="next-card-in">${nextHigh ? relTime(nextHigh.time) : ''}</div>
+      </div>
+      <div class="next-card">
+        <div class="next-card-label">Next Low</div>
+        <div class="next-card-type low">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 19V5M5 12l7 7 7-7"/></svg>
+          Low Tide
+        </div>
+        <div class="next-card-time">${nextLow ? fmtTime(nextLow.time) : '—'}</div>
+        <div class="next-card-in">${nextLow ? relTime(nextLow.time) : ''}</div>
+      </div>
+    </div>
+
+    <div class="schedule-card">
+      <div class="schedule-title">Upcoming Tides</div>
+      <div class="schedule-list">
+        ${showTides.map((t, i) => {
+          const isPast = t.time < now;
+          const isCurrent = !isPast && t === next;
+          return `<div class="schedule-row ${isPast ? 'sched-past' : ''} ${isCurrent ? 'current-window' : ''}">
+            <span class="sched-dot ${t.type}"></span>
+            <span class="sched-type ${t.type}">${t.type === 'high' ? 'High' : 'Low'}</span>
+            <span class="sched-time">${fmtTime(t.time)}</span>
+            ${isCurrent ? '<span class="now-badge">NEXT</span>' : ''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="updated-at">Updated ${fmtTime(new Date())}</div>
+  `;
+}
+
+let clockInterval = null;
+function startClock() {
+  if (clockInterval) clearInterval(clockInterval);
+  clockInterval = setInterval(() => {
+    const el = document.getElementById('liveClock');
+    if (el) el.textContent = fmtTime(new Date());
+  }, 10000);
+}
+
+function getStationName() {
+  const sel = document.getElementById('stationSelect');
+  return sel.options[sel.selectedIndex].text;
+}
+
+async function load(isInitial = false) {
+  const stationId = document.getElementById('stationSelect').value;
+  const main = document.getElementById('main');
+  const btn = document.getElementById('refreshBtn');
+
+  // Remove any existing error banner
+  const prev = main.querySelector('.error-banner');
+  if (prev) prev.remove();
+
+  btn.classList.add('spinning');
+
+  // Only show the loading placeholder when there's nothing rendered yet
+  if (isInitial || !main.querySelector('.current-card')) {
+    main.innerHTML = '<div class="loading">Loading tides…</div>';
+  }
+
+  try {
+    const [tides, tempResult] = await Promise.all([
+      fetchTides(stationId),
+      fetchWeather(stationId).catch(() => null),
+    ]);
+    render(tides, tempResult);
+    startClock();
+  } catch (e) {
+    const name = getStationName();
+    const detail = e.message || 'No prediction data available for this station.';
+    const banner = document.createElement('div');
+    banner.className = 'error-banner';
+    banner.innerHTML = `
+      <span class="error-banner-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </span>
+      <div class="error-banner-body">
+        <div class="error-banner-title">${name} unavailable</div>
+        <div class="error-banner-detail">${detail}</div>
+        <button class="error-banner-retry" onclick="load()">Retry</button>
+      </div>`;
+    // If nothing rendered, replace loading placeholder; otherwise prepend banner
+    if (!main.querySelector('.current-card')) {
+      main.innerHTML = '';
+    }
+    main.prepend(banner);
+  } finally {
+    btn.classList.remove('spinning');
+  }
+}
+
+document.getElementById('stationSelect').addEventListener('change', () => {
+  localStorage.setItem('tides_station', document.getElementById('stationSelect').value);
+  load();
+});
+document.getElementById('refreshBtn').addEventListener('click', () => load());
+document.getElementById('themeBtn').addEventListener('click', toggleTheme);
+
+// auto-refresh every 5 minutes, paused when tab is hidden
+let _refreshTimer = null;
+function startAutoRefresh() {
+  stopAutoRefresh();
+  _refreshTimer = setInterval(() => load(), 5 * 60 * 1000);
+}
+function stopAutoRefresh() {
+  if (_refreshTimer) { clearInterval(_refreshTimer); _refreshTimer = null; }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    stopAutoRefresh();
+  } else {
+    load();
+    startAutoRefresh();
+  }
+});
+
+const saved = localStorage.getItem('tides_station');
+if (saved) {
+  const sel = document.getElementById('stationSelect');
+  if ([...sel.options].some(o => o.value === saved)) sel.value = saved;
+}
+initTheme();
+load(true).then(() => startAutoRefresh());
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
+</script>
+</body>
+</html>
