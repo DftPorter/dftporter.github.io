@@ -41,7 +41,7 @@
     flex-direction: column;
     align-items: center;
     padding: 0 0 40px;
-    max-width: 480px;
+    max-width: 960px;
     margin: 0 auto;
   }
 
@@ -473,6 +473,34 @@
   body.light select option {
     background: #ffffff;
     color: #0b1e35;
+  }
+
+  @media (min-width: 768px) {
+    body { padding: 0 0 60px; }
+
+    header { padding: 28px 28px 0; }
+
+    .main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto 1fr auto;
+      align-items: start;
+      padding: 24px 28px;
+      gap: 20px;
+    }
+
+    .current-card  { grid-column: 1; grid-row: 1 / 3; align-self: stretch; }
+    .next-row      { grid-column: 2; grid-row: 1; align-self: start; }
+    .schedule-card { grid-column: 2; grid-row: 2; align-self: stretch; display: flex; flex-direction: column; }
+    .schedule-card .schedule-list { flex: 1; }
+    .updated-at    { grid-column: 1 / 3; grid-row: 3; }
+    .error-banner,
+    .cache-banner  { grid-column: 1 / 3; }
+
+    .arc-svg { max-width: 100%; }
+
+    div:has(> #stationSelect) { padding: 0 28px 12px; }
+    #stationSelect { max-width: 420px; }
   }
 </style>
 </head>
