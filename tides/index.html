@@ -364,6 +364,25 @@
   }
   .error-banner-retry:hover { background: #3b1215; }
 
+  .cache-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #1a2e1a;
+    border: 1px solid #2d5a2d;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 0.78rem;
+    color: #86efac;
+    line-height: 1.4;
+  }
+  .cache-banner svg { flex-shrink: 0; }
+  body.light .cache-banner {
+    background: #f0fdf4;
+    border-color: #86efac;
+    color: #166534;
+  }
+
   .updated-at {
     text-align: center;
     font-size: 0.68rem;
@@ -604,11 +623,28 @@ async function fetchTides(stationId) {
   const res = await fetch(url);
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
-  return data.predictions.map(p => ({
+  const tides = data.predictions.map(p => ({
     time: parseNoaaDate(p.t),
     type: p.type === 'H' ? 'high' : 'low',
     ft: parseFloat(p.v)
   }));
+  // persist for offline fallback
+  try {
+    localStorage.setItem(`tides_cache_${stationId}`, JSON.stringify({
+      savedAt: Date.now(),
+      tides: tides.map(t => ({ ...t, time: t.time.getTime() }))
+    }));
+  } catch (_) {}
+  return tides;
+}
+
+function loadCachedTides(stationId) {
+  try {
+    const raw = localStorage.getItem(`tides_cache_${stationId}`);
+    if (!raw) return null;
+    const { savedAt, tides } = JSON.parse(raw);
+    return { savedAt, tides: tides.map(t => ({ ...t, time: new Date(t.time) })) };
+  } catch (_) { return null; }
 }
 
 function buildTideChart(tides, nowMs) {
@@ -899,29 +935,42 @@ async function load(isInitial = false) {
     render(tides, tempResult);
     startClock();
   } catch (e) {
-    const name = getStationName();
-    const msg = (e.message || '').toLowerCase();
-    const detail = msg.includes('504') || msg.includes('timeout') || msg.includes('failed to fetch') || msg.includes('networkerror')
-      ? 'Tide data is temporarily unavailable — the NOAA service may be down. Try again in a few minutes.'
-      : msg.includes('no data') || msg.includes('not found') || msg.includes('invalid')
-        ? 'No tide data is available for this location right now. Try refreshing or selecting another station.'
-        : 'Couldn\'t load tide data. Check your connection and try again.';
-    const banner = document.createElement('div');
-    banner.className = 'error-banner';
-    banner.innerHTML = `
-      <span class="error-banner-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      </span>
-      <div class="error-banner-body">
-        <div class="error-banner-title">${name} unavailable</div>
-        <div class="error-banner-detail">${detail}</div>
-        <button class="error-banner-retry" onclick="load()">Retry</button>
-      </div>`;
-    // If nothing rendered, replace loading placeholder; otherwise prepend banner
-    if (!main.querySelector('.current-card')) {
-      main.innerHTML = '';
+    const stationId = document.getElementById('stationSelect').value;
+    const cached = loadCachedTides(stationId);
+    if (cached) {
+      render(cached.tides, _lastTemp);
+      startClock();
+      const ageMin = Math.round((Date.now() - cached.savedAt) / 60000);
+      const ageStr = ageMin < 60 ? `${ageMin}m ago` : `${Math.round(ageMin/60)}h ago`;
+      const notice = document.createElement('div');
+      notice.className = 'cache-banner';
+      notice.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Live data unavailable — showing cached data from ${ageStr}.
+        <button onclick="load()" style="background:none;border:none;color:inherit;font:inherit;text-decoration:underline;cursor:pointer;padding:0;margin-left:4px;">Retry</button>`;
+      main.prepend(notice);
+    } else {
+      const name = getStationName();
+      const msg = (e.message || '').toLowerCase();
+      const detail = msg.includes('504') || msg.includes('timeout') || msg.includes('failed to fetch') || msg.includes('networkerror')
+        ? 'Tide data is temporarily unavailable — the NOAA service may be down. Try again in a few minutes.'
+        : msg.includes('no data') || msg.includes('not found') || msg.includes('invalid')
+          ? 'No tide data is available for this location right now. Try refreshing or selecting another station.'
+          : 'Couldn\'t load tide data. Check your connection and try again.';
+      const banner = document.createElement('div');
+      banner.className = 'error-banner';
+      banner.innerHTML = `
+        <span class="error-banner-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </span>
+        <div class="error-banner-body">
+          <div class="error-banner-title">${name} unavailable</div>
+          <div class="error-banner-detail">${detail}</div>
+          <button class="error-banner-retry" onclick="load()">Retry</button>
+        </div>`;
+      if (!main.querySelector('.current-card')) main.innerHTML = '';
+      main.prepend(banner);
     }
-    main.prepend(banner);
   } finally {
     btn.classList.remove('spinning');
   }
