@@ -85,6 +85,21 @@
   .refresh-btn.spinning svg { animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  .location-wrap {
+    width: 100%;
+    padding: 0 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .location-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
   select {
     width: 100%;
     background: linear-gradient(160deg, #14294e 0%, #0f2040 100%);
@@ -180,6 +195,103 @@
     font-size: 0.85rem;
     color: var(--muted);
     margin-bottom: 22px;
+  }
+
+  /* alerts */
+  .alerts-section { display: flex; flex-direction: column; gap: 8px; }
+
+  .alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border-radius: 12px;
+    padding: 12px 14px;
+    border: 1px solid;
+    line-height: 1.4;
+  }
+  .alert-item.alert-extreme,
+  .alert-item.alert-severe {
+    background: rgba(185,28,28,0.18);
+    border-color: rgba(239,68,68,0.45);
+    color: #fca5a5;
+  }
+  .alert-item.alert-moderate {
+    background: rgba(180,83,9,0.18);
+    border-color: rgba(251,146,60,0.45);
+    color: #fed7aa;
+  }
+  .alert-item.alert-minor,
+  .alert-item.alert-unknown {
+    background: rgba(133,117,0,0.18);
+    border-color: rgba(250,204,21,0.4);
+    color: #fef08a;
+  }
+  .alert-event {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 3px;
+  }
+  .alert-headline { font-size: 0.8rem; opacity: 0.88; }
+
+  body.light .alert-item.alert-extreme,
+  body.light .alert-item.alert-severe  { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+  body.light .alert-item.alert-moderate { background: #fff7ed; border-color: #fdba74; color: #9a3412; }
+  body.light .alert-item.alert-minor,
+  body.light .alert-item.alert-unknown  { background: #fefce8; border-color: #fde047; color: #854d0e; }
+
+  /* conditions card */
+  .conditions-card {
+    background: linear-gradient(155deg, #162f58 0%, #0f2040 55%, #0c1c38 100%);
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid rgba(56, 120, 180, 0.35);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 4px 16px rgba(0,0,0,0.35);
+  }
+
+  body.light .conditions-card {
+    background: linear-gradient(155deg, #ffffff 0%, #f2f8fd 100%);
+    border-color: rgba(13, 148, 136, 0.18);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 4px 20px rgba(0,60,100,0.09);
+  }
+
+  .conditions-row {
+    display: flex;
+    gap: 12px;
+  }
+
+  .condition-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(56,120,180,0.18);
+    border-radius: 10px;
+  }
+
+  .condition-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .condition-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    text-align: center;
+  }
+
+  .condition-item svg { color: var(--muted); }
+
+  body.light .condition-item {
+    background: rgba(0,0,0,0.03);
+    border-color: rgba(13,148,136,0.15);
   }
 
   /* tide arc progress */
@@ -483,23 +595,34 @@
     .main {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      grid-template-rows: auto 1fr auto;
       align-items: start;
       padding: 24px 28px;
       gap: 20px;
     }
 
-    .current-card  { grid-column: 1; grid-row: 1 / 3; align-self: stretch; }
-    .next-row      { grid-column: 2; grid-row: 1; align-self: start; }
-    .schedule-card { grid-column: 2; grid-row: 2; align-self: stretch; display: flex; flex-direction: column; }
-    .schedule-card .schedule-list { flex: 1; }
-    .updated-at    { grid-column: 1 / 3; grid-row: 3; }
+    .alerts-section  { grid-column: 1 / 3; grid-row: 1; }
+    .current-card    { grid-column: 1; grid-row: 2 / 4; align-self: stretch; }
+    .next-row        { grid-column: 2; grid-row: 2; align-self: stretch; display: flex; flex-direction: column; }
+    .next-row > .next-card { flex: 1; }
+    .next-card       { flex: 1; }
+    .conditions-card { grid-column: 2; grid-row: 3; }
+    .schedule-card   { grid-column: 1 / 3; grid-row: 4; display: block; }
+    .updated-at      { grid-column: 1 / 3; grid-row: 5; }
     .error-banner,
-    .cache-banner  { grid-column: 1 / 3; }
+    .cache-banner    { grid-column: 1 / 3; grid-row: 1; }
+
+    /* when no alerts, shift everything up one row */
+    .main:not(:has(.alerts-section)) .current-card    { grid-row: 1 / 3; }
+    .main:not(:has(.alerts-section)) .next-row        { grid-row: 1; }
+    .main:not(:has(.alerts-section)) .conditions-card { grid-row: 2; }
+    .main:not(:has(.alerts-section)) .schedule-card   { grid-row: 3; }
+    .main:not(:has(.alerts-section)) .updated-at      { grid-row: 4; }
+    .main:not(:has(.alerts-section)) .error-banner,
+    .main:not(:has(.alerts-section)) .cache-banner    { grid-row: 1; }
 
     .arc-svg { max-width: 100%; }
 
-    div:has(> #stationSelect) { padding: 0 28px 12px; }
+    .location-wrap { padding: 0 28px 12px; }
     #stationSelect { max-width: 420px; }
   }
 </style>
@@ -535,7 +658,8 @@
   <div class="loading">Loading tides…</div>
 </div>
 
-<div style="width:100%;padding:0 20px 8px;">
+<div class="location-wrap">
+  <label for="stationSelect" class="location-label">Location</label>
   <select id="stationSelect">
     <option value="8536110">Cape May</option>
     <option value="8535101">Ocean City</option>
@@ -577,12 +701,23 @@ function updateThemeBtn() {
 
 function initTheme() {
   const saved = localStorage.getItem('tides_theme');
-  if (saved === 'light') document.body.classList.add('light');
+  const systemLight = !window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const useLight = saved ? saved === 'light' : systemLight;
+  document.body.classList.toggle('light', useLight);
   updateThemeBtn();
   updateThemeColor();
+
+  // follow system changes only when the user hasn't made an explicit choice
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    if (localStorage.getItem('tides_theme')) return;
+    document.body.classList.toggle('light', !e.matches);
+    updateThemeBtn();
+    updateThemeColor();
+    if (_lastTides) render(_lastTides, _lastWeather, _lastWaterTemp, _lastAlerts);
+  });
 }
 
-let _lastTides = null, _lastTemp = null;
+let _lastTides = null, _lastWeather = null, _lastWaterTemp = null, _lastAlerts = null;
 
 function updateThemeColor() {
   document.querySelector('meta[name="theme-color"]')
@@ -594,7 +729,7 @@ function toggleTheme() {
   localStorage.setItem('tides_theme', isLight() ? 'light' : 'dark');
   updateThemeBtn();
   updateThemeColor();
-  if (_lastTides) render(_lastTides, _lastTemp);
+  if (_lastTides) render(_lastTides, _lastWeather, _lastWaterTemp, _lastAlerts);
 }
 
 const STATION_META = {
@@ -605,10 +740,70 @@ const STATION_META = {
 
 async function fetchWeather(stationId) {
   const { lat, lon } = STATION_META[stationId] || { lat: 39.1, lon: -74.7 };
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m&temperature_unit=fahrenheit&forecast_days=1`;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+    `&current=temperature_2m,wind_speed_10m,wind_direction_10m,uv_index` +
+    `&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=1`;
   const res = await fetch(url);
   const data = await res.json();
-  return Math.round(data.current.temperature_2m);
+  const c = data.current;
+  return {
+    tempF:     Math.round(c.temperature_2m),
+    uvIndex:   Math.round(c.uv_index),
+    windSpeed: Math.round(c.wind_speed_10m),
+    windDir:   windDirToCardinal(c.wind_direction_10m),
+  };
+}
+
+const WATER_TEMP_STATION = '8536110'; // Cape May — only NJ station with a water temp sensor
+
+async function fetchWaterTemp(stationId) {
+  const url = `${NOAA}?date=latest&station=${WATER_TEMP_STATION}&product=water_temperature` +
+    `&units=english&time_zone=lst_ldt&application=nj_tides&format=json`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (data.error || !data.data?.length) return null;
+  const tempF = Math.round(parseFloat(data.data[0].v));
+  return { tempF, approximate: stationId !== WATER_TEMP_STATION };
+}
+
+const BEACH_ALERT_EVENTS = new Set([
+  'Rip Current Statement', 'Beach Hazard Statement', 'High Surf Advisory',
+  'Coastal Flood Advisory', 'Coastal Flood Warning', 'Coastal Flood Watch',
+  'Coastal Flood Statement', 'Special Marine Warning', 'Small Craft Advisory',
+]);
+
+async function fetchAlerts(stationId) {
+  const { lat, lon } = STATION_META[stationId] || { lat: 39.1, lon: -74.7 };
+  const res = await fetch(`https://api.weather.gov/alerts/active?point=${lat},${lon}&status=actual`);
+  const data = await res.json();
+  return (data.features || [])
+    .filter(f => BEACH_ALERT_EVENTS.has(f.properties.event))
+    .map(f => ({
+      event:    f.properties.event,
+      headline: f.properties.headline,
+      severity: (f.properties.severity || 'Unknown').toLowerCase(),
+    }));
+}
+
+function windDirToCardinal(deg) {
+  return ['N','NE','E','SE','S','SW','W','NW'][Math.round(deg / 45) % 8];
+}
+
+function uvLabel(uv) {
+  if (uv <= 2)  return 'Low';
+  if (uv <= 5)  return 'Moderate';
+  if (uv <= 7)  return 'High';
+  if (uv <= 10) return 'Very High';
+  return 'Extreme';
+}
+
+function uvColor(uv) {
+  const l = isLight();
+  if (uv <= 2)  return l ? '#059669' : '#34d399';
+  if (uv <= 5)  return l ? '#b45309' : '#fbbf24';
+  if (uv <= 7)  return l ? '#c2410c' : '#fb923c';
+  if (uv <= 10) return l ? '#b91c1c' : '#f87171';
+  return l ? '#7c3aed' : '#c084fc';
 }
 
 function fmtTime(date) {
@@ -830,8 +1025,12 @@ function buildTideChart(tides, nowMs) {
   </svg>`;
 }
 
-function render(tides, tempF) {
-  _lastTides = tides; _lastTemp = tempF;
+function render(tides, weather, waterTempF, alerts) {
+  _lastTides = tides; _lastWeather = weather; _lastWaterTemp = waterTempF; _lastAlerts = alerts;
+  const tempF     = weather?.tempF     ?? null;
+  const uvIndex   = weather?.uvIndex   ?? null;
+  const windSpeed = weather?.windSpeed ?? null;
+  const windDir   = weather?.windDir   ?? null;
   const now = Date.now();
   const main = document.getElementById('main');
 
@@ -867,7 +1066,20 @@ function render(tides, tempF) {
   const fromLabel = isRising ? 'Low' : 'High';
   const toLabel   = isRising ? 'High' : 'Low';
 
+  const alertsHtml = alerts && alerts.length ? `
+    <div class="alerts-section">
+      ${alerts.map(a => `
+        <div class="alert-item alert-${a.severity}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:1px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div>
+            <div class="alert-event">${a.event}</div>
+            <div class="alert-headline">${a.headline}</div>
+          </div>
+        </div>`).join('')}
+    </div>` : '';
+
   main.innerHTML = `
+    ${alertsHtml}
     <div class="current-card">
       <div class="current-card-top">
         <div class="current-label">Current Tide</div>
@@ -902,6 +1114,26 @@ function render(tides, tempF) {
         </div>
         <div class="next-card-time">${nextLow ? fmtTime(nextLow.time) : '—'}</div>
         <div class="next-card-in">${nextLow ? relTime(nextLow.time) : ''}</div>
+      </div>
+    </div>
+
+    <div class="conditions-card">
+      <div class="conditions-row">
+        <div class="condition-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          <span class="condition-label">Water</span>
+          <span class="condition-value">${waterTempF != null ? (waterTempF.approximate ? '~' : '') + waterTempF.tempF + '°F' : '—'}</span>
+        </div>
+        <div class="condition-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>
+          <span class="condition-label">Wind</span>
+          <span class="condition-value">${windSpeed != null ? windSpeed + ' mph ' + windDir : '—'}</span>
+        </div>
+        <div class="condition-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          <span class="condition-label">UV</span>
+          <span class="condition-value" ${uvIndex != null ? `style="color:${uvColor(uvIndex)}"` : ''}>${uvIndex != null ? uvIndex + ' · ' + uvLabel(uvIndex) : '—'}</span>
+        </div>
       </div>
     </div>
 
@@ -956,17 +1188,18 @@ async function load(isInitial = false) {
   }
 
   try {
-    const [tides, tempResult] = await Promise.all([
+    const [tides, weather, waterTempF, alerts] = await Promise.all([
       fetchTides(stationId),
       fetchWeather(stationId).catch(() => null),
+      fetchWaterTemp(stationId).catch(() => null),
+      fetchAlerts(stationId).catch(() => []),
     ]);
-    render(tides, tempResult);
+    render(tides, weather, waterTempF, alerts);
     startClock();
   } catch (e) {
-    const stationId = document.getElementById('stationSelect').value;
     const cached = loadCachedTides(stationId);
     if (cached) {
-      render(cached.tides, _lastTemp);
+      render(cached.tides, _lastWeather, _lastWaterTemp, _lastAlerts);
       startClock();
       const ageMin = Math.round((Date.now() - cached.savedAt) / 60000);
       const ageStr = ageMin < 60 ? `${ageMin}m ago` : `${Math.round(ageMin/60)}h ago`;
