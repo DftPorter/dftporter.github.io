@@ -1,4 +1,4 @@
-const CACHE = 'tides-v1';
+const CACHE = 'tides-v2';
 const ASSETS = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png', './waves.png'];
 
 self.addEventListener('install', e => {

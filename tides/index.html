@@ -82,6 +82,8 @@
     align-items: center;
   }
   .refresh-btn:hover { color: var(--accent); }
+  .refresh-btn:focus-visible,
+  .theme-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   .refresh-btn.spinning svg { animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -258,41 +260,36 @@
 
   .conditions-row {
     display: flex;
-    gap: 12px;
+    justify-content: space-around;
+    width: 100%;
   }
 
   .condition-item {
-    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    padding: 10px 8px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(56,120,180,0.18);
-    border-radius: 10px;
+    padding: 10px 0;
   }
 
   .condition-label {
-    font-size: 0.62rem;
-    letter-spacing: 0.08em;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--muted);
   }
 
   .condition-value {
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-size: 1.5rem;
+    font-weight: 700;
     color: var(--text);
     text-align: center;
+    white-space: nowrap;
   }
 
   .condition-item svg { color: var(--muted); }
 
-  body.light .condition-item {
-    background: rgba(0,0,0,0.03);
-    border-color: rgba(13,148,136,0.15);
-  }
+  body.light .condition-item {}
 
   /* tide arc progress */
   .arc-wrap {
@@ -303,11 +300,10 @@
     gap: 8px;
   }
 
-  .arc-svg { width: 100%; max-width: 320px; overflow: visible; }
+  .arc-svg { width: 100%; overflow: visible; }
 
   .arc-labels {
     width: 100%;
-    max-width: 320px;
     display: flex;
     justify-content: space-between;
     font-size: 0.72rem;
@@ -318,7 +314,7 @@
   .next-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 16px;
   }
 
   .next-card {
@@ -362,6 +358,26 @@
   .next-card-in {
     font-size: 0.78rem;
     color: var(--muted);
+  }
+
+  .next-card-content { display: flex; flex-direction: column; gap: 4px; }
+
+  .next-card-ft {
+    display: none;
+    font-size: 5.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--muted);
+    opacity: 0.18;
+    margin-left: auto;
+    align-self: center;
+    letter-spacing: -0.04em;
+  }
+  .next-card-ft-unit {
+    font-size: 1.8rem;
+    font-weight: 500;
+    margin-left: 3px;
+    vertical-align: super;
   }
 
   /* ---- full schedule ---- */
@@ -423,10 +439,14 @@
   .sched-time {
     font-size: 0.9rem;
     color: var(--text);
-    flex: 1;
   }
 
-  .sched-past { opacity: 0.38; }
+  .sched-ft {
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  .sched-past { opacity: 0.55; }
 
   .now-badge {
     font-size: 0.62rem;
@@ -437,6 +457,7 @@
     font-weight: 700;
     letter-spacing: 0.05em;
     box-shadow: 0 0 8px rgba(45, 212, 191, 0.4);
+    margin-left: auto;
   }
 
   /* ---- states ---- */
@@ -602,10 +623,11 @@
 
     .alerts-section  { grid-column: 1 / 3; grid-row: 1; }
     .current-card    { grid-column: 1; grid-row: 2 / 4; align-self: stretch; }
-    .next-row        { grid-column: 2; grid-row: 2; align-self: stretch; display: flex; flex-direction: column; }
-    .next-row > .next-card { flex: 1; }
+    .next-row        { grid-column: 2; grid-row: 2; align-self: stretch; display: flex; flex-direction: column; gap: 20px; }
+    .next-row > .next-card { flex: 1; display: flex; flex-direction: row; align-items: stretch; }
+    .next-card-ft    { display: flex; align-items: center; }
     .next-card       { flex: 1; }
-    .conditions-card { grid-column: 2; grid-row: 3; }
+    .conditions-card { grid-column: 2; grid-row: 3; align-self: stretch; display: flex; align-items: center; }
     .schedule-card   { grid-column: 1 / 3; grid-row: 4; display: block; }
     .updated-at      { grid-column: 1 / 3; grid-row: 5; }
     .error-banner,
@@ -618,7 +640,7 @@
     .main:not(:has(.alerts-section)):not(:has(.cache-banner)):not(:has(.error-banner)) .schedule-card   { grid-row: 3; }
     .main:not(:has(.alerts-section)):not(:has(.cache-banner)):not(:has(.error-banner)) .updated-at      { grid-row: 4; }
 
-    .arc-svg { max-width: 100%; }
+    .conditions-row { gap: 20px; }
 
     .location-wrap { padding: 0 28px 12px; }
     #stationSelect { max-width: 420px; }
@@ -634,7 +656,7 @@
       <h1>Tides</h1>
     </div>
     <div class="btn-group">
-      <button class="theme-btn" id="themeBtn" title="Toggle light/dark mode">
+      <button class="theme-btn" id="themeBtn" title="Toggle light/dark mode" aria-label="Toggle light/dark mode">
         <svg id="themeBtnIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
           <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
@@ -642,7 +664,7 @@
           <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
         </svg>
       </button>
-      <button class="refresh-btn" id="refreshBtn" title="Refresh">
+      <button class="refresh-btn" id="refreshBtn" title="Refresh" aria-label="Refresh tide data">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
           <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
@@ -652,7 +674,7 @@
   </div>
 </header>
 
-<div class="main" id="main">
+<div class="main" id="main" aria-live="polite" aria-atomic="false">
   <div class="loading">Loading tides…</div>
 </div>
 
@@ -869,7 +891,7 @@ function loadCachedTides(stationId) {
 }
 
 function buildTideChart(tides, nowMs) {
-  const W = 280, H = 120;
+  const W = 280, H = 180;
   const PAD = { top: 20, right: 14, bottom: 28, left: 14 };
   const cW = W - PAD.left - PAD.right;
   const cH = H - PAD.top - PAD.bottom;
@@ -1057,7 +1079,7 @@ function render(tides, weather, waterTempF, alerts) {
 
   // build schedule (today's tides + a couple tomorrow)
   const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-  const showTides = tides.filter(t => t.time >= todayStart).slice(0, 8);
+  const showTides = tides.filter(t => t.time >= todayStart).slice(0, 5);
 
   const chart = buildTideChart(tides, now);
   const pctDisplay = Math.round(pct * 100);
@@ -1096,29 +1118,35 @@ function render(tides, weather, waterTempF, alerts) {
 
     <div class="next-row">
       <div class="next-card">
-        <div class="next-card-label">Next High</div>
-        <div class="next-card-type high">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
-          High Tide
+        <div class="next-card-content">
+          <div class="next-card-label">Next High</div>
+          <div class="next-card-type high">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
+            High Tide
+          </div>
+          <div class="next-card-time">${nextHigh ? fmtTime(nextHigh.time) : '—'}</div>
+          <div class="next-card-in">${nextHigh ? relTime(nextHigh.time) : ''}</div>
         </div>
-        <div class="next-card-time">${nextHigh ? fmtTime(nextHigh.time) : '—'}</div>
-        <div class="next-card-in">${nextHigh ? relTime(nextHigh.time) : ''}</div>
+        ${nextHigh ? `<div class="next-card-ft">${nextHigh.ft.toFixed(1)}<span class="next-card-ft-unit">ft</span></div>` : ''}
       </div>
       <div class="next-card">
-        <div class="next-card-label">Next Low</div>
-        <div class="next-card-type low">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 19V5M5 12l7 7 7-7"/></svg>
-          Low Tide
+        <div class="next-card-content">
+          <div class="next-card-label">Next Low</div>
+          <div class="next-card-type low">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 19V5M5 12l7 7 7-7"/></svg>
+            Low Tide
+          </div>
+          <div class="next-card-time">${nextLow ? fmtTime(nextLow.time) : '—'}</div>
+          <div class="next-card-in">${nextLow ? relTime(nextLow.time) : ''}</div>
         </div>
-        <div class="next-card-time">${nextLow ? fmtTime(nextLow.time) : '—'}</div>
-        <div class="next-card-in">${nextLow ? relTime(nextLow.time) : ''}</div>
+        ${nextLow ? `<div class="next-card-ft">${nextLow.ft.toFixed(1)}<span class="next-card-ft-unit">ft</span></div>` : ''}
       </div>
     </div>
 
     <div class="conditions-card">
       <div class="conditions-row">
         <div class="condition-item">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
           <span class="condition-label">Water</span>
           <span class="condition-value">${waterTempF != null ? (waterTempF.approximate ? '~' : '') + waterTempF.tempF + '°F' : '—'}</span>
         </div>
@@ -1145,6 +1173,7 @@ function render(tides, weather, waterTempF, alerts) {
             <span class="sched-dot ${t.type}"></span>
             <span class="sched-type ${t.type}">${t.type === 'high' ? 'High' : 'Low'}</span>
             <span class="sched-time">${fmtTime(t.time)}</span>
+            <span class="sched-ft">${t.ft.toFixed(1)} ft</span>
             ${isCurrent ? '<span class="now-badge">NEXT</span>' : ''}
           </div>`;
         }).join('')}
