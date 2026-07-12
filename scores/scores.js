@@ -430,7 +430,7 @@ async function fetchNews(){
     }));
     const allItems=results.flat().filter(i=>i.title&&i.pubDate).sort((a,b)=>parseRssDate(b.pubDate)-parseRssDate(a.pubDate));
     const byTeam={};
-    allItems.forEach(item=>{ if(!byTeam[item.team]) byTeam[item.team]=[]; if(byTeam[item.team].length<3) byTeam[item.team].push(item); });
+    allItems.forEach(item=>{ if(!byTeam[item.team]) byTeam[item.team]=[]; if(byTeam[item.team].length<4) byTeam[item.team].push(item); });
     const merged=allItems.slice(0,5);
     newsCache={items:merged,byTeam,fetchedAt:Date.now()};
     return merged;
@@ -606,7 +606,7 @@ function renderCard(key,data){
       +(f.label?'<div class="game-label">'+f.label+'</div>':'')
       +'<div class="matchup">'+matchup+'</div><div class="game-info-row">'+datePrefix+f.note+(f.venue?' · '+f.venue:'')+'</div>'+broadcastRow+'</div>';
   } else {
-    featuredHtml='<div class="offseason-banner"><img class="offseason-logo" src="'+TEAMS[key].logo+'" alt="'+name+'">'+(data.offseasonNote?'<div class="offseason-note">'+data.offseasonNote+'</div>':'')+'</div>';
+    featuredHtml='<div class="offseason-banner">'+(data.offseasonNote?'<div class="offseason-note">'+data.offseasonNote+'</div>':'')+'</div>';
   }
   const recentHtml=data.recentGames?.length?data.recentGames.map(g=>{ const r=g.phiScore>g.oppScore?{c:'win',l:'W'}:g.phiScore<g.oppScore?{c:'loss',l:'L'}:{c:'draw',l:'D'}; return '<div class="result-row"><div class="result-matchup">'+(g.home?'vs':'@')+' <span>'+g.opp+'</span></div><div class="result-score">'+g.phiScore+'&ndash;'+g.oppScore+'</div><div class="result-wl '+r.c+'">'+r.l+'</div><div class="result-date">'+g.date+'</div></div>'; }).join(''):'<div class="no-recent">No recent games</div>';
   const nextHtml=data.nextGame?'<div class="next-game-row'+(data.nextGameToday?' today':'')+(data.nextGameIsPlayoff?' playoffs':'')+'"><div class="next-game-label">'+(data.nextGameIsPlayoff?'Playoffs &#9654;':'Next &#9654;')+'</div><div class="next-game-info">'+data.nextGame+(data.nextGameToday?'<span class="today-badge">TODAY</span>':'')+'</div></div>':'';
@@ -617,7 +617,7 @@ function renderCard(key,data){
   const recentSection=teamNews.length
     ?'<div class="recent-results"><div class="results-label">Recent Headlines</div>'+teamNews.map(item=>'<a class="card-news-item" href="'+safeUrl(item.link)+'" target="_blank" rel="noopener noreferrer"><div class="card-news-title">'+escHtml(item.title)+'</div><div class="card-news-time">'+timeAgo(item.pubDate)+'</div></a>').join('')+'</div>'
     :'<div class="recent-results"><div class="results-label">Recent Games</div>'+recentHtml+nextHtml+'</div>';
-  return '<div class="team-card'+(isLive?' is-live':'')+'" data-team="'+key+'" style="--team-color:'+color+'"'+clickAttr+'><div class="card-header"><div class="team-icon">'+icon+'</div><div class="team-meta"><div class="team-name">'+name+'</div><div class="team-sport">'+sport+'</div>'+(data.standing?'<div class="team-sport" style="margin-top:2px">'+data.standing+'</div>':'')+'</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px"><span class="card-status '+statusCls+'">'+statusLabel+'</span>'+(data.streak?'<span class="streak '+streakCls+'">'+data.streak+'</span>':'')+'</div></div>'+featuredHtml+recentSection+(isLive?'<div class="live-expand-hint">⛶ Click to expand</div>':'')+'</div>';
+  return '<div class="team-card'+(isLive?' is-live':'')+'" data-team="'+key+'" style="--team-color:'+color+'"'+clickAttr+'><div class="card-header"><div class="team-icon"><img src="'+TEAMS[key].logo+'" alt="'+escHtml(name)+'"></div><div class="team-meta"><div class="team-name">'+name+'</div><div class="team-sport">'+sport+'</div>'+(data.standing?'<div class="team-sport" style="margin-top:2px">'+data.standing+'</div>':'')+'</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px"><span class="card-status '+statusCls+'">'+statusLabel+'</span>'+(data.streak?'<span class="streak '+streakCls+'">'+data.streak+'</span>':'')+'</div></div>'+featuredHtml+recentSection+(isLive?'<div class="live-expand-hint">⛶ Click to expand</div>':'')+'</div>';
 }
 
 // ── Theme ──
@@ -678,6 +678,28 @@ function scheduleNextRefresh(scores){
   refreshTimeout=setTimeout(()=>fetchScores(true),secs*1000);
 }
 
+// ── Startup retry state ──
+let firstLoadDone = false;
+let startupRetryTimer = null;
+let startupRetryCount = 0;
+const STARTUP_RETRY_DELAYS = [5, 15, 30, 60, 120]; // seconds
+
+function scheduleStartupRetry() {
+  clearTimeout(startupRetryTimer);
+  if (startupRetryCount >= STARTUP_RETRY_DELAYS.length) return;
+  const secs = STARTUP_RETRY_DELAYS[startupRetryCount++];
+  setStatus('loading', 'No connection — retrying in ' + secs + 's…');
+  startupRetryTimer = setTimeout(() => fetchScores(), secs * 1000);
+}
+
+window.addEventListener('online', () => {
+  if (!firstLoadDone) {
+    clearTimeout(startupRetryTimer);
+    startupRetryCount = 0;
+    fetchScores();
+  }
+});
+
 async function fetchScores(silent=false){
   const btn=document.getElementById('refresh-btn');
   if(!silent){ btn.disabled=true; btn.classList.add('spinning'); hideError(); setStatus('loading','Fetching live scores…'); showSkeletons(); }
@@ -716,11 +738,17 @@ async function fetchScores(silent=false){
     const t=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     setStatus('ok','Updated '+t);
     syncModalStatus();
+    firstLoadDone=true;
+    clearTimeout(startupRetryTimer);
     scheduleNextRefresh(scores);
   } catch(err){
     console.error(err);
-    setStatus('error','Update failed');
-    if(!silent) showError('Could not fetch scores: '+err.message);
+    if(!firstLoadDone){
+      scheduleStartupRetry();
+    } else {
+      setStatus('error','Update failed');
+      if(!silent) showError('Could not fetch scores: '+err.message);
+    }
   } finally{
     if(!silent){ btn.disabled=false; btn.classList.remove('spinning'); }
   }
