@@ -395,6 +395,7 @@ async function fetchTeamData(key){
     streak:effectiveOffseason?null:streak,
     standing:effectiveOffseason?null:(schRes?.team?.standingSummary||null),
     offseasonNote:fs==='offseason'?nextSeasonNote(path):null,
+    isPreseason:!effectiveOffseason&&seasonTypeNum===1,
   };
 }
 
@@ -599,17 +600,20 @@ function renderCard(key,data){
     const matchup=f.isHome?oppSide+div+phiSide:phiSide+div+oppSide;
     const seriesStr=f.isPlayoff&&f.seriesSummary?' · '+f.seriesSummary:'';
     const playoffBadge=f.isPlayoff?'<div class="playoff-badge">'+fmtPlayoffNote(f.gameNote)+seriesStr+'</div>':'';
+    const preseasonBadge=!f.isPlayoff&&data.isPreseason?'<div class="preseason-badge">Preseason</div>':'';
     const datePrefix=fs==='final'&&data.featuredDateMs?fmtShort(data.featuredDateMs)+' · ':'';
     const broadcastRow=fs!=='final'&&f.broadcast?'<div class="broadcast-row">📺 '+f.broadcast+'</div>':'';
     featuredHtml='<div class="featured-game">'
       +playoffBadge
+      +preseasonBadge
       +(f.label?'<div class="game-label">'+f.label+'</div>':'')
       +'<div class="matchup">'+matchup+'</div><div class="game-info-row">'+datePrefix+f.note+(f.venue?' · '+f.venue:'')+'</div>'+broadcastRow+'</div>';
   } else {
     featuredHtml='<div class="offseason-banner">'+(data.offseasonNote?'<div class="offseason-note">'+data.offseasonNote+'</div>':'')+'</div>';
   }
   const recentHtml=data.recentGames?.length?data.recentGames.map(g=>{ const r=g.phiScore>g.oppScore?{c:'win',l:'W'}:g.phiScore<g.oppScore?{c:'loss',l:'L'}:{c:'draw',l:'D'}; return '<div class="result-row"><div class="result-matchup">'+(g.home?'vs':'@')+' <span>'+g.opp+'</span></div><div class="result-score">'+g.phiScore+'&ndash;'+g.oppScore+'</div><div class="result-wl '+r.c+'">'+r.l+'</div><div class="result-date">'+g.date+'</div></div>'; }).join(''):'<div class="no-recent">No recent games</div>';
-  const nextHtml=data.nextGame?'<div class="next-game-row'+(data.nextGameToday?' today':'')+(data.nextGameIsPlayoff?' playoffs':'')+'"><div class="next-game-label">'+(data.nextGameIsPlayoff?'Playoffs &#9654;':'Next &#9654;')+'</div><div class="next-game-info">'+data.nextGame+(data.nextGameToday?'<span class="today-badge">TODAY</span>':'')+'</div></div>':'';
+  const nextGameLabel=data.nextGameIsPlayoff?'Playoffs &#9654;':data.isPreseason?'Preseason &#9654;':'Next &#9654;';
+  const nextHtml=data.nextGame?'<div class="next-game-row'+(data.nextGameToday?' today':'')+(data.nextGameIsPlayoff?' playoffs':'')+'"><div class="next-game-label">'+nextGameLabel+'</div><div class="next-game-info">'+data.nextGame+(data.nextGameToday?'<span class="today-badge">TODAY</span>':'')+'</div></div>':'';
   // During offseason, swap Recent Games for team-specific Recent Headlines
   const NEWS_TEAM_KEY={eagles:'Eagles',sixers:'Sixers',flyers:'Flyers',phillies:'Phillies',union:'Union'};
   const teamNewsKey=NEWS_TEAM_KEY[key];
