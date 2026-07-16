@@ -37,6 +37,9 @@
   --pend-bg:#10102e;
   --pend-bd:#4040a0;
   --pend-txt:#8888cc;
+  --excused-bg:#0e0e20;
+  --excused-bd:#383870;
+  --excused-txt:#505090;
   --dim:#8888b8;
   --font:'Press Start 2P',monospace;
 }
@@ -158,9 +161,10 @@ header{text-align:center;padding:18px 0 22px;}
   font-size:clamp(10px,3.5vw,13px);
   border:1px solid;
 }
-.day-box.done  {background:var(--done-bg);border-color:var(--done-bd);color:var(--done-txt);}
-.day-box.missed{background:var(--miss-bg);border-color:var(--miss-bd);color:var(--miss-txt);}
-.day-box.pend  {background:var(--pend-bg);border-color:var(--pend-bd);color:var(--pend-txt);}
+.day-box.done   {background:var(--done-bg);border-color:var(--done-bd);color:var(--done-txt);}
+.day-box.missed {background:var(--miss-bg);border-color:var(--miss-bd);color:var(--miss-txt);}
+.day-box.pend   {background:var(--pend-bg);border-color:var(--pend-bd);color:var(--pend-txt);}
+.day-box.excused{background:var(--excused-bg);border-color:var(--excused-bd);color:var(--excused-txt);border-style:dashed;}
 
 .week-pay{font-size:9px;color:var(--gold);margin-bottom:14px;}
 
@@ -206,11 +210,13 @@ header{text-align:center;padding:18px 0 22px;}
 .hist-date{font-size:8px;color:#8080b8;min-width:50px;flex-shrink:0;}
 .hist-dots{display:flex;gap:2px;flex:1;}
 .hdot{width:11px;height:11px;flex-shrink:0;}
-.hdot.done  {background:#006600;}
-.hdot.missed{background:#2a0000;border:1px solid #660000;}
-.hdot.pend  {background:#101030;border:1px solid #3030a0;}
-.hdot.tr.done  {background:#556600;}
-.hdot.tr.missed{background:#2a1800;border:1px solid #5a3000;}
+.hdot.done   {background:#006600;}
+.hdot.missed {background:#2a0000;border:1px solid #660000;}
+.hdot.pend   {background:#101030;border:1px solid #3030a0;}
+.hdot.excused{background:#0e0e20;border:1px dashed #383870;}
+.hdot.tr.done   {background:#556600;}
+.hdot.tr.missed {background:#2a1800;border:1px solid #5a3000;}
+.hdot.tr.excused{background:#0e0e20;border:1px dashed #383870;}
 .hdot.tr       {margin-right:6px;}
 
 /* TR cell — dashed border + gap to separate from weekdays */
@@ -545,8 +551,8 @@ function parseSheet(rows) {
     const nm = (c[2] || '').trim().toLowerCase();
     if (nm === 'simon' || nm === 'desmond') {
       cur[nm] = {
-        days:      DAY_LABELS.map((_, i) => { const v = money(c[3+i]); return v != null && v > 0; }),
-        trash:     (() => { const v = money(c[10]); return v != null && v > 0; })(),
+        days:      DAY_LABELS.map((_, i) => { if (isExcused(c[3+i])) return 'excused'; const v = money(c[3+i]); return v != null && v > 0; }),
+        trash:     (() => { if (isExcused(c[10])) return 'excused'; const v = money(c[10]); return v != null && v > 0; })(),
         pay:       money(c[11]) || 0,
         simonOwed: money(c[13]),
         desOwed:   money(c[18]),
@@ -601,6 +607,7 @@ function fmtDate(str) {
   return `${MONTHS[m-1]} ${d}`;
 }
 function dayState(weekStr, dayIdx, done) {
+  if (done === 'excused') return 'excused';
   if (done) return 'done';
   const dt = parseWDate(weekStr);
   dt.setDate(dt.getDate() + dayIdx);
@@ -609,12 +616,14 @@ function dayState(weekStr, dayIdx, done) {
   return 'missed';
 }
 function trashState(weekStr, done) {
+  if (done === 'excused') return 'excused';
   if (done) return 'done';
   const sat = parseWDate(weekStr);
   sat.setDate(sat.getDate() + 6);
   return sat > TODAY ? 'pend' : 'missed';
 }
-const SYM = { done:'✓', missed:'✗', pend:'?' };
+const SYM = { done:'✓', missed:'✗', pend:'?', excused:'—' };
+function isExcused(raw) { return (raw || '').trim().toUpperCase() === 'N/A'; }
 
 function isEmptyRow(r) {
   return !r || (r.pay === 0 && !r.days.some(Boolean) && !r.trash);
@@ -631,6 +640,7 @@ function calcStreak(weeks, key) {
       dt.setDate(dt.getDate() + i);
       if (dt > TODAY) continue; // future — skip
       const done = r ? r.days[i] : false;
+      if (done === 'excused') continue; // excused — skip, don't break streak
       // Before noon grace: skip today's undone tasks rather than penalising
       if (dt.getTime() === TODAY.getTime() && BEFORE_NOON && !done) continue;
       days.push({ dt, done });
@@ -646,7 +656,11 @@ function calcStreak(weeks, key) {
 }
 
 function isAllDone(row) {
-  return row && row.days.every(d => d) && row.trash;
+  if (!row) return false;
+  const hasDone = row.days.some(d => d === true) || row.trash === true;
+  return hasDone
+    && row.days.every(d => d === true || d === 'excused')
+    && (row.trash === true || row.trash === 'excused');
 }
 
 // ── Past-30-day earnings ────────────────────────────────────
@@ -681,12 +695,13 @@ function buildCard(weeks, name, num) {
       dt.setDate(dt.getDate() + i);
       if (dt > TODAY) return;
       if (dt.getTime() === TODAY.getTime() && BEFORE_NOON) return;
+      if (d === 'excused') return;
       total++;
-      if (d) done++;
+      if (d === true) done++;
     });
     const sat = parseWDate(w.date);
     sat.setDate(sat.getDate() + 6);
-    if (sat <= TODAY) { total++; if (r.trash) done++; }
+    if (sat <= TODAY && r.trash !== 'excused') { total++; if (r.trash === true) done++; }
   }
   const pct = total ? done / total : 0;
   const pips = Array.from({length:10}, (_,i) =>
@@ -753,8 +768,8 @@ function buildCard(weeks, name, num) {
   // History (all filled weeks, newest first, excluding curW)
   const histRows = [...filled].reverse().filter(w => w !== curW).map(w => {
     const r = w[key];
-    const dots = r.days.map(d => `<div class="hdot ${d?'done':'missed'}"></div>`).join('');
-    const tr = `<div class="hdot tr ${r.trash?'done':'missed'}"></div>`;
+    const dots = r.days.map(d => `<div class="hdot ${d===true?'done':d==='excused'?'excused':'missed'}"></div>`).join('');
+    const tr = `<div class="hdot tr ${r.trash===true?'done':r.trash==='excused'?'excused':'missed'}"></div>`;
     return `<div class="hist-row">
       <span class="hist-date">${fmtDate(w.date)}</span>
       <div class="hist-dots">${tr}${dots}</div>
@@ -857,9 +872,11 @@ function buildSummaryModal(weeks, playerKey) {
   const players = (playerKey ? ALL_PLAYERS.filter(p => p.key === playerKey) : ALL_PLAYERS)
   .map(p => {
     const r = targetW[p.key];
-    const bedDays     = r ? r.days.filter(Boolean).length : 0;
+    const availDays   = r ? r.days.filter(d => d !== 'excused').length : 7;
+    const bedDays     = r ? r.days.filter(d => d === true).length : 0;
     const bedEarned   = bedDays * 1.0;
-    const trashDone   = r ? r.trash : false;
+    const trashExcused = r ? r.trash === 'excused' : false;
+    const trashDone   = r ? r.trash === true : false;
     const trashEarned = trashDone ? 2.0 : 0;
     const choreTotal  = bedEarned + trashEarned;
     const weekStart = parseWDate(targetW.date);
@@ -880,7 +897,7 @@ function buildSummaryModal(weeks, playerKey) {
       });
     const extrasTotal = extras.reduce((s, e) => s + e.amt, 0);
     const grandTotal  = choreTotal + extrasTotal;
-    return { ...p, bedDays, bedEarned, trashDone, trashEarned, choreTotal, extras, extrasTotal, grandTotal };
+    return { ...p, availDays, bedDays, bedEarned, trashExcused, trashDone, trashEarned, choreTotal, extras, extrasTotal, grandTotal };
   });
 
   // Build HTML — all step elements start invisible, values show ···
@@ -892,12 +909,12 @@ function buildSummaryModal(weeks, playerKey) {
     html += `<div class="sm-player-name ${p.cls} sm-step" id="${k}-name">${p.label}</div>`;
 
     html += `<div class="sm-line ${p.bedEarned > 0 ? 'pos' : 'dim'} sm-step" id="${k}-bed-row">
-      <span class="sm-line-lbl">&#x1F6CF; BED (${p.bedDays}/7 DAYS)</span>
+      <span class="sm-line-lbl">&#x1F6CF; BED (${p.bedDays}/${p.availDays} DAYS)</span>
       <span class="sm-line-val" id="${k}-bed">&#xB7;&#xB7;&#xB7;</span>
     </div>`;
 
     html += `<div class="sm-line ${p.trashDone ? 'pos' : 'dim'} sm-step" id="${k}-trash-row">
-      <span class="sm-line-lbl">&#x1F5D1; TRASH</span>
+      <span class="sm-line-lbl">&#x1F5D1; TRASH${p.trashExcused ? ' (N/A)' : ''}</span>
       <span class="sm-line-val" id="${k}-trash">&#xB7;&#xB7;&#xB7;</span>
     </div>`;
 
