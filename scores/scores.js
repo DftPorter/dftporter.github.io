@@ -315,6 +315,9 @@ async function fetchTeamData(key){
 
   const activeLive=liveGame?.featuredStatus==='live'?liveGame:null;
   const nextIsClose=nextGame&&(nextGame.dateMs-now)<=2*60*60*1000;
+  // Only promote a future game to featured if it's within 7 days — prevents far-future
+  // schedule entries (e.g. October NBA games in July) from showing as "upcoming" all summer.
+  const nextIsNear=nextGame&&(nextGame.dateMs-now)<=7*24*60*60*1000;
 
   // Detect season-ending states ESPN doesn't immediately flag as type=4
   const seasonTypeNum=typeof seasonType==='object'?seasonType?.type:seasonType;
@@ -333,13 +336,13 @@ async function fetchTeamData(key){
     activeLive?activeLive:
     nextIsClose?nextGame:
     lastCompleted?lastCompleted:
-    nextGame?nextGame:null;
+    nextIsNear?nextGame:null;
   const fs=effectiveOffseason?'offseason':
     !featured?'offseason':
     activeLive?'live':
     nextIsClose&&nextGame?'upcoming':
     lastCompleted?featured.featuredStatus:
-    nextGame?'upcoming':
+    nextIsNear?'upcoming':
     'offseason';
 
   const showRecords=fs!=='offseason';
@@ -394,7 +397,7 @@ async function fetchTeamData(key){
     nextGameDateMs:nextGame?.dateMs||0,
     streak:effectiveOffseason?null:streak,
     standing:effectiveOffseason?null:(schRes?.team?.standingSummary||null),
-    offseasonNote:fs==='offseason'?nextSeasonNote(path):null,
+    offseasonNote:fs==='offseason'?(nextGame&&!nextIsNear?(seasonTypeNum===1?'Preseason':'Season')+' opens '+new Date(nextGame.dateMs).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):nextSeasonNote(path)):null,
     isPreseason:!effectiveOffseason&&seasonTypeNum===1,
   };
 }
