@@ -1,7 +1,7 @@
 {
-  "name": "Philly Sports HQ",
-  "short_name": "Philly HQ",
-  "description": "Tim's Philly Sports Scores",
+  "name": "The Score",
+  "short_name": "The Score",
+  "description": "The Score",
   "start_url": "/scores/index.html",
   "display": "standalone",
   "background_color": "#090b13",
