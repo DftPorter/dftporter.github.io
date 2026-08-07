@@ -685,10 +685,11 @@ function scheduleNextRefresh(scores){
   refreshTimeout=setTimeout(()=>fetchScores(true),secs*1000);
 }
 
-// ── Startup retry state ──
+// ── Startup / recovery retry state ──
 let firstLoadDone = false;
 let startupRetryTimer = null;
 let startupRetryCount = 0;
+let lastFetchAt = 0;
 const STARTUP_RETRY_DELAYS = [5, 15, 30, 60, 120]; // seconds
 
 function scheduleStartupRetry() {
@@ -699,6 +700,7 @@ function scheduleStartupRetry() {
   startupRetryTimer = setTimeout(() => fetchScores(), secs * 1000);
 }
 
+// Retry immediately when the browser detects network restored
 window.addEventListener('online', () => {
   if (!firstLoadDone) {
     clearTimeout(startupRetryTimer);
@@ -707,11 +709,27 @@ window.addEventListener('online', () => {
   }
 });
 
+// Retry when the page becomes visible again (computer waking from sleep,
+// or Edge resuming the PWA after the PC was idle overnight)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  if (!firstLoadDone) {
+    clearTimeout(startupRetryTimer);
+    startupRetryCount = 0;
+    fetchScores();
+  } else if (Date.now() - lastFetchAt > 60000) {
+    // Been more than 60s since last fetch — likely a real wake, not just tab switching
+    clearTimeout(refreshTimeout);
+    fetchScores(true);
+  }
+});
+
 async function fetchScores(silent=false){
   const btn=document.getElementById('refresh-btn');
   if(!silent){ btn.disabled=true; btn.classList.add('spinning'); hideError(); setStatus('loading','Fetching live scores…'); showSkeletons(); }
   // Refresh MLS standings in the background if they've gone stale
   if(Date.now()-mlsRecordsFetchedAt>MLS_RECORDS_TTL) fetchMlsRecords();
+  lastFetchAt=Date.now();
   try{
     const [results,newsItems]=await Promise.all([
       Promise.allSettled(TEAM_ORDER.map(k=>fetchTeamData(k))),
@@ -723,6 +741,15 @@ async function fetchScores(silent=false){
         ?results[i].value
         :{featuredStatus:'offseason',featured:null,recentGames:[],nextGame:null,completedDateMs:0,offseasonNote:'Data unavailable',featuredDateMs:0,nextGameDateMs:0};
     });
+    // Quality check: if news is empty and no team has any game data, the network
+    // is technically connected but ESPN isn't reachable yet (common on wake from sleep).
+    // Don't paint blank cards — retry instead.
+    const hasRealData=newsItems.length>0||TEAM_ORDER.some(k=>scores[k].recentGames?.length>0||scores[k].featured||scores[k].nextGame);
+    if(!hasRealData){
+      firstLoadDone=false;
+      scheduleStartupRetry();
+      return;
+    }
     const rank=s=>({live:0,starting:0,upcoming:1,final:2,offseason:3}[s]??3);
     const sorted=TEAM_ORDER.map(k=>({key:k,data:scores[k]})).sort((a,b)=>{
       const rd=rank(a.data.featuredStatus)-rank(b.data.featuredStatus);
