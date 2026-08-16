@@ -380,6 +380,25 @@
     vertical-align: super;
   }
 
+  /* ---- waves card ---- */
+  .waves-card {
+    background: linear-gradient(155deg, #162f58 0%, #0f2040 55%, #0c1c38 100%);
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid rgba(56, 120, 180, 0.35);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 4px 16px rgba(0,0,0,0.35);
+  }
+  body.light .waves-card {
+    background: linear-gradient(155deg, #ffffff 0%, #f2f8fd 100%);
+    border-color: rgba(13, 148, 136, 0.18);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 4px 20px rgba(0,60,100,0.09);
+  }
+  .waves-row {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+  }
+
   /* ---- full schedule ---- */
   .schedule-card {
     background: linear-gradient(155deg, #162f58 0%, #0f2040 55%, #0c1c38 100%);
@@ -628,8 +647,9 @@
     .next-card-ft    { display: flex; align-items: center; }
     .next-card       { flex: 1; }
     .conditions-card { grid-column: 2; grid-row: 3; align-self: stretch; display: flex; align-items: center; }
-    .schedule-card   { grid-column: 1 / 3; grid-row: 4; display: block; }
-    .updated-at      { grid-column: 1 / 3; grid-row: 5; }
+    .waves-card      { grid-column: 1 / 3; grid-row: 4; }
+    .schedule-card   { grid-column: 1 / 3; grid-row: 5; display: block; }
+    .updated-at      { grid-column: 1 / 3; grid-row: 6; }
     .error-banner,
     .cache-banner    { grid-column: 1 / 3; grid-row: 1; }
 
@@ -637,8 +657,9 @@
     .main:not(:has(.alerts-section)):not(:has(.cache-banner)):not(:has(.error-banner)) .current-card    { grid-row: 1 / 3; }
     .main:not(:has(.alerts-section)):not(:has(.cache-banner)):not(:has(.error-banner)) .next-row        { grid-row: 1; }
     .main:not(:has(.alerts-section)):not(:has(.cache-banner)):not(:has(.error-banner)) .conditions-card { grid-row: 2; }
-    .main:not(:has(.alerts-section)):not(:has(.cache-banner)):not(:has(.error-banner)) .schedule-card   { grid-row: 3; }
-    .main:not(:has(.alerts-section)):not(:has(.cache-banner)):not(:has(.error-banner)) .updated-at      { grid-row: 4; }
+    .main:not(:has(.alerts-section)):not(:has(.cache-banner)):not(:has(.error-banner)) .waves-card      { grid-row: 3; }
+    .main:not(:has(.alerts-section)):not(:has(.cache-banner)):not(:has(.error-banner)) .schedule-card   { grid-row: 4; }
+    .main:not(:has(.alerts-section)):not(:has(.cache-banner)):not(:has(.error-banner)) .updated-at      { grid-row: 5; }
 
     .conditions-row { gap: 20px; }
     .condition-value { font-size: 1.5rem; }
@@ -738,7 +759,7 @@ function initTheme() {
   });
 }
 
-let _lastTides = null, _lastWeather = null, _lastWaterTemp = null, _lastAlerts = null;
+let _lastTides = null, _lastWeather = null, _lastWaterTemp = null, _lastAlerts = null, _lastSwell = null;
 
 function updateThemeColor() {
   document.querySelector('meta[name="theme-color"]')
@@ -776,6 +797,36 @@ async function fetchWeather(stationId) {
 }
 
 const WATER_TEMP_STATION = '8536110'; // Cape May — only NJ station with a water temp sensor
+
+async function fetchSwell(stationId) {
+  const { lat, lon } = STATION_META[stationId] || { lat: 39.1, lon: -74.7 };
+  const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}` +
+    `&current=swell_wave_height,swell_wave_period,swell_wave_direction,wind_wave_height,wind_wave_period` +
+    `&length_unit=imperial`;
+  const res = await fetch(url);
+  const data = await res.json();
+  const c = data.current;
+  return {
+    swellHeight: Math.round(c.swell_wave_height * 10) / 10,
+    swellPeriod: Math.round(c.swell_wave_period),
+    swellDir:    windDirToCardinal(c.swell_wave_direction),
+    chopHeight:  Math.round(c.wind_wave_height * 10) / 10,
+  };
+}
+
+function swellQuality(period) {
+  if (period >= 14) return { label: 'Excellent', color: '#34d399' };
+  if (period >= 10) return { label: 'Good',      color: '#38bdf8' };
+  if (period >= 7)  return { label: 'Fair',      color: '#fbbf24' };
+  return                   { label: 'Poor',      color: '#6b8db5' };
+}
+
+function swellQualityLight(period) {
+  if (period >= 14) return { label: 'Excellent', color: '#059669' };
+  if (period >= 10) return { label: 'Good',      color: '#0369a1' };
+  if (period >= 7)  return { label: 'Fair',      color: '#b45309' };
+  return                   { label: 'Poor',      color: '#4a6a8a' };
+}
 
 async function fetchWaterTemp(stationId) {
   const url = `${NOAA}?date=latest&station=${WATER_TEMP_STATION}&product=water_temperature` +
@@ -1046,8 +1097,8 @@ function buildTideChart(tides, nowMs) {
   </svg>`;
 }
 
-function render(tides, weather, waterTempF, alerts) {
-  _lastTides = tides; _lastWeather = weather; _lastWaterTemp = waterTempF; _lastAlerts = alerts;
+function render(tides, weather, waterTempF, alerts, swell) {
+  _lastTides = tides; _lastWeather = weather; _lastWaterTemp = waterTempF; _lastAlerts = alerts; _lastSwell = swell;
   const tempF     = weather?.tempF     ?? null;
   const uvIndex   = weather?.uvIndex   ?? null;
   const windSpeed = weather?.windSpeed ?? null;
@@ -1164,6 +1215,34 @@ function render(tides, weather, waterTempF, alerts) {
       </div>
     </div>
 
+    ${swell ? (() => {
+      const q = isLight() ? swellQualityLight(swell.swellPeriod) : swellQuality(swell.swellPeriod);
+      return `<div class="waves-card">
+        <div class="waves-row">
+          <div class="condition-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2"/><path d="M2 12c.6.5 1.2 1 2.5 1C7 13 7 11 9.5 11c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2"/><path d="M2 18c.6.5 1.2 1 2.5 1C7 19 7 17 9.5 17c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2"/></svg>
+            <span class="condition-label">Swell</span>
+            <span class="condition-value">${swell.swellHeight} ft</span>
+          </div>
+          <div class="condition-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span class="condition-label">Period</span>
+            <span class="condition-value" style="color:${q.color}">${swell.swellPeriod}s · ${q.label}</span>
+          </div>
+          <div class="condition-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="4 9 12 2 20 9"/></svg>
+            <span class="condition-label">From</span>
+            <span class="condition-value">${swell.swellDir}</span>
+          </div>
+          <div class="condition-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2"/><path d="M2 12c.6.5 1.2 1 2.5 1C7 13 7 11 9.5 11c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2"/></svg>
+            <span class="condition-label">Chop</span>
+            <span class="condition-value">${swell.chopHeight} ft</span>
+          </div>
+        </div>
+      </div>`;
+    })() : ''}
+
     <div class="schedule-card">
       <div class="schedule-title">Upcoming Tides</div>
       <div class="schedule-list">
@@ -1216,18 +1295,19 @@ async function load(isInitial = false) {
   }
 
   try {
-    const [tides, weather, waterTempF, alerts] = await Promise.all([
+    const [tides, weather, waterTempF, alerts, swell] = await Promise.all([
       fetchTides(stationId),
       fetchWeather(stationId).catch(() => null),
       fetchWaterTemp(stationId).catch(() => null),
       fetchAlerts(stationId).catch(() => []),
+      fetchSwell(stationId).catch(() => null),
     ]);
-    render(tides, weather, waterTempF, alerts);
+    render(tides, weather, waterTempF, alerts, swell);
     startClock();
   } catch (e) {
     const cached = loadCachedTides(stationId);
     if (cached) {
-      render(cached.tides, _lastWeather, _lastWaterTemp, _lastAlerts);
+      render(cached.tides, _lastWeather, _lastWaterTemp, _lastAlerts, _lastSwell);
       startClock();
       const ageMin = Math.round((Date.now() - cached.savedAt) / 60000);
       const ageStr = ageMin < 60 ? `${ageMin}m ago` : `${Math.round(ageMin/60)}h ago`;
