@@ -3,1083 +3,1409 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tides</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a1628">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Chore Quest">
-<meta name="theme-color" content="#0a0a1a">
-<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-title" content="Tides">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
-<link rel="apple-touch-icon" href="icon-180.png">
-<title>CHORE QUEST</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { overflow-x: hidden; }
+  html, body { max-width: 100vw; overscroll-behavior-x: none; }
 
-:root{
-  --bg:#0a0a1a;
-  --surface:#0d0d2a;
-  --p1:#00c8ff;
-  --p1-glow:rgba(0,200,255,.12);
-  --p1-dim:#003a55;
-  --p2:#00ff88;
-  --p2-glow:rgba(0,255,136,.12);
-  --p2-dim:#003a25;
-  --gold:#ffd700;
-  --gold-dk:#7a4200;
-  --done-bg:#002800;
-  --done-bd:#00aa00;
-  --done-txt:#00ee00;
-  --miss-bg:#2a0000;
-  --miss-bd:#880000;
-  --miss-txt:#ff3333;
-  --pend-bg:#10102e;
-  --pend-bd:#4040a0;
-  --pend-txt:#8888cc;
-  --excused-bg:#0e0e20;
-  --excused-bd:#383870;
-  --excused-txt:#505090;
-  --dim:#8888b8;
-  --font:'Press Start 2P',monospace;
-}
+  :root {
+    --bg: #0a1628;
+    --surface: #0f2040;
+    --card: #132a52;
+    --accent: #2dd4bf;
+    --accent2: #38bdf8;
+    --text: #e2f0ff;
+    --muted: #6b8db5;
+    --high: #34d399;
+    --low: #94a3b8;
+  }
 
-body{
-  font-family:var(--font);
-  background:var(--bg);
-  background-image:repeating-linear-gradient(
-    0deg,transparent,transparent 3px,
-    rgba(0,0,0,.18) 3px,rgba(0,0,0,.18) 4px
-  );
-  color:#c8c8e8;
-  min-height:100vh;
-  padding:12px 10px 32px;
-  font-size:10px;
-  line-height:1.6;
-}
+  body {
+    background: radial-gradient(ellipse 120% 40% at 50% 0%, #0e2444 0%, #0a1628 55%);
+    color: var(--text);
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 40px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
 
-/* ── Title ── */
-header{text-align:center;padding:18px 0 22px;}
-.title{
-  font-size:clamp(12px,5.5vw,18px);
-  color:var(--gold);
-  text-shadow:4px 4px 0 var(--gold-dk);
-  letter-spacing:4px;
-  margin-bottom:8px;
-}
-.subtitle{font-size:8px;color:var(--dim);letter-spacing:4px;}
+  header {
+    width: 100%;
+    padding: 20px 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
 
-/* ── Season bar ── */
-.season-bar{
-  text-align:center;
-  font-size:9px;
-  color:#9090c8;
-  background:#0c0c26;
-  border:2px solid #181858;
-  padding:7px 12px;
-  margin-bottom:22px;
-  letter-spacing:1px;
-}
+  .title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
 
-/* ── Layout ── */
-.players{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:22px;
-  max-width:460px;
-  margin:0 auto;
-}
-@media(min-width:820px){
-  .players{grid-template-columns:1fr 1fr;max-width:900px;}
-}
+  h1 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: linear-gradient(120deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 
-/* ── Card ── */
-.card{
-  background:var(--surface);
-  padding:16px 14px;
-  position:relative;
-}
-.card-p1{
-  border:3px solid var(--p1);
-  box-shadow:0 0 0 2px #0a0a1a,0 0 0 5px var(--p1-dim),
-             inset 0 0 30px var(--p1-glow);
-}
-.card-p2{
-  border:3px solid var(--p2);
-  box-shadow:0 0 0 2px #0a0a1a,0 0 0 5px var(--p2-dim),
-             inset 0 0 30px var(--p2-glow);
-}
-.card::before,.card::after{content:'';position:absolute;width:7px;height:7px;}
-.card-p1::before{top:-3px;right:-3px;background:var(--p1);}
-.card-p1::after {bottom:-3px;left:-3px;background:var(--p1);}
-.card-p2::before{top:-3px;right:-3px;background:var(--p2);}
-.card-p2::after {bottom:-3px;left:-3px;background:var(--p2);}
+  .refresh-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+  }
+  .refresh-btn:hover { color: var(--accent); }
+  .refresh-btn:focus-visible,
+  .theme-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .refresh-btn.spinning svg { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Card header ── */
-.card-head{
-  display:flex;align-items:center;gap:10px;
-  margin-bottom:14px;padding-bottom:10px;
-  border-bottom:2px solid #181848;
-}
-.card-icon{font-size:20px;line-height:1;}
-.card-name{font-size:clamp(12px,4vw,15px);line-height:1;}
-.card-p1 .card-name{color:var(--p1);}
-.card-p2 .card-name{color:var(--p2);}
-.summary-btn{
-  margin-left:auto;background:none;border:1px solid #303060;
-  color:#505088;font-family:var(--font);font-size:7px;
-  letter-spacing:1px;padding:5px 7px;cursor:pointer;line-height:1;
-  flex-shrink:0;
-}
-.summary-btn:active{background:#0d0d2a;color:#8080c0;border-color:#5050a0;}
+  .location-wrap {
+    width: 100%;
+    padding: 0 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
 
-/* ── Section label ── */
-.slbl{font-size:8px;color:var(--dim);letter-spacing:2px;margin-bottom:6px;}
+  .location-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
 
-/* ── Pips ── */
-.pips{display:flex;gap:3px;margin-bottom:16px;flex-wrap:wrap;}
-.pip{width:13px;height:13px;background:#101030;border:1px solid #202060;flex-shrink:0;}
-.card-p1 .pip.on{background:var(--p1);border-color:#008aaa;}
-.card-p2 .pip.on{background:var(--p2);border-color:#00aa55;}
+  select {
+    width: 100%;
+    background: linear-gradient(160deg, #14294e 0%, #0f2040 100%);
+    color: var(--text);
+    border: 1px solid rgba(56, 120, 180, 0.4);
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 1rem;
+    font-family: 'Space Grotesk', sans-serif;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b8db5' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 8px rgba(0,0,0,0.3);
+  }
+  select:focus { outline: 1px solid var(--accent); }
+  select option {
+    background: #0f2040;
+    color: #e2f0ff;
+  }
 
-/* ── Week grid ── */
-.week-lbl{font-size:9px;margin-bottom:8px;}
-.week-lbl.cur{color:var(--gold);}
-.week-lbl.past{color:#6060a0;}
+  .main {
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
 
-.chore-grid{
-  display:grid;
-  grid-template-columns:repeat(8,1fr);
-  gap:3px;
-  margin-bottom:8px;
-}
-.day-cell{display:flex;flex-direction:column;align-items:center;gap:2px;}
-.day-lbl{font-size:7px;color:var(--dim);}
-.day-box{
-  width:100%;aspect-ratio:1;
-  display:flex;align-items:center;justify-content:center;
-  font-size:clamp(10px,3.5vw,13px);
-  border:1px solid;
-}
-.day-box.done   {background:var(--done-bg);border-color:var(--done-bd);color:var(--done-txt);}
-.day-box.missed {background:var(--miss-bg);border-color:var(--miss-bd);color:var(--miss-txt);}
-.day-box.pend   {background:var(--pend-bg);border-color:var(--pend-bd);color:var(--pend-txt);}
-.day-box.excused{background:var(--excused-bg);border-color:var(--excused-bd);color:var(--excused-txt);border-style:dashed;}
+  /* ---- current tide card ---- */
+  .current-card {
+    background: linear-gradient(155deg, #162f58 0%, #0f2040 55%, #0c1c38 100%);
+    border-radius: 18px;
+    padding: 24px 22px 20px;
+    border: 1px solid rgba(56, 120, 180, 0.35);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 8px 32px rgba(0,0,0,0.4);
+  }
 
-.week-pay{font-size:9px;color:var(--gold);margin-bottom:14px;}
+  .current-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+  }
 
-/* ── Money box ── */
-.money-box{
-  background:#110e00;
-  border:2px solid #4a3200;
-  padding:10px 14px;
-  margin-bottom:14px;
-}
-.money-box.debt{
-  background:#110000;
-  border:2px solid #880000;
-  box-shadow:inset 0 0 20px rgba(200,0,0,.08);
-}
-.money-lbl{font-size:8px;color:#b09000;letter-spacing:2px;margin-bottom:7px;}
-.money-box.debt .money-lbl{color:#aa3333;}
-.money-val{
-  font-size:clamp(16px,5.5vw,22px);
-  color:var(--gold);
-  text-shadow:3px 3px 0 var(--gold-dk);
-  display:flex;align-items:center;gap:10px;
-}
-.money-box.debt .money-val{
-  color:#ff4444;
-  text-shadow:3px 3px 0 #660000;
-}
-.coin{
-  display:inline-block;
-  font-size:clamp(18px,6vw,24px);
-  animation:cspin 1.4s linear infinite;
-}
-@keyframes cspin{
-  0%  {transform:scaleX(1);}
-  18% {transform:scaleX(.08);}
-  36% {transform:scaleX(1);}
-  54% {transform:scaleX(.08);}
-  72% {transform:scaleX(1);}
-}
-@keyframes cshake{
-  0%,100%{transform:translateX(0);}
-  20%{transform:translateX(-3px);}
-  40%{transform:translateX(3px);}
-  60%{transform:translateX(-2px);}
-  80%{transform:translateX(2px);}
-}
-.coin.debt{animation:cshake 1.8s ease-in-out infinite;}
+  .current-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
 
-/* ── Month earnings ── */
-.month-earn{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:8px 12px;margin-bottom:12px;
-  background:#0f0a00;border:2px solid #3a2800;
-}
-.month-earn-lbl{font-size:8px;color:#b09000;letter-spacing:2px;}
-.month-earn-val{font-size:13px;color:var(--gold);}
+  .current-meta {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+  }
 
-/* ── History ── */
-.hist-section{border-top:2px solid #181848;padding-top:10px;}
-.hist-row{display:flex;align-items:center;gap:5px;margin-bottom:6px;}
-.hist-date{font-size:8px;color:#8080b8;min-width:50px;flex-shrink:0;}
-.hist-dots{display:flex;gap:2px;flex:1;}
-.hdot{width:11px;height:11px;flex-shrink:0;}
-.hdot.done   {background:#006600;}
-.hdot.missed {background:#2a0000;border:1px solid #660000;}
-.hdot.pend   {background:#101030;border:1px solid #3030a0;}
-.hdot.excused{background:#0e0e20;border:1px dashed #383870;}
-.hdot.tr.done   {background:#556600;}
-.hdot.tr.missed {background:#2a1800;border:1px solid #5a3000;}
-.hdot.tr.excused{background:#0e0e20;border:1px dashed #383870;}
-.hdot.tr       {margin-right:6px;}
+  .current-location-display {
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: right;
+  }
 
-/* TR cell — dashed border + gap to separate from weekdays */
-.tr-cell{margin-right:6px;}
-.tr-cell .day-box{border-style:dashed;}
-.hist-pay{font-size:8px;color:#aa8800;min-width:36px;text-align:right;flex-shrink:0;}
+  .current-time-display {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.1;
+    letter-spacing: 0.01em;
+  }
 
-/* ── Streak ── */
-.streak{
-  margin-bottom:14px;padding:8px 10px;
-  background:#120800;border:2px solid #3a1800;
-  display:flex;align-items:center;gap:10px;
-}
-.streak-fire{font-size:16px;line-height:1;}
-.streak-num{font-size:14px;color:#ff6600;text-shadow:2px 2px 0 #7a3000;}
-.streak-lbl{font-size:8px;color:#994400;line-height:1.4;}
-.streak-go{margin-bottom:14px;padding:8px 10px;font-size:8px;color:#505088;background:#0e0e20;border:2px solid #252550;}
+  .current-temp-display {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
 
-/* ── Streak tiers ── */
-/* Tier 1 (5–9): warm glow */
-.streak-t1{border-color:#7a2800;background:#1a0a00;}
-.streak-t1 .streak-num{color:#ff8800;text-shadow:2px 2px 0 #7a3000,0 0 10px rgba(255,136,0,.5);}
-.streak-t1 .streak-lbl{color:#cc5500;}
-.streak-t1 .streak-fire{animation:sfPulse 1.2s ease-in-out infinite;}
+  .current-status {
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .current-status.rising  { color: var(--high);    text-shadow: 0 0 28px rgba(52, 211, 153, 0.45); }
+  .current-status.falling { color: var(--accent2); text-shadow: 0 0 28px rgba(56, 189, 248, 0.45); }
 
-/* Tier 2 (10–14): hot orange pulse */
-.streak-t2{border-color:#c04000;background:#1f0800;box-shadow:inset 0 0 20px rgba(255,100,0,.1);}
-.streak-t2 .streak-num{font-size:18px;color:#ff6600;text-shadow:2px 2px 0 #7a2000,0 0 14px rgba(255,80,0,.7);}
-.streak-t2 .streak-lbl{color:#dd6600;}
-.streak-t2 .streak-fire{font-size:20px;animation:sfPulse .9s ease-in-out infinite;}
-.streak-t2 .streak-num{animation:sfOrangePulse 1.4s ease-in-out infinite;}
+  .current-sub {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 22px;
+  }
 
-/* Tier 3 (15–24): high — larger text, intense glow, border flicker */
-.streak-t3{border-color:#ff5500;background:#240800;box-shadow:inset 0 0 30px rgba(255,80,0,.15),0 0 8px rgba(255,80,0,.2);}
-.streak-t3 .streak-num{font-size:24px;color:#ff4400;text-shadow:2px 2px 0 #aa2000,0 0 20px #ff4400,0 0 40px rgba(255,68,0,.4);animation:sfIntensePulse 1s ease-in-out infinite;}
-.streak-t3 .streak-lbl{font-size:9px;color:#ff6600;}
-.streak-t3 .streak-fire{font-size:24px;animation:sfPulse .7s ease-in-out infinite;}
+  /* alerts */
+  .alerts-section { display: flex; flex-direction: column; gap: 8px; }
 
-/* Tier 4 (25+): legendary — rainbow fire, intense box glow */
-.streak-t4{background:#200400;animation:sfBorderCycle 2s linear infinite;}
-.streak-t4 .streak-num{font-size:28px;animation:sfRainbowFire .8s linear infinite;}
-.streak-t4 .streak-lbl{color:#ffaa00;font-size:9px;}
-.streak-t4 .streak-fire{font-size:28px;animation:sfFireSpin .6s ease-in-out infinite;}
+  .alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border-radius: 12px;
+    padding: 12px 14px;
+    border: 1px solid;
+    line-height: 1.4;
+  }
+  .alert-item.alert-extreme,
+  .alert-item.alert-severe {
+    background: rgba(185,28,28,0.18);
+    border-color: rgba(239,68,68,0.45);
+    color: #fca5a5;
+  }
+  .alert-item.alert-moderate {
+    background: rgba(180,83,9,0.18);
+    border-color: rgba(251,146,60,0.45);
+    color: #fed7aa;
+  }
+  .alert-item.alert-minor,
+  .alert-item.alert-unknown {
+    background: rgba(133,117,0,0.18);
+    border-color: rgba(250,204,21,0.4);
+    color: #fef08a;
+  }
+  .alert-event {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 3px;
+  }
+  .alert-headline { font-size: 0.8rem; opacity: 0.88; }
 
-@keyframes sfPulse{
-  0%,100%{transform:scale(1);}
-  50%{transform:scale(1.2);}
-}
-@keyframes sfFireSpin{
-  0%,100%{transform:scale(1) rotate(-8deg);}
-  50%{transform:scale(1.3) rotate(8deg);}
-}
-@keyframes sfOrangePulse{
-  0%,100%{text-shadow:2px 2px 0 #7a2000,0 0 14px rgba(255,80,0,.7);}
-  50%{text-shadow:2px 2px 0 #7a2000,0 0 24px #ff6600,0 0 40px rgba(255,100,0,.4);}
-}
-@keyframes sfIntensePulse{
-  0%,100%{text-shadow:2px 2px 0 #aa2000,0 0 20px #ff4400,0 0 40px rgba(255,68,0,.4);}
-  50%{text-shadow:2px 2px 0 #aa2000,0 0 30px #ff2200,0 0 60px rgba(255,34,0,.6),0 0 80px rgba(255,0,0,.2);}
-}
-@keyframes sfRainbowFire{
-  0%  {color:#ff2200;text-shadow:2px 2px 0 #800000,0 0 20px #ff0000,0 0 40px rgba(255,0,0,.5);}
-  25% {color:#ff8800;text-shadow:2px 2px 0 #804000,0 0 20px #ff6600,0 0 40px rgba(255,100,0,.5);}
-  50% {color:#ffff00;text-shadow:2px 2px 0 #808000,0 0 20px #ffcc00,0 0 40px rgba(255,200,0,.5);}
-  75% {color:#ff8800;text-shadow:2px 2px 0 #804000,0 0 20px #ff6600,0 0 40px rgba(255,100,0,.5);}
-  100%{color:#ff2200;text-shadow:2px 2px 0 #800000,0 0 20px #ff0000,0 0 40px rgba(255,0,0,.5);}
-}
-@keyframes sfBorderCycle{
-  0%  {border-color:#ff2200;box-shadow:inset 0 0 30px rgba(255,34,0,.2),0 0 12px rgba(255,34,0,.3);}
-  33% {border-color:#ff8800;box-shadow:inset 0 0 30px rgba(255,136,0,.2),0 0 12px rgba(255,136,0,.3);}
-  66% {border-color:#ffff00;box-shadow:inset 0 0 30px rgba(255,255,0,.15),0 0 12px rgba(255,255,0,.25);}
-  100%{border-color:#ff2200;box-shadow:inset 0 0 30px rgba(255,34,0,.2),0 0 12px rgba(255,34,0,.3);}
-}
+  body.light .alert-item.alert-extreme,
+  body.light .alert-item.alert-severe  { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+  body.light .alert-item.alert-moderate { background: #fff7ed; border-color: #fdba74; color: #9a3412; }
+  body.light .alert-item.alert-minor,
+  body.light .alert-item.alert-unknown  { background: #fefce8; border-color: #fde047; color: #854d0e; }
 
-/* ── Celebration ── */
-.cel-box{
-  text-align:center;padding:18px 10px 16px;
-  margin-bottom:14px;
-  animation:celPulse .8s steps(1) infinite;
-}
-.card-p1 .cel-box{background:#001a00;border:3px solid var(--p1);}
-.card-p2 .cel-box{background:#001a00;border:3px solid var(--p2);}
-@keyframes celPulse{0%{filter:brightness(1);}50%{filter:brightness(1.35);}}
-.cel-stars{font-size:20px;color:var(--gold);letter-spacing:10px;margin-bottom:12px;}
-.cel-msg{
-  font-size:clamp(15px,5vw,20px);color:var(--gold);
-  text-shadow:3px 3px 0 var(--gold-dk);
-  line-height:1.9;margin-bottom:12px;letter-spacing:2px;
-}
-.cel-earn{font-size:9px;color:var(--done-txt);letter-spacing:1px;}
+  .card-section-title {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
 
-/* ── Loading / Error ── */
-#app{min-height:200px;}
-.loading{
-  text-align:center;padding:50px 20px;
-  color:var(--dim);font-size:9px;
-  animation:blink .9s step-start infinite;
-}
-@keyframes blink{50%{opacity:0;}}
-.err-box{
-  border:2px solid #660000;background:#110000;
-  padding:18px;color:#ff5555;font-size:8px;
-  text-align:center;max-width:380px;
-  margin:40px auto;line-height:2.2;
-}
+  /* conditions card */
+  .conditions-card {
+    background: linear-gradient(155deg, #162f58 0%, #0f2040 55%, #0c1c38 100%);
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid rgba(56, 120, 180, 0.35);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 4px 16px rgba(0,0,0,0.35);
+  }
 
-/* ── Extras (one-off credits/debits) ── */
-.extras-section{border-top:2px solid #181848;padding-top:10px;margin-top:10px;}
-.extra-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
-.extra-date{font-size:8px;color:#8080b8;min-width:50px;flex-shrink:0;}
-.extra-note{font-size:8px;color:#c8c8e8;flex:1;letter-spacing:1px;text-transform: uppercase;}
-.extra-amt{font-size:9px;min-width:48px;text-align:right;flex-shrink:0;}
-.extra-amt.pos{color:var(--done-txt);}
-.extra-amt.neg{color:var(--miss-txt);}
+  body.light .conditions-card {
+    background: linear-gradient(155deg, #ffffff 0%, #f2f8fd 100%);
+    border-color: rgba(13, 148, 136, 0.18);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 4px 20px rgba(0,60,100,0.09);
+  }
 
-/* ── Refresh button ── */
-.refresh-btn{
-  display:block;margin:24px auto 0;
-  background:none;border:2px solid #303060;
-  color:#505088;font-family:var(--font);font-size:8px;
-  letter-spacing:2px;padding:10px 20px;cursor:pointer;
-}
-.refresh-btn:active{background:#0d0d2a;color:#8080c0;border-color:#5050a0;}
+  .conditions-row {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+  }
 
-/* ── Weekly Summary Overlay ── */
-#summary-overlay{
-  position:fixed;inset:0;z-index:200;
-  background:rgba(0,0,0,.93);
-  display:flex;align-items:flex-start;justify-content:center;
-  overflow-y:auto;padding:20px 12px 40px;
-  animation:smFadeIn .5s ease forwards;
-  cursor:pointer;
-}
-@keyframes smFadeIn{from{opacity:0}to{opacity:1}}
+  .condition-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 0;
+  }
 
-.sm-panel{
-  background:var(--surface);
-  border:3px solid var(--gold);
-  box-shadow:0 0 0 2px #0a0a1a,0 0 0 5px var(--gold-dk),0 0 50px rgba(255,215,0,.18);
-  padding:22px 18px 18px;
-  max-width:480px;width:100%;
-  cursor:default;
-  position:relative;
-}
+  .condition-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
 
-.sm-title{
-  text-align:center;
-  font-size:clamp(11px,4.5vw,15px);
-  color:var(--gold);
-  text-shadow:3px 3px 0 var(--gold-dk);
-  letter-spacing:3px;
-  margin-bottom:6px;
-}
-.sm-week{
-  text-align:center;font-size:7px;color:var(--dim);
-  letter-spacing:3px;margin-bottom:22px;
-}
-.sm-divider{border:none;border-top:2px solid #181848;margin:16px 0;}
+  .condition-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    text-align: center;
+    white-space: nowrap;
+  }
 
-.sm-player-name{
-  font-size:10px;letter-spacing:2px;margin-bottom:12px;
-}
-.sm-p1 .sm-player-name{color:var(--p1);}
-.sm-p2 .sm-player-name{color:var(--p2);}
+  .condition-item svg { color: var(--muted); }
 
-.sm-step{opacity:0;transform:translateX(-24px);transition:opacity .45s ease,transform .45s ease;}
-.sm-step.sm-vis{opacity:1;transform:none;}
+  body.light .condition-item {}
 
-.sm-line{
-  display:flex;justify-content:space-between;align-items:center;
-  font-size:9px;margin-bottom:8px;padding:3px 0;
-}
-.sm-line-lbl{color:#a0a0c8;letter-spacing:1px;}
-.sm-line-val{letter-spacing:1px;}
-.sm-line.pos .sm-line-val{color:var(--done-txt);}
-.sm-line.dim .sm-line-val{color:#404060;}
-.sm-line.neg .sm-line-val{color:var(--miss-txt);}
+  /* tide arc progress */
+  .arc-wrap {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
 
-.sm-subtotal{
-  display:flex;justify-content:space-between;align-items:center;
-  font-size:10px;
-  border-top:1px solid #303060;padding-top:9px;
-  margin-top:2px;margin-bottom:12px;
-}
-.sm-subtotal-lbl{color:var(--gold);}
-.sm-subtotal-val{color:var(--gold);}
+  .arc-svg { width: 100%; overflow: visible; }
 
-.sm-extras-lbl{
-  font-size:8px;color:var(--dim);letter-spacing:2px;margin-bottom:8px;
-}
+  .arc-labels {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
 
-.sm-grand{
-  background:#110e00;border:2px solid #4a3200;
-  padding:11px 14px;margin-top:6px;
-  display:flex;justify-content:space-between;align-items:center;
-}
-.sm-grand-lbl{font-size:9px;color:var(--gold);letter-spacing:2px;}
-.sm-grand-val{font-size:clamp(17px,5.5vw,22px);color:var(--gold);text-shadow:3px 3px 0 var(--gold-dk);}
+  /* ---- next tides row ---- */
+  .next-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
 
-.sm-tier-msg{font-size:8px;letter-spacing:2px;text-align:center;margin-top:8px;}
+  .next-card {
+    background: linear-gradient(155deg, #162f58 0%, #0f2040 55%, #0c1c38 100%);
+    border-radius: 16px;
+    padding: 18px 16px;
+    border: 1px solid rgba(56, 120, 180, 0.35);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 4px 16px rgba(0,0,0,0.35);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
 
-/* Tier 0 — nothing earned */
-.sm-tier-zero .sm-grand-val{color:#404060;text-shadow:none;}
-.sm-tier-zero .sm-grand{border-color:#252540;}
-.sm-tier-zero .sm-tier-msg{color:#404060;}
+  .next-card-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
 
-/* Tier 1 — a little ($1–$3) */
-.sm-tier-low .sm-grand-val{color:var(--p1);text-shadow:0 0 12px var(--p1),2px 2px 0 #004466;}
-.sm-tier-low .sm-tier-msg{color:var(--p1);}
+  .next-card-type {
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .next-card-type.high { color: var(--high); }
+  .next-card-type.low  { color: var(--accent2); }
 
-/* Tier 2 — decent ($4–$6) */
-.sm-tier-mid .sm-grand-val{animation:smGoldPulse 1.6s ease-in-out infinite;}
-.sm-tier-mid .sm-tier-msg{color:var(--gold);}
-@keyframes smGoldPulse{
-  0%,100%{text-shadow:3px 3px 0 var(--gold-dk);}
-  50%{text-shadow:3px 3px 0 var(--gold-dk),0 0 18px var(--gold),0 0 36px rgba(255,215,0,.4);}
-}
+  .next-card-time {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+    background: linear-gradient(180deg, #ffffff 0%, #a8c8e8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 
-/* Tier 3 — legendary ($7+) */
-.sm-tier-high .sm-grand-val{animation:smRainbow .9s linear infinite;}
-.sm-tier-high .sm-grand{border-color:var(--gold);}
-.sm-tier-high .sm-tier-msg{animation:smRainbow .9s linear infinite;}
-.sm-tier-high .sm-panel{animation:smBorderRainbow 2s linear infinite;}
-@keyframes smRainbow{
-  0%  {color:#ff4444;text-shadow:2px 2px 0 #800000,0 0 16px #ff0000;}
-  20% {color:#ffaa00;text-shadow:2px 2px 0 #804400,0 0 16px #ff8800;}
-  40% {color:#ffff00;text-shadow:2px 2px 0 #808000,0 0 16px #ffff00;}
-  60% {color:#00ff88;text-shadow:2px 2px 0 #008040,0 0 16px #00ff88;}
-  80% {color:#00ccff;text-shadow:2px 2px 0 #006688,0 0 16px #00ccff;}
-  100%{color:#ff4444;text-shadow:2px 2px 0 #800000,0 0 16px #ff0000;}
-}
-@keyframes smBorderRainbow{
-  0%  {border-color:#ff4444;box-shadow:0 0 0 2px #0a0a1a,0 0 0 5px #800000,0 0 40px rgba(255,68,68,.25);}
-  33% {border-color:#ffff00;box-shadow:0 0 0 2px #0a0a1a,0 0 0 5px #808000,0 0 40px rgba(255,255,0,.25);}
-  66% {border-color:#00ff88;box-shadow:0 0 0 2px #0a0a1a,0 0 0 5px #008040,0 0 40px rgba(0,255,136,.25);}
-  100%{border-color:#ff4444;box-shadow:0 0 0 2px #0a0a1a,0 0 0 5px #800000,0 0 40px rgba(255,68,68,.25);}
-}
+  .next-card-in {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
 
-.sm-footer{
-  text-align:center;font-size:7px;color:#404068;
-  letter-spacing:2px;margin-top:22px;
-  animation:smBlink 1.2s step-start infinite;
-}
-@keyframes smBlink{50%{opacity:0;}}
+  .next-card-content { display: flex; flex-direction: column; gap: 4px; }
 
-/* ── Footer ── */
-footer{
-  text-align:center;font-size:7px;color:#505080;
-  margin-top:20px;padding-top:12px;
-  border-top:2px solid #0e0e30;letter-spacing:1px;
-}
+  .next-card-ft {
+    display: none;
+    font-size: 5.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--muted);
+    opacity: 0.18;
+    margin-left: auto;
+    align-self: center;
+    letter-spacing: -0.04em;
+  }
+  .next-card-ft-unit {
+    font-size: 1.8rem;
+    font-weight: 500;
+    margin-left: 3px;
+    vertical-align: super;
+  }
+
+  /* ---- waves card ---- */
+  .waves-card {
+    background: linear-gradient(155deg, #162f58 0%, #0f2040 55%, #0c1c38 100%);
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid rgba(56, 120, 180, 0.35);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 4px 16px rgba(0,0,0,0.35);
+  }
+  body.light .waves-card {
+    background: linear-gradient(155deg, #ffffff 0%, #f2f8fd 100%);
+    border-color: rgba(13, 148, 136, 0.18);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 4px 20px rgba(0,60,100,0.09);
+  }
+  .waves-row {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+  }
+
+  /* ---- full schedule ---- */
+  .schedule-card {
+    background: linear-gradient(155deg, #162f58 0%, #0f2040 55%, #0c1c38 100%);
+    border-radius: 16px;
+    padding: 18px 18px;
+    border: 1px solid rgba(56, 120, 180, 0.35);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 4px 16px rgba(0,0,0,0.35);
+  }
+
+  .schedule-title {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .schedule-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .schedule-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid #1a3254;
+  }
+  .schedule-row:last-child { border-bottom: none; }
+
+  .schedule-row.current-window {
+    background: #0d2040;
+    border-radius: 8px;
+    padding: 7px 8px;
+    margin: 0 -8px;
+  }
+
+  .sched-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .sched-dot.high { background: var(--high);  box-shadow: 0 0 6px rgba(52, 211, 153, 0.6); }
+  .sched-dot.low  { background: var(--muted); box-shadow: 0 0 6px rgba(107, 141, 181, 0.4); }
+
+  .sched-type {
+    font-size: 0.8rem;
+    font-weight: 500;
+    width: 34px;
+    flex-shrink: 0;
+  }
+  .sched-type.high { color: var(--high); }
+  .sched-type.low  { color: var(--muted); }
+
+  .sched-time {
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+
+  .sched-ft {
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  .sched-past { opacity: 0.55; }
+
+  .now-badge {
+    font-size: 0.62rem;
+    background: linear-gradient(120deg, var(--accent) 0%, var(--accent2) 100%);
+    color: var(--bg);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    box-shadow: 0 0 8px rgba(45, 212, 191, 0.4);
+    margin-left: auto;
+  }
+
+  /* ---- states ---- */
+  .loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .error-banner {
+    background: #2a1215;
+    border: 1px solid #7f1d1d;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+  .error-banner-icon { color: #f87171; flex-shrink: 0; margin-top: 1px; }
+  .error-banner-body { flex: 1; }
+  .error-banner-title { color: #f87171; font-weight: 600; margin-bottom: 2px; }
+  .error-banner-detail { color: #fca5a5; opacity: 0.8; font-size: 0.78rem; }
+  .error-banner-retry {
+    background: none;
+    border: 1px solid #7f1d1d;
+    color: #f87171;
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    margin-top: 8px;
+    display: inline-block;
+  }
+  .error-banner-retry:hover { background: #3b1215; }
+
+  .cache-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #1a2e1a;
+    border: 1px solid #2d5a2d;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 0.78rem;
+    color: #86efac;
+    line-height: 1.4;
+  }
+  .cache-banner svg { flex-shrink: 0; }
+  body.light .cache-banner {
+    background: #f0fdf4;
+    border-color: #86efac;
+    color: #166534;
+  }
+
+  .updated-at {
+    text-align: center;
+    font-size: 0.68rem;
+    color: var(--muted);
+    padding-top: 4px;
+  }
+
+  /* ---- theme toggle button ---- */
+  .theme-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+  }
+  .theme-btn:hover { color: var(--accent); }
+  .btn-group { display: flex; align-items: center; gap: 4px; }
+
+  /* ---- light mode ---- */
+  body.light {
+    --bg: #ddeaf5;
+    --surface: #ffffff;
+    --accent: #0d9488;
+    --accent2: #0369a1;
+    --text: #0b1e35;
+    --muted: #4a6a8a;
+    --high: #059669;
+    background: linear-gradient(160deg, #e6f2fb 0%, #d8e8f4 100%);
+    color: var(--text);
+  }
+
+  body.light h1 {
+    background: linear-gradient(120deg, #0d9488 0%, #0369a1 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  body.light select {
+    background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234a6a8a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 14px center;
+    color: var(--text);
+    border-color: rgba(13, 148, 136, 0.3);
+    box-shadow: 0 2px 8px rgba(0,60,100,0.08);
+  }
+
+  body.light .current-card,
+  body.light .next-card,
+  body.light .schedule-card {
+    background: linear-gradient(155deg, #ffffff 0%, #f2f8fd 100%);
+    border-color: rgba(13, 148, 136, 0.18);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 4px 20px rgba(0,60,100,0.09);
+  }
+
+  body.light .current-status.rising  { color: #059669; text-shadow: none; }
+  body.light .current-status.falling { color: #0369a1; text-shadow: none; }
+
+  body.light .next-card-type.high { color: #059669; }
+  body.light .next-card-type.low  { color: #0369a1; }
+
+  body.light .next-card-time {
+    background: linear-gradient(180deg, #0b1e35 0%, #1e3a5f 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  body.light .schedule-row        { border-bottom-color: #ccdded; }
+  body.light .schedule-row.current-window { background: #e4f2fb; }
+  body.light .sched-dot.high { background: #059669; box-shadow: 0 0 5px rgba(5,150,105,0.3); }
+  body.light .sched-dot.low  { background: #0369a1; box-shadow: 0 0 5px rgba(3,105,161,0.3); }
+  body.light .sched-type.high { color: #059669; }
+  body.light .sched-type.low  { color: #0369a1; }
+
+  body.light .now-badge {
+    background: linear-gradient(120deg, #0d9488 0%, #0369a1 100%);
+    color: #ffffff;
+    box-shadow: 0 0 8px rgba(13,148,136,0.2);
+  }
+
+  body.light .error-banner {
+    background: #fff0f0;
+    border-color: #fca5a5;
+  }
+  body.light select option {
+    background: #ffffff;
+    color: #0b1e35;
+  }
+
+  @media (min-width: 768px) {
+    body { padding: 0 0 60px; }
+
+    header { padding: 28px 28px 0; }
+
+    .main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+      padding: 24px 28px;
+      gap: 20px;
+    }
+
+    .alerts-section  { grid-column: 1 / 3; grid-row: 1; }
+    .current-card    { grid-column: 1; grid-row: 2 / 4; align-self: stretch; }
+    .next-row        { grid-column: 2; grid-row: 2; align-self: stretch; display: flex; flex-direction: column; gap: 20px; }
+    .next-row > .next-card { flex: 1; display: flex; flex-direction: row; align-items: stretch; }
+    .next-card-ft    { display: flex; align-items: center; }
+    .next-card       { flex: 1; }
+    .conditions-card { grid-column: 2; grid-row: 3; align-self: stretch; display: flex; flex-direction: column; justify-content: center; }
+    .waves-card      { grid-column: 1 / 3; grid-row: 4; }
+    .schedule-card   { grid-column: 1 / 3; grid-row: 5; display: block; }
+    .updated-at      { grid-column: 1 / 3; grid-row: 6; }
+    .error-banner,
+    .cache-banner    { grid-column: 1 / 3; grid-row: 1; }
+
+    /* when no alerts and no banners, shift everything up one row */
+    .main:not(:has(.alerts-section)):not(:has(.cache-banner)):not(:has(.error-banner)) .current-card    { grid-row: 1 / 3; }
+    .main:not(:has(.alerts-section)):not(:has(.cache-banner)):not(:has(.error-banner)) .next-row        { grid-row: 1; }
+    .main:not(:has(.alerts-section)):not(:has(.cache-banner)):not(:has(.error-banner)) .conditions-card { grid-row: 2; }
+    .main:not(:has(.alerts-section)):not(:has(.cache-banner)):not(:has(.error-banner)) .waves-card      { grid-row: 3; }
+    .main:not(:has(.alerts-section)):not(:has(.cache-banner)):not(:has(.error-banner)) .schedule-card   { grid-row: 4; }
+    .main:not(:has(.alerts-section)):not(:has(.cache-banner)):not(:has(.error-banner)) .updated-at      { grid-row: 5; }
+
+    .conditions-row { gap: 20px; }
+    .condition-value { font-size: 1.5rem; }
+
+    .location-wrap { padding: 0 28px 12px; }
+    #stationSelect { max-width: 420px; }
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <h1 class="title">★ CHORE QUEST ★</h1>
-  <p class="subtitle">HOUSEHOLD HEROES</p>
+  <div class="title-row">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <img src="waves.png" alt="" style="width:28px;height:28px;object-fit:contain;opacity:0.9;">
+      <h1>Tides</h1>
+    </div>
+    <div class="btn-group">
+      <button class="theme-btn" id="themeBtn" title="Toggle light/dark mode" aria-label="Toggle light/dark mode">
+        <svg id="themeBtnIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </button>
+      <button class="refresh-btn" id="refreshBtn" title="Refresh" aria-label="Refresh tide data">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
+          <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+        </svg>
+      </button>
+    </div>
+  </div>
 </header>
 
-<div id="app"><div class="loading">LOADING DATA...</div></div>
+<div class="main" id="main" aria-live="polite" aria-atomic="false">
+  <div class="loading">Loading tides…</div>
+</div>
 
-<button class="refresh-btn" onclick="location.reload()">&#8635; REFRESH</button>
-
-<footer>INSERT COIN TO CONTINUE &nbsp;·&nbsp; LIVE DATA FROM HEADQUARTERS</footer>
+<div class="location-wrap">
+  <label for="stationSelect" class="location-label">Location</label>
+  <select id="stationSelect">
+    <option value="8536110">Cape May</option>
+    <option value="8535101">Ocean City</option>
+    <option value="8535835">Wildwood Crest</option>
+  </select>
+</div>
 
 <script>
-const SHEET_ID = '1dAmlZqyuLw1SSuRTHwXO0fXBnTWLvB-Hb79ImoAtXLg';
-const DAY_LABELS = ['SU','MO','TU','WE','TH','FR','SA'];
-const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+const NOAA = 'https://api.tidesandcurrents.noaa.gov/api/prod/datagetter';
 
-const NOW   = new Date();
-const TODAY = new Date(NOW);
-TODAY.setHours(0,0,0,0);
-// ET time parts — used for noon cutoff and Saturday summary gating
-const ET_PARTS = new Intl.DateTimeFormat('en-US', {
-  timeZone: 'America/New_York',
-  weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit', hour: 'numeric', hour12: false
-}).formatToParts(NOW).reduce((o, p) => { o[p.type] = p.value; return o; }, {});
-const ET_HOUR    = parseInt(ET_PARTS.hour, 10);
-const ET_WEEKDAY = ET_PARTS.weekday;                                    // e.g. 'Saturday'
-const ET_DAY_KEY = `${ET_PARTS.year}${ET_PARTS.month}${ET_PARTS.day}`; // e.g. '20260531'
-const BEFORE_NOON = ET_HOUR < 12;
+// ---- theme ----
+function isLight() { return document.body.classList.contains('light'); }
 
-// ── CSV parser ──────────────────────────────────────────────
-function parseCSV(text) {
-  return text.split('\n').map(raw => {
-    const line = raw.replace(/\r$/, '');
-    const cols = [];
-    let field = '', inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      if (line[i] === '"') { inQ = !inQ; }
-      else if (line[i] === ',' && !inQ) { cols.push(field.trim()); field = ''; }
-      else { field += line[i]; }
-    }
-    cols.push(field.trim());
-    return cols;
+function themeColors() {
+  const light = isLight();
+  return {
+    high:          light ? '#059669' : '#34d399',
+    low:           light ? '#0369a1' : '#38bdf8',
+    grid:          light ? '#ccdded' : '#1a3254',
+    gridMid:       light ? '#d8e8f2' : '#1a3254',
+    area:          light ? [0.14, 0.01] : [0.22, 0.02],
+    pastDotFill:   light ? '#d0e6f4' : '#122038',
+    pastDotStroke: light ? '#b0cce0' : '#1e3a5f',
+    pastLabel:     light ? '#9ab8cc' : '#2a4460',
+    futureLabel:   light ? '#4a6a8a' : '#3d5f80',
+    timeLabel:     light ? '#9ab8cc' : '#3d5f80',
+    dimLabel:      light ? '#c0d4e4' : '#1e3a5f',
+    nowLine:       light ? '#0b1e35' : 'white',
+    levelPill:     light ? 0.2 : 0.18,
+  };
+}
+
+function updateThemeBtn() {
+  const light = isLight();
+  document.getElementById('themeBtnIcon').innerHTML = light
+    ? /* moon */ `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`
+    : /* sun  */ `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('tides_theme');
+  const systemLight = !window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const useLight = saved ? saved === 'light' : systemLight;
+  document.body.classList.toggle('light', useLight);
+  updateThemeBtn();
+  updateThemeColor();
+
+  // follow system changes only when the user hasn't made an explicit choice
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    if (localStorage.getItem('tides_theme')) return;
+    document.body.classList.toggle('light', !e.matches);
+    updateThemeBtn();
+    updateThemeColor();
+    if (_lastTides) render(_lastTides, _lastWeather, _lastWaterTemp, _lastAlerts);
   });
 }
 
-function money(s) {
-  if (!s) return null;
-  let c = s.replace(/[\s$,]/g, '');
-  if (!c || c === '-') return null;
-  if (c.startsWith('(') && c.endsWith(')')) c = '-' + c.slice(1, -1);
-  const n = parseFloat(c);
-  return isNaN(n) ? null : n;
+let _lastTides = null, _lastWeather = null, _lastWaterTemp = null, _lastAlerts = null, _lastSwell = null;
+
+function updateThemeColor() {
+  document.querySelector('meta[name="theme-color"]')
+    .setAttribute('content', isLight() ? '#ddeaf5' : '#0a1628');
 }
 
-// ── Sheet parser ────────────────────────────────────────────
-// Column layout (0-indexed):
-//  0=week date  2=name  3-9=S/M/T/W/T/F/S  10=trash  11=pay
-//  13=simonOwed  O(14)=simonAdj  P(15)=simonNote  Q(16)=simonAdjDate
-//  18=desOwed    T(19)=desAdj    U(20)=desNote    V(21)=desAdjDate
-// Extras are collected from EVERY row in a week section (named or not),
-// so additional credit/debit rows can be added freely in the sheet.
-function parseSheet(rows) {
-  const weeks = [];
-  let cur = null;
-  for (const c of rows) {
-    if (!c.length) continue;
-    if (c[0] && /^\d{2}\/\d{2}\/\d{2}$/.test(c[0])) {
-      cur = { date: c[0], simon: null, desmond: null, extras: [] };
-      weeks.push(cur);
-      // Still scan for extras on the week-header row itself before moving on
-      const sa0 = money(c[14]);
-      if (sa0 != null) cur.extras.push({ player:'simon',   amt:sa0, note:(c[15]||'').trim(), date:(c[16]||'').trim() });
-      const da0 = money(c[19]);
-      if (da0 != null) cur.extras.push({ player:'desmond', amt:da0, note:(c[20]||'').trim(), date:(c[21]||'').trim() });
-      continue;
-    }
-    if (!cur) continue;
-    const nm = (c[2] || '').trim().toLowerCase();
-    if (nm === 'simon' || nm === 'desmond') {
-      cur[nm] = {
-        days:      DAY_LABELS.map((_, i) => { if (isExcused(c[3+i])) return 'excused'; const v = money(c[3+i]); return v != null && v > 0; }),
-        trash:     (() => { if (isExcused(c[10])) return 'excused'; const v = money(c[10]); return v != null && v > 0; })(),
-        pay:       money(c[11]) || 0,
-        simonOwed: money(c[13]),
-        desOwed:   money(c[18]),
-      };
-    }
-    // Scan O/P/Q (Simon) and T/U/V (Desmond) on every row
-    const sa = money(c[14]);
-    if (sa != null) cur.extras.push({ player:'simon',   amt:sa, note:(c[15]||'').trim(), date:(c[16]||'').trim() });
-    const da = money(c[19]);
-    if (da != null) cur.extras.push({ player:'desmond', amt:da, note:(c[20]||'').trim(), date:(c[21]||'').trim() });
-  }
-  return weeks.filter(w => w.simon || w.desmond);
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  localStorage.setItem('tides_theme', isLight() ? 'light' : 'dark');
+  updateThemeBtn();
+  updateThemeColor();
+  if (_lastTides) render(_lastTides, _lastWeather, _lastWaterTemp, _lastAlerts);
 }
 
-// ── Money calculation ───────────────────────────────────────
-// Strategy: take first snapshot found (in Simon's row for both players),
-// then add all weekly pays. Desmond's row may carry a payout adjustment.
-function calcOwed(weeks, key) {
-  // Use the sheet's authoritative running balance from completed weeks only,
-  // then add any one-off adjustments (e.g. mowing bonus) from the current week.
-  let last = 0;
-  let adj = 0;
-  for (const w of weeks) {
-    const sat = parseWDate(w.date);
-    sat.setDate(sat.getDate() + 6);
-    if (sat > TODAY) {
-      // Week still in progress — pick up one-off adjustments only
-      for (const e of w.extras) if (e.player === key) adj += e.amt;
-      // Quest complete mid-week? Pay is earned — add it now
-      const r = w[key];
-      if (r && isAllDone(r)) adj += r.pay;
-      continue;
-    }
-    if (w.simon) {
-      const snap = key === 'simon' ? w.simon.simonOwed : w.simon.desOwed;
-      if (snap !== null) last = snap;
-    }
-    if (key === 'desmond' && w.desmond && w.desmond.desOwed !== null)
-      last = w.desmond.desOwed;
-  }
-  return last + adj;
+const STATION_META = {
+  '8535101': { lat: 39.274, lon: -74.574 },
+  '8535835': { lat: 38.984, lon: -74.868 },
+  '8536110': { lat: 38.968, lon: -74.960 },
+};
+
+async function fetchWeather(stationId) {
+  const { lat, lon } = STATION_META[stationId] || { lat: 39.1, lon: -74.7 };
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+    `&current=temperature_2m,wind_speed_10m,wind_direction_10m,uv_index` +
+    `&temperature_unit=fahrenheit&wind_speed_unit=mph&forecast_days=1`;
+  const res = await fetch(url);
+  const data = await res.json();
+  const c = data.current;
+  return {
+    tempF:     Math.round(c.temperature_2m),
+    uvIndex:   Math.round(c.uv_index),
+    windSpeed: Math.round(c.wind_speed_10m),
+    windDir:   windDirToCardinal(c.wind_direction_10m),
+  };
 }
 
-// ── Date helpers ────────────────────────────────────────────
-function parseWDate(str) {
-  const [m,d,y] = str.split('/').map(Number);
-  return new Date(2000+y, m-1, d);
-}
-function fmtDate(str) {
-  const [m,,] = str.split('/').map(Number);
-  const d = parseInt(str.split('/')[1]);
-  return `${MONTHS[m-1]} ${d}`;
-}
-function dayState(weekStr, dayIdx, done) {
-  if (done === 'excused') return 'excused';
-  if (done) return 'done';
-  const dt = parseWDate(weekStr);
-  dt.setDate(dt.getDate() + dayIdx);
-  if (dt > TODAY) return 'pend';
-  if (dt.getTime() === TODAY.getTime() && BEFORE_NOON) return 'pend';
-  return 'missed';
-}
-function trashState(weekStr, done) {
-  if (done === 'excused') return 'excused';
-  if (done) return 'done';
-  const sat = parseWDate(weekStr);
-  sat.setDate(sat.getDate() + 6);
-  return sat > TODAY ? 'pend' : 'missed';
-}
-const SYM = { done:'✓', missed:'✗', pend:'?', excused:'—' };
-function isExcused(raw) { return (raw || '').trim().toUpperCase() === 'N/A'; }
+const WATER_TEMP_STATION = '8536110'; // Cape May — only NJ station with a water temp sensor
 
-function isEmptyRow(r) {
-  return !r || (r.pay === 0 && !r.days.some(Boolean) && !r.trash);
+async function fetchSwell(stationId) {
+  const { lat, lon } = STATION_META[stationId] || { lat: 39.1, lon: -74.7 };
+  const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}` +
+    `&current=swell_wave_height,swell_wave_period,swell_wave_direction,wind_wave_height,wind_wave_period` +
+    `&length_unit=imperial`;
+  const res = await fetch(url);
+  const data = await res.json();
+  const c = data.current;
+  return {
+    swellHeight: Math.round(c.swell_wave_height * 10) / 10,
+    swellPeriod: Math.round(c.swell_wave_period),
+    swellDir:    windDirToCardinal(c.swell_wave_direction),
+    chopHeight:  Math.round(c.wind_wave_height * 10) / 10,
+  };
 }
 
-function calcStreak(weeks, key) {
-  // Iterate every week's daily slots directly — a missing row (no data yet)
-  // counts as all-missed, so a new week with no entries breaks the streak.
-  const days = [];
-  for (const w of weeks) {
-    const r = w[key]; // null if player has no row this week
-    for (let i = 0; i < DAY_LABELS.length; i++) {
-      const dt = parseWDate(w.date);
-      dt.setDate(dt.getDate() + i);
-      if (dt > TODAY) continue; // future — skip
-      const done = r ? r.days[i] : false;
-      if (done === 'excused') continue; // excused — skip, don't break streak
-      // Before noon grace: skip today's undone tasks rather than penalising
-      if (dt.getTime() === TODAY.getTime() && BEFORE_NOON && !done) continue;
-      days.push({ dt, done });
-    }
-  }
-  days.sort((a, b) => b.dt - a.dt);
-  let streak = 0;
-  for (const { done } of days) {
-    if (done) streak++;
-    else break;
-  }
-  return streak;
+function waveSize(heightFt) {
+  if (heightFt < 0.5) return 'Flat';
+  if (heightFt < 1.5) return 'Tiny';
+  if (heightFt < 3)   return 'Small';
+  if (heightFt < 5)   return 'Medium';
+  if (heightFt < 8)   return 'Large';
+  if (heightFt < 12)  return 'Huge';
+  return 'Massive';
 }
 
-function isAllDone(row) {
-  if (!row) return false;
-  const hasDone = row.days.some(d => d === true) || row.trash === true;
-  return hasDone
-    && row.days.every(d => d === true || d === 'excused')
-    && (row.trash === true || row.trash === 'excused');
+function swellQuality(period) {
+  if (period >= 14) return { label: 'Excellent', color: '#34d399' };
+  if (period >= 10) return { label: 'Good',      color: '#38bdf8' };
+  if (period >= 7)  return { label: 'Fair',      color: '#fbbf24' };
+  return                   { label: 'Poor',      color: '#6b8db5' };
 }
 
-// ── Past-30-day earnings ────────────────────────────────────
-function calcMonthEarnings(weeks, key) {
-  const cutoff = new Date(TODAY);
-  cutoff.setDate(cutoff.getDate() - 30);
-  let total = 0;
-  for (const w of weeks) {
-    const r = w[key];
-    if (!r || isEmptyRow(r)) continue;
-    const sat = parseWDate(w.date);
-    sat.setDate(sat.getDate() + 6);
-    if (sat >= cutoff && sat <= TODAY) total += r.pay || 0;
-  }
-  return total;
+function swellQualityLight(period) {
+  if (period >= 14) return { label: 'Excellent', color: '#059669' };
+  if (period >= 10) return { label: 'Good',      color: '#0369a1' };
+  if (period >= 7)  return { label: 'Fair',      color: '#b45309' };
+  return                   { label: 'Poor',      color: '#4a6a8a' };
 }
 
-// ── Card builder ────────────────────────────────────────────
-function buildCard(weeks, name, num) {
-  const key = name.toLowerCase();
-  const owed = calcOwed(weeks, key);
-  const streak = calcStreak(weeks, key);
-  const monthEarned = calcMonthEarnings(weeks, key);
+async function fetchWaterTemp(stationId) {
+  const url = `${NOAA}?date=latest&station=${WATER_TEMP_STATION}&product=water_temperature` +
+    `&units=english&time_zone=lst_ldt&application=nj_tides&format=json`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (data.error || !data.data?.length) return null;
+  const tempF = Math.round(parseFloat(data.data[0].v));
+  return { tempF, approximate: stationId !== WATER_TEMP_STATION };
+}
 
-  // Completion rate — only count days that have already occurred
-  let total = 0, done = 0;
-  for (const w of weeks) {
-    const r = w[key];
-    if (!r || isEmptyRow(r)) continue;
-    r.days.forEach((d, i) => {
-      const dt = parseWDate(w.date);
-      dt.setDate(dt.getDate() + i);
-      if (dt > TODAY) return;
-      if (dt.getTime() === TODAY.getTime() && BEFORE_NOON) return;
-      if (d === 'excused') return;
-      total++;
-      if (d === true) done++;
-    });
-    const sat = parseWDate(w.date);
-    sat.setDate(sat.getDate() + 6);
-    if (sat <= TODAY && r.trash !== 'excused') { total++; if (r.trash === true) done++; }
-  }
-  const pct = total ? done / total : 0;
-  const pips = Array.from({length:10}, (_,i) =>
-    `<div class="pip${i < Math.round(pct*10) ? ' on' : ''}"></div>`
-  ).join('');
+const BEACH_ALERT_EVENTS = new Set([
+  'Rip Current Statement', 'Beach Hazard Statement', 'High Surf Advisory',
+  'Coastal Flood Advisory', 'Coastal Flood Warning', 'Coastal Flood Watch',
+  'Coastal Flood Statement', 'Special Marine Warning', 'Small Craft Advisory',
+]);
 
-  // The calendar week that contains today (may have no data yet for this player)
-  const thisWeek = weeks.find(w => {
-    const start = parseWDate(w.date);
-    const sat = new Date(start); sat.setDate(sat.getDate() + 6);
-    return TODAY >= start && TODAY <= sat;
-  });
+async function fetchAlerts(stationId) {
+  const { lat, lon } = STATION_META[stationId] || { lat: 39.1, lon: -74.7 };
+  const res = await fetch(`https://api.weather.gov/alerts/active?point=${lat},${lon}&status=actual`);
+  const data = await res.json();
+  return (data.features || [])
+    .filter(f => BEACH_ALERT_EVENTS.has(f.properties.event))
+    .map(f => ({
+      event:    f.properties.event,
+      headline: f.properties.headline,
+      severity: (f.properties.severity || 'Unknown').toLowerCase(),
+    }));
+}
 
-  // Non-empty weeks for this player (used for history)
-  const filled = weeks.filter(w => w[key] && !isEmptyRow(w[key]));
+function windDirToCardinal(deg) {
+  return ['N','NE','E','SE','S','SW','W','NW'][Math.round(deg / 45) % 8];
+}
 
-  // Always show the current calendar week — avoids stale "Quest Complete"
-  // from last week when the new week has no entries yet
-  const curW = thisWeek || (filled.length ? filled[filled.length - 1] : null);
+function uvLabel(uv) {
+  if (uv <= 2)  return 'Low';
+  if (uv <= 5)  return 'Moderate';
+  if (uv <= 7)  return 'High';
+  if (uv <= 10) return 'Very High';
+  return 'Extreme';
+}
 
-  // Streak badge
-  const streakTier = streak >= 25 ? 'streak-t4' : streak >= 15 ? 'streak-t3' : streak >= 10 ? 'streak-t2' : streak >= 5 ? 'streak-t1' : '';
-  const streakHtml = streak > 1
-    ? `<div class="streak ${streakTier}">
-        <span class="streak-fire">🔥</span>
-        <span class="streak-num">${streak}</span>
-        <span class="streak-lbl">DAY${streak !== 1 ? 'S' : ''}<br>STREAK</span>
-       </div>`
-    : `<div class="streak-go">&#9733; DO YOUR CHORES AND START A STREAK!</div>`;
+function uvColor(uv) {
+  const l = isLight();
+  if (uv <= 2)  return l ? '#059669' : '#34d399';
+  if (uv <= 5)  return l ? '#b45309' : '#fbbf24';
+  if (uv <= 7)  return l ? '#c2410c' : '#fb923c';
+  if (uv <= 10) return l ? '#b91c1c' : '#f87171';
+  return l ? '#7c3aed' : '#c084fc';
+}
 
-  // Current week: celebration or normal grid
-  let gridHtml = '';
-  if (curW) {
-    const r = curW[key]; // null if player has no entries yet this week
-    if (r && isAllDone(r)) {
-      gridHtml = `
-        <div class="cel-box">
-          <div class="cel-stars">&#9733; &#9733; &#9733;</div>
-          <div class="cel-msg">QUEST<br>COMPLETE!</div>
-          <div class="cel-earn">ALL CHORES DONE &mdash; $${r.pay.toFixed(2)} EARNED</div>
-        </div>`;
-    } else {
-      const days = r ? r.days : Array(7).fill(false);
-      const cells = days.map((d,i) => {
-        const st = dayState(curW.date, i, d);
-        return `<div class="day-cell">
-          <span class="day-lbl">${DAY_LABELS[i]}</span>
-          <div class="day-box ${st}">${SYM[st]}</div>
-        </div>`;
-      }).join('');
-      const tst = trashState(curW.date, r ? r.trash : false);
-      const trCell = `<div class="day-cell tr-cell">
-        <span class="day-lbl">TRASH</span>
-        <div class="day-box ${tst}">${SYM[tst]}</div>
-      </div>`;
-      gridHtml = `
-        <div class="slbl">CURRENT WEEK</div>
-        <div class="week-lbl cur">&#9658; WEEK OF ${fmtDate(curW.date)}</div>
-        <div class="chore-grid">${trCell}${cells}</div>
-        ${r ? `<div class="week-pay">QUEST IN PROGRESS &nbsp;&middot;&nbsp; $${r.pay.toFixed(2)} SO FAR</div>` : ''}`;
+function fmtTime(date) {
+  return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+}
+
+function relTime(date) {
+  const diff = date - Date.now();
+  const abs = Math.abs(diff);
+  const h = Math.floor(abs / 3600000);
+  const m = Math.floor((abs % 3600000) / 60000);
+  if (diff < 0) return 'passed';
+  if (h === 0) return `in ${m}m`;
+  if (m === 0) return `in ${h}h`;
+  return `in ${h}h ${m}m`;
+}
+
+function parseNoaaDate(str) {
+  // "2025-06-25 14:30" local time
+  const [datePart, timePart] = str.split(' ');
+  const [y, mo, d] = datePart.split('-').map(Number);
+  const [h, mi] = timePart.split(':').map(Number);
+  return new Date(y, mo - 1, d, h, mi);
+}
+
+async function fetchTides(stationId) {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const fmt = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
+
+  // fetch today + tomorrow to always have a "next" tide
+  const begin = fmt(now);
+  const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate() + 1);
+  const end = fmt(tomorrow);
+
+  const url = `${NOAA}?begin_date=${begin}&end_date=${end}` +
+    `&station=${stationId}&product=predictions&datum=MLLW` +
+    `&time_zone=lst_ldt&interval=hilo&units=english&application=nj_tides&format=json`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  const tides = data.predictions.map(p => ({
+    time: parseNoaaDate(p.t),
+    type: p.type === 'H' ? 'high' : 'low',
+    ft: parseFloat(p.v)
+  }));
+  // persist for offline fallback
+  try {
+    localStorage.setItem(`tides_cache_${stationId}`, JSON.stringify({
+      savedAt: Date.now(),
+      tides: tides.map(t => ({ ...t, time: t.time.getTime() }))
+    }));
+  } catch (_) {}
+  return tides;
+}
+
+function loadCachedTides(stationId) {
+  try {
+    const raw = localStorage.getItem(`tides_cache_${stationId}`);
+    if (!raw) return null;
+    const { savedAt, tides } = JSON.parse(raw);
+    return { savedAt, tides: tides.map(t => ({ ...t, time: new Date(t.time) })) };
+  } catch (_) { return null; }
+}
+
+function buildTideChart(tides, nowMs) {
+  const W = 280, H = 180;
+  const PAD = { top: 20, right: 14, bottom: 28, left: 14 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top - PAD.bottom;
+
+  // window: 1 event before now → 2 events after (≈18 hrs of context)
+  const nextIdx = tides.findIndex(t => t.time > nowMs);
+  if (nextIdx === -1) return '';
+  const startIdx = Math.max(0, nextIdx - 1);
+  const endIdx   = Math.min(tides.length - 1, nextIdx + 2);
+  const win = tides.slice(startIdx, endIdx + 1);
+  if (win.length < 2) return '';
+
+  const t0 = win[0].time, t1 = win[win.length - 1].time;
+  const fts = win.map(t => t.ft);
+  const minFt = Math.min(...fts), maxFt = Math.max(...fts);
+  const ftSpan = Math.max(maxFt - minFt, 1);
+
+  function tx(ms) { return PAD.left + (ms - t0) / (t1 - t0) * cW; }
+  function ty(ft) { return PAD.top + cH - (ft - minFt + 0.25) / (ftSpan + 0.5) * cH; }
+
+  // cosine-interpolated curve sampled at 60 pts per segment
+  const pts = [];
+  for (let i = 0; i < win.length - 1; i++) {
+    const a = win[i], b = win[i + 1];
+    const STEPS = 60;
+    for (let s = 0; s <= STEPS; s++) {
+      const f = s / STEPS;
+      pts.push([
+        tx(a.time + f * (b.time - a.time)),
+        ty(a.ft + (b.ft - a.ft) * (1 - Math.cos(Math.PI * f)) / 2)
+      ]);
     }
   }
 
-  // History (all filled weeks, newest first, excluding curW)
-  const histRows = [...filled].reverse().filter(w => w !== curW).map(w => {
-    const r = w[key];
-    const dots = r.days.map(d => `<div class="hdot ${d===true?'done':d==='excused'?'excused':'missed'}"></div>`).join('');
-    const tr = `<div class="hdot tr ${r.trash===true?'done':r.trash==='excused'?'excused':'missed'}"></div>`;
-    return `<div class="hist-row">
-      <span class="hist-date">${fmtDate(w.date)}</span>
-      <div class="hist-dots">${tr}${dots}</div>
-      <span class="hist-pay">$${r.pay.toFixed(2)}</span>
-    </div>`;
-  }).join('');
+  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join('');
+  const area = `${line}L${pts[pts.length-1][0].toFixed(1)},${PAD.top+cH}L${pts[0][0].toFixed(1)},${PAD.top+cH}Z`;
 
-  const icon = num === 1 ? '🎮' : '🕹️';
-  return `
-  <div class="card card-p${num}">
-    <div class="card-head">
-      <span class="card-icon">${icon}</span>
-      <span class="card-name">${name.toUpperCase()}</span>
-      <button class="summary-btn" onclick="showSummary('${key}')">📊 LAST WEEK</button>
-    </div>
+  // current water level via cosine interpolation
+  const prevT = nextIdx > 0 ? tides[nextIdx - 1] : null;
+  const nextT = tides[nextIdx];
+  const frac  = prevT ? (nowMs - prevT.time) / (nextT.time - prevT.time) : 0;
+  const nowFt = prevT ? prevT.ft + (nextT.ft - prevT.ft) * (1 - Math.cos(Math.PI * frac)) / 2 : nextT.ft;
+  const nowX  = tx(nowMs), nowY = ty(nowFt);
+  const isRisingNow = nextT.type === 'high';
+  const tc = themeColors();
+  const color = isRisingNow ? tc.high : tc.low;
 
-    <div class="slbl">COMPLETION RATE — ${Math.round(pct*100)}%</div>
-    <div class="pips">${pips}</div>
+  // wave paths at nowY — two sine layers fill downward to chart bottom
+  const wSX = PAD.left - 5, wEX = PAD.left + cW + 10;
+  const wBot = PAD.top + cH + 6;
+  const period = 68;
+  function genWave(baseY, amp) {
+    let d = `M ${wSX},${baseY}`;
+    for (let x = wSX; x < wEX; x += period) {
+      d += ` C ${x+period*0.25},${baseY-amp} ${x+period*0.75},${baseY+amp} ${x+period},${baseY}`;
+    }
+    return d;
+  }
+  const w1 = genWave(nowY - 1, 3);
+  const w2 = genWave(nowY + 4, 4);
+  const w1Fill = `${w1} L ${wEX},${wBot} L ${wSX},${wBot} Z`;
+  const w2Fill = `${w2} L ${wEX},${wBot} L ${wSX},${wBot} Z`;
 
-    ${streakHtml}
+  const markers = win.map(t => ({
+    x: tx(t.time), y: ty(t.ft),
+    type: t.type, ft: t.ft.toFixed(1),
+    label: fmtTime(t.time), isPast: t.time < nowMs
+  }));
 
-    ${gridHtml}
+  const splitIdx = pts.findIndex(p => p[0] >= nowX);
+  const pastPts   = splitIdx > 0 ? pts.slice(0, splitIdx + 1) : [];
+  const futurePts = splitIdx >= 0 ? pts.slice(splitIdx) : pts;
+  const mkPath = arr => arr.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join('');
+  const pastLine   = mkPath(pastPts);
+  const futureLine = mkPath(futurePts);
 
-    <div class="money-box${owed < 0 ? ' debt' : ''}">
-      <div class="money-lbl">${owed < 0 ? 'YOU OWE' : 'COINS OWED'}</div>
-      <div class="money-val">
-        <span class="coin${owed < 0 ? ' debt' : ''}">${owed < 0 ? '💸' : '🪙'}</span>
-        ${owed < 0 ? `&#x2212;$${Math.abs(owed).toFixed(2)}` : `$${owed.toFixed(2)}`}
+  return `<svg class="arc-svg" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="areaGrad" gradientUnits="userSpaceOnUse" x1="0" y1="${PAD.top}" x2="0" y2="${PAD.top+cH}">
+        <stop offset="0%"   stop-color="${color}" stop-opacity="${tc.area[0]}"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="${tc.area[1]}"/>
+      </linearGradient>
+      <clipPath id="chartClip">
+        <rect x="${PAD.left}" y="${PAD.top-4}" width="${cW}" height="${cH+4}"/>
+      </clipPath>
+      <pattern id="waveHatch" patternUnits="userSpaceOnUse" width="10" height="10">
+        <path d="M0,0 L10,10 M10,0 L0,10" stroke="${color}" stroke-width="0.8" stroke-linecap="round"/>
+      </pattern>
+      <linearGradient id="waveFillFade" gradientUnits="userSpaceOnUse" x1="0" y1="${nowY}" x2="0" y2="${wBot}">
+        <stop offset="0%"   stop-color="white" stop-opacity="1"/>
+        <stop offset="100%" stop-color="white" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="waveHatchFade" gradientUnits="userSpaceOnUse" x1="0" y1="${nowY}" x2="0" y2="${wBot}">
+        <stop offset="0%"   stop-color="white" stop-opacity="0"/>
+        <stop offset="55%"  stop-color="white" stop-opacity="1"/>
+        <stop offset="100%" stop-color="white" stop-opacity="0"/>
+      </linearGradient>
+      <mask id="waveFillMask">
+        <rect x="${wSX}" y="${nowY-8}" width="${wEX - wSX}" height="${wBot - nowY + 8}" fill="url(#waveFillFade)"/>
+      </mask>
+      <mask id="waveHatchMask">
+        <rect x="${wSX}" y="${nowY}" width="${wEX - wSX}" height="${wBot - nowY}" fill="url(#waveHatchFade)"/>
+      </mask>
+    </defs>
+
+    <line x1="${PAD.left}" y1="${PAD.top}"      x2="${PAD.left+cW}" y2="${PAD.top}"      stroke="${tc.grid}" stroke-width="1"/>
+    <line x1="${PAD.left}" y1="${PAD.top+cH/2}" x2="${PAD.left+cW}" y2="${PAD.top+cH/2}" stroke="${tc.gridMid}" stroke-width="0.5" stroke-dasharray="3,4"/>
+    <line x1="${PAD.left}" y1="${PAD.top+cH}"   x2="${PAD.left+cW}" y2="${PAD.top+cH}"   stroke="${tc.grid}" stroke-width="1"/>
+
+    <path d="${area}" fill="url(#areaGrad)" clip-path="url(#chartClip)"/>
+
+    <path d="${line}" stroke="${color}" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#chartClip)" opacity="0.07"/>
+    ${pastLine   ? `<path d="${pastLine}"   stroke="${color}" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#chartClip)" opacity="0.28"/>` : ''}
+    ${futureLine ? `<path d="${futureLine}" stroke="${color}" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#chartClip)" opacity="0.9"/>` : ''}
+
+    <!-- wave water body at current level -->
+    <g clip-path="url(#chartClip)" mask="url(#waveFillMask)">
+      <path d="${w1Fill}" fill="${color}" opacity="0.12"/>
+      <path d="${w2Fill}" fill="${color}" opacity="0.2"/>
+    </g>
+    <g clip-path="url(#chartClip)" mask="url(#waveHatchMask)">
+      <rect x="${wSX}" y="${nowY}" width="${wEX - wSX}" height="${wBot - nowY}" fill="url(#waveHatch)" opacity="0.45"/>
+    </g>
+    <g clip-path="url(#chartClip)">
+      <path d="${w2}" stroke="${color}" stroke-width="1.5" fill="none" opacity="0.55" stroke-linecap="round"/>
+    </g>
+    <!-- height label -->
+    <rect x="${PAD.left}" y="${nowY-9}" width="26" height="11" rx="3" fill="${color}" opacity="${tc.levelPill}"/>
+    <text x="${PAD.left+13}" y="${nowY+0.5}" text-anchor="middle" dominant-baseline="middle"
+      font-size="8" font-weight="700" font-family="Space Grotesk,sans-serif" fill="${color}">${nowFt.toFixed(1)}ft</text>
+
+    <line x1="${nowX}" y1="${PAD.top}" x2="${nowX}" y2="${PAD.top+cH}" stroke="${tc.nowLine}" stroke-width="1" stroke-dasharray="2,4" opacity="0.18" clip-path="url(#chartClip)"/>
+
+    ${markers.map(m => {
+      const mc = m.isPast ? tc.pastDotFill   : (m.type==='high' ? tc.high : tc.low);
+      const ms = m.isPast ? tc.pastDotStroke : mc;
+      const lc = m.isPast ? tc.pastLabel     : mc;
+      const tc2 = m.isPast ? tc.dimLabel : tc.futureLabel;
+      return `
+      <circle cx="${m.x}" cy="${m.y}" r="3.5" fill="${mc}" stroke="${ms}" stroke-width="1.5"/>
+      <text x="${m.x}" y="${m.type==='high' ? m.y-9 : m.y+16}"
+        text-anchor="middle" font-size="8.5" font-weight="600"
+        font-family="Space Grotesk,sans-serif" fill="${lc}">${m.ft}ft</text>
+      <text x="${m.x}" y="${H-4}" text-anchor="middle" font-size="8"
+        font-family="Space Grotesk,sans-serif" fill="${tc2}">${m.label}</text>`;
+    }).join('')}
+
+    <circle cx="${nowX}" cy="${nowY}" r="8" fill="${color}" opacity="0.15"/>
+    <circle cx="${nowX}" cy="${nowY}" r="5" fill="${color}"/>
+    <circle cx="${nowX}" cy="${nowY}" r="2.5" fill="white"/>
+  </svg>`;
+}
+
+function render(tides, weather, waterTempF, alerts, swell) {
+  _lastTides = tides; _lastWeather = weather; _lastWaterTemp = waterTempF; _lastAlerts = alerts; _lastSwell = swell;
+  const tempF     = weather?.tempF     ?? null;
+  const uvIndex   = weather?.uvIndex   ?? null;
+  const windSpeed = weather?.windSpeed ?? null;
+  const windDir   = weather?.windDir   ?? null;
+  const now = Date.now();
+  const main = document.getElementById('main');
+
+  // find where we are in the schedule
+  const futureIdx = tides.findIndex(t => t.time > now);
+  if (futureIdx === -1) { main.innerHTML = '<div class="error-msg">No upcoming tide data.</div>'; return; }
+
+  const next = tides[futureIdx];
+  const prev = tides[futureIdx - 1] || null;
+
+  // current tide direction
+  const isRising = next.type === 'high';
+  const statusLabel = isRising ? 'Rising' : 'Falling';
+
+  // progress through current cycle
+  let pct = 0.5;
+  if (prev) {
+    const total = next.time - prev.time;
+    const elapsed = now - prev.time;
+    pct = Math.max(0, Math.min(1, elapsed / total));
+  }
+
+  // next high and next low
+  const nextHigh = tides.find(t => t.time > now && t.type === 'high');
+  const nextLow  = tides.find(t => t.time > now && t.type === 'low');
+
+  // build schedule (today's tides + a couple tomorrow)
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const showTides = tides.filter(t => t.time >= todayStart).slice(0, 5);
+
+  const chart = buildTideChart(tides, now);
+  const pctDisplay = Math.round(pct * 100);
+  const fromLabel = isRising ? 'Low' : 'High';
+  const toLabel   = isRising ? 'High' : 'Low';
+
+  const alertsHtml = alerts && alerts.length ? `
+    <div class="alerts-section">
+      ${alerts.map(a => `
+        <div class="alert-item alert-${a.severity}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:1px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div>
+            <div class="alert-event">${a.event}</div>
+            <div class="alert-headline">${a.headline}</div>
+          </div>
+        </div>`).join('')}
+    </div>` : '';
+
+  main.innerHTML = `
+    ${alertsHtml}
+    <div class="current-card">
+      <div class="current-card-top">
+        <div class="current-label">Current Tide</div>
+        <div class="current-meta">
+          <div class="current-location-display">${getStationName()}</div>
+          <div class="current-time-display" id="liveClock">${fmtTime(new Date())}</div>
+          <div class="current-temp-display">${tempF != null ? tempF + '°F' : '—'}</div>
+        </div>
+      </div>
+      <div class="current-status ${isRising ? 'rising' : 'falling'}">${statusLabel}</div>
+      <div class="current-sub">${pctDisplay}% of the way from ${fromLabel} → ${toLabel}</div>
+      <div class="arc-wrap">
+        ${chart}
       </div>
     </div>
 
-    ${histRows ? `
-    <div class="month-earn">
-      <span class="month-earn-lbl">PAST 30 DAYS</span>
-      <span class="month-earn-val">$${monthEarned.toFixed(2)}</span>
+    <div class="next-row">
+      <div class="next-card">
+        <div class="next-card-content">
+          <div class="next-card-label">Next High</div>
+          <div class="next-card-type high">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
+            High Tide
+          </div>
+          <div class="next-card-time">${nextHigh ? fmtTime(nextHigh.time) : '—'}</div>
+          <div class="next-card-in">${nextHigh ? relTime(nextHigh.time) : ''}</div>
+        </div>
+        ${nextHigh ? `<div class="next-card-ft">${nextHigh.ft.toFixed(1)}<span class="next-card-ft-unit">ft</span></div>` : ''}
+      </div>
+      <div class="next-card">
+        <div class="next-card-content">
+          <div class="next-card-label">Next Low</div>
+          <div class="next-card-type low">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 19V5M5 12l7 7 7-7"/></svg>
+            Low Tide
+          </div>
+          <div class="next-card-time">${nextLow ? fmtTime(nextLow.time) : '—'}</div>
+          <div class="next-card-in">${nextLow ? relTime(nextLow.time) : ''}</div>
+        </div>
+        ${nextLow ? `<div class="next-card-ft">${nextLow.ft.toFixed(1)}<span class="next-card-ft-unit">ft</span></div>` : ''}
+      </div>
     </div>
-    <div class="hist-section">
-      <div class="slbl">HISTORY &nbsp; TR &middot; SU MO TU WE TH FR SA</div>
-      ${histRows}
-    </div>` : ''}
 
-    ${(() => {
-      const entries = [];
-      for (const w of weeks) {
-        for (const e of w.extras) {
-          if (e.player === key) entries.push({ date: e.date || w.date, amt: e.amt, note: e.note });
-        }
-      }
-      if (!entries.length) return '';
-      const rows = entries.map(e => `
-        <div class="extra-row">
-          <span class="extra-date">${fmtDate(e.date)}</span>
-          <span class="extra-note">${e.note || '—'}</span>
-          <span class="extra-amt ${e.amt > 0 ? 'pos' : 'neg'}">${e.amt > 0 ? '+' : '−'}$${Math.abs(e.amt).toFixed(2)}</span>
-        </div>`).join('');
-      return '<div class="extras-section"><div class="slbl">EXTRAS</div>' + rows + '</div>';
-    })()}
-  </div>`;
+    <div class="conditions-card">
+      <div class="card-section-title">Conditions</div>
+      <div class="conditions-row">
+        <div class="condition-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+          <span class="condition-label">Water</span>
+          <span class="condition-value">${waterTempF != null ? (waterTempF.approximate ? '~' : '') + waterTempF.tempF + '°F' : '—'}</span>
+        </div>
+        <div class="condition-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>
+          <span class="condition-label">Wind</span>
+          <span class="condition-value">${windSpeed != null ? windSpeed + ' mph ' + windDir : '—'}</span>
+        </div>
+        <div class="condition-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          <span class="condition-label">UV</span>
+          <span class="condition-value" ${uvIndex != null ? `style="color:${uvColor(uvIndex)}"` : ''}>${uvIndex != null ? uvIndex + ' · ' + uvLabel(uvIndex) : '—'}</span>
+        </div>
+      </div>
+    </div>
+
+    ${swell ? (() => {
+      const q = isLight() ? swellQualityLight(swell.swellPeriod) : swellQuality(swell.swellPeriod);
+      return `<div class="waves-card">
+        <div class="card-section-title">Waves</div>
+        <div class="waves-row">
+          <div class="condition-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 3 22 21 2 21"/></svg>
+            <span class="condition-label">Overall</span>
+            <span class="condition-value">${waveSize(swell.swellHeight)}</span>
+          </div>
+          <div class="condition-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2"/><path d="M2 12c.6.5 1.2 1 2.5 1C7 13 7 11 9.5 11c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2"/><path d="M2 18c.6.5 1.2 1 2.5 1C7 19 7 17 9.5 17c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2"/></svg>
+            <span class="condition-label">Swell</span>
+            <span class="condition-value">${swell.swellHeight} ft</span>
+          </div>
+          <div class="condition-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span class="condition-label">Period</span>
+            <span class="condition-value" style="color:${q.color}">${swell.swellPeriod}s · ${q.label}</span>
+          </div>
+          <div class="condition-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="4 9 12 2 20 9"/></svg>
+            <span class="condition-label">From</span>
+            <span class="condition-value">${swell.swellDir}</span>
+          </div>
+          <div class="condition-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2"/><path d="M2 12c.6.5 1.2 1 2.5 1C7 13 7 11 9.5 11c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2"/></svg>
+            <span class="condition-label">Chop</span>
+            <span class="condition-value">${swell.chopHeight} ft</span>
+          </div>
+        </div>
+      </div>`;
+    })() : ''}
+
+    <div class="schedule-card">
+      <div class="schedule-title">Upcoming Tides</div>
+      <div class="schedule-list">
+        ${showTides.map((t, i) => {
+          const isPast = t.time < now;
+          const isCurrent = !isPast && t === next;
+          return `<div class="schedule-row ${isPast ? 'sched-past' : ''} ${isCurrent ? 'current-window' : ''}">
+            <span class="sched-dot ${t.type}"></span>
+            <span class="sched-type ${t.type}">${t.type === 'high' ? 'High' : 'Low'}</span>
+            <span class="sched-time">${fmtTime(t.time)}</span>
+            <span class="sched-ft">${t.ft.toFixed(1)} ft</span>
+            ${isCurrent ? '<span class="now-badge">NEXT</span>' : ''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="updated-at">Updated ${fmtTime(new Date())}</div>
+  `;
 }
 
-// ── Saturday Summary ────────────────────────────────────────
-function shouldShowSummary() {
-  if (ET_WEEKDAY !== 'Saturday') return false;
-  if (ET_HOUR < 20) return false;
-  const key = `wkSummary_${ET_DAY_KEY}`;
-  if (localStorage.getItem(key)) return false;
-  localStorage.setItem(key, '1');
-  return true;
+let clockInterval = null;
+function startClock() {
+  if (clockInterval) clearInterval(clockInterval);
+  clockInterval = setInterval(() => {
+    const el = document.getElementById('liveClock');
+    if (el) el.textContent = fmtTime(new Date());
+  }, 10000);
 }
 
-function tierClass(amt) {
-  if (amt <= 0)  return 'sm-tier-zero';
-  if (amt < 4)   return 'sm-tier-low';
-  if (amt < 7)   return 'sm-tier-mid';
-  return 'sm-tier-high';
+function getStationName() {
+  const sel = document.getElementById('stationSelect');
+  return sel.options[sel.selectedIndex].text;
 }
 
-const TIER_MSG = {
-  'sm-tier-low':  '— KEEP IT UP! —',
-  'sm-tier-mid':  '— GREAT WEEK! —',
-  'sm-tier-high': '— LEGENDARY WEEK!! —',
-};
+async function load(isInitial = false) {
+  const stationId = document.getElementById('stationSelect').value;
+  const main = document.getElementById('main');
+  const btn = document.getElementById('refreshBtn');
 
-function buildSummaryModal(weeks, playerKey) {
-  // Find the week before the current calendar week
-  const curIdx = weeks.findIndex(w => {
-    const start = parseWDate(w.date);
-    const sat = new Date(start); sat.setDate(sat.getDate() + 6);
-    return TODAY >= start && TODAY <= sat;
-  });
-  const targetW = curIdx > 0 ? weeks[curIdx - 1]
-                : curIdx === -1 && weeks.length ? weeks[weeks.length - 1]
-                : null;
-  if (!targetW) return;
+  // Remove any existing error banner
+  const prev = main.querySelector('.error-banner');
+  if (prev) prev.remove();
 
-  const ALL_PLAYERS = [
-    { key: 'simon',   label: '🎮 SIMON',   cls: 'sm-p1' },
-    { key: 'desmond', label: '🕹️ DESMOND', cls: 'sm-p2' },
-  ];
-  const players = (playerKey ? ALL_PLAYERS.filter(p => p.key === playerKey) : ALL_PLAYERS)
-  .map(p => {
-    const r = targetW[p.key];
-    const availDays   = r ? r.days.filter(d => d !== 'excused').length : 7;
-    const bedDays     = r ? r.days.filter(d => d === true).length : 0;
-    const bedEarned   = bedDays * 1.0;
-    const trashExcused = r ? r.trash === 'excused' : false;
-    const trashDone   = r ? r.trash === true : false;
-    const trashEarned = trashDone ? 2.0 : 0;
-    const choreTotal  = bedEarned + trashEarned;
-    const weekStart = parseWDate(targetW.date);
-    const weekEnd   = new Date(weekStart); weekEnd.setDate(weekEnd.getDate() + 6);
-    function parseAnyDate(str) {
-      const [m, d, y] = str.split('/').map(Number);
-      return new Date(y > 999 ? y : 2000 + y, m - 1, d);
-    }
-    const extras    = weeks
-      .flatMap(w => w.extras.map(e => ({ ...e, _week: w })))
-      .filter(e => {
-        if (e.player !== p.key) return false;
-        if (e.date) {
-          const d = parseAnyDate(e.date);
-          return d >= weekStart && d <= weekEnd;
-        }
-        return e._week === targetW;
-      });
-    const extrasTotal = extras.reduce((s, e) => s + e.amt, 0);
-    const grandTotal  = choreTotal + extrasTotal;
-    return { ...p, availDays, bedDays, bedEarned, trashExcused, trashDone, trashEarned, choreTotal, extras, extrasTotal, grandTotal };
-  });
+  btn.classList.add('spinning');
 
-  // Build HTML — all step elements start invisible, values show ···
-  const playerBlocks = players.map((p, pi) => {
-    const tier = tierClass(p.grandTotal);
-    const k = p.key;
-    let html = '';
-
-    html += `<div class="sm-player-name ${p.cls} sm-step" id="${k}-name">${p.label}</div>`;
-
-    html += `<div class="sm-line ${p.bedEarned > 0 ? 'pos' : 'dim'} sm-step" id="${k}-bed-row">
-      <span class="sm-line-lbl">&#x1F6CF; BED (${p.bedDays}/${p.availDays} DAYS)</span>
-      <span class="sm-line-val" id="${k}-bed">&#xB7;&#xB7;&#xB7;</span>
-    </div>`;
-
-    html += `<div class="sm-line ${p.trashDone ? 'pos' : 'dim'} sm-step" id="${k}-trash-row">
-      <span class="sm-line-lbl">&#x1F5D1; TRASH${p.trashExcused ? ' (N/A)' : ''}</span>
-      <span class="sm-line-val" id="${k}-trash">&#xB7;&#xB7;&#xB7;</span>
-    </div>`;
-
-    html += `<div class="sm-subtotal sm-step" id="${k}-sub-row">
-      <span class="sm-subtotal-lbl">CHORES</span>
-      <span class="sm-subtotal-val" id="${k}-sub">&#xB7;&#xB7;&#xB7;</span>
-    </div>`;
-
-    if (p.extras.length) {
-      html += `<div class="sm-extras-lbl sm-step" id="${k}-xlbl">EXTRAS</div>`;
-      p.extras.forEach((e, ei) => {
-        const ecls = e.amt >= 0 ? 'pos' : 'neg';
-        const label = e.note ? e.note.toUpperCase() : 'BONUS';
-        html += `<div class="sm-line ${ecls} sm-step" id="${k}-x${ei}-row">
-          <span class="sm-line-lbl">${label}</span>
-          <span class="sm-line-val" id="${k}-x${ei}">&#xB7;&#xB7;&#xB7;</span>
-        </div>`;
-      });
-    }
-
-    html += `<div class="sm-grand ${tier} sm-step" id="${k}-grand-row">
-      <span class="sm-grand-lbl">TOTAL EARNED</span>
-      <span class="sm-grand-val" id="${k}-grand">&#xB7;&#xB7;&#xB7;</span>
-    </div>`;
-
-    if (TIER_MSG[tier]) html += `<div class="sm-tier-msg ${tier} sm-step" id="${k}-tier">${TIER_MSG[tier]}</div>`;
-
-    if (pi === 0 && players.length > 1) html += '<hr class="sm-divider">';
-    return `<div class="${p.cls}">${html}</div>`;
-  }).join('');
-
-  const titleName = playerKey ? ` · ${playerKey.toUpperCase()}` : '';
-  const overlay = document.createElement('div');
-  overlay.id = 'summary-overlay';
-  overlay.innerHTML = `
-    <div class="sm-panel">
-      <div class="sm-title">&#x2605; WEEKLY REPORT${titleName} &#x2605;</div>
-      <div class="sm-week">WEEK OF ${fmtDate(targetW.date)}</div>
-      ${playerBlocks}
-      <div class="sm-footer sm-step" id="sm-footer-hint">TAP ANYWHERE TO CONTINUE</div>
-    </div>`;
-
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-  overlay.querySelector('.sm-panel').addEventListener('click', () => overlay.remove());
-  document.body.appendChild(overlay);
-
-  // ── Sequenced animation ─────────────────────────────────────
-  const STEP     = 420;  // ms between row reveals
-  const DELAY    = 100;  // ms after row appears before countup starts
-  const COUNT_SM = 380;  // countup duration for line items
-  const COUNT_LG = 1300; // countup duration for grand total
-
-  const q    = s  => overlay.querySelector(s);
-  const show = id => { const el = q('#' + id); if (el) el.classList.add('sm-vis'); };
-
-  function countUp(id, target, prefix, duration, onDone) {
-    const el = q('#' + id);
-    if (!el) { onDone && setTimeout(onDone, duration); return; }
-    if (target === null) { el.textContent = '—'; onDone && onDone(); return; }
-    const t0 = performance.now();
-    (function frame(now) {
-      const p = Math.min((now - t0) / duration, 1);
-      el.textContent = prefix + (target * (1 - Math.pow(1 - p, 3))).toFixed(2);
-      if (p < 1) requestAnimationFrame(frame);
-      else { el.textContent = prefix + target.toFixed(2); onDone && onDone(); }
-    })(performance.now());
+  // Only show the loading placeholder when there's nothing rendered yet
+  if (isInitial || !main.querySelector('.current-card')) {
+    main.innerHTML = '<div class="loading">Loading tides…</div>';
   }
 
-  const acts = [];
-  const at = (ms, fn) => acts.push({ ms, fn });
-  let t = 350;
-
-  players.forEach(p => {
-    const k = p.key;
-
-    at(t, () => show(`${k}-name`));
-    t += STEP;
-
-    at(t,          () => show(`${k}-bed-row`));
-    at(t + DELAY,  () => countUp(`${k}-bed`, p.bedEarned, p.bedEarned > 0 ? '+$' : '$', COUNT_SM));
-    t += STEP;
-
-    at(t,          () => show(`${k}-trash-row`));
-    at(t + DELAY,  () => countUp(`${k}-trash`, p.trashDone ? 2 : null, '+$', COUNT_SM));
-    t += STEP + 80;
-
-    at(t,          () => show(`${k}-sub-row`));
-    at(t + DELAY,  () => countUp(`${k}-sub`, p.choreTotal, '$', COUNT_SM));
-    t += STEP;
-
-    if (p.extras.length) {
-      at(t, () => show(`${k}-xlbl`));
-      t += STEP;
-      p.extras.forEach((e, ei) => {
-        at(t,         () => show(`${k}-x${ei}-row`));
-        at(t + DELAY, () => countUp(`${k}-x${ei}`, Math.abs(e.amt), e.amt >= 0 ? '+$' : '−$', COUNT_SM));
-        t += STEP;
-      });
-    }
-
-    t += 140;
-    at(t,         () => show(`${k}-grand-row`));
-    at(t + DELAY, () => countUp(`${k}-grand`, p.grandTotal, '$', COUNT_LG, () => show(`${k}-tier`)));
-    t += COUNT_LG + 500;
-  });
-
-  at(t + 100, () => show('sm-footer-hint'));
-  acts.forEach(({ ms, fn }) => setTimeout(fn, ms));
-}
-
-// ── Main ────────────────────────────────────────────────────
-async function init() {
-  const app = document.getElementById('app');
   try {
-    const res = await fetch(
-      `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&t=${Date.now()}`
-    );
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const text = await res.text();
-    const weeks = parseSheet(parseCSV(text));
-    if (!weeks.length) throw new Error('No data found in sheet');
-
-    const season = `${fmtDate(weeks[0].date)} &#8212; ${fmtDate(weeks[weeks.length-1].date)}`;
-    app.innerHTML = `
-      <div class="season-bar">&#128197; SEASON: ${season}</div>
-      <div class="players">
-        ${buildCard(weeks, 'Simon', 1)}
-        ${buildCard(weeks, 'Desmond', 2)}
-      </div>`;
-    window.showSummary = (playerKey) => {
-      const existing = document.getElementById('summary-overlay');
-      if (existing) existing.remove();
-      buildSummaryModal(weeks, playerKey);
-    };
-    if (shouldShowSummary()) buildSummaryModal(weeks);
-  } catch (err) {
-    app.innerHTML = `
-      <div class="err-box">
-        &#9888; LOAD ERROR<br><br>
-        ${err.message}<br><br>
-        SHEET MUST BE SET TO<br>"ANYONE WITH LINK CAN VIEW"
-      </div>`;
+    const [tides, weather, waterTempF, alerts, swell] = await Promise.all([
+      fetchTides(stationId),
+      fetchWeather(stationId).catch(() => null),
+      fetchWaterTemp(stationId).catch(() => null),
+      fetchAlerts(stationId).catch(() => []),
+      fetchSwell(stationId).catch(() => null),
+    ]);
+    render(tides, weather, waterTempF, alerts, swell);
+    startClock();
+  } catch (e) {
+    const cached = loadCachedTides(stationId);
+    if (cached) {
+      render(cached.tides, _lastWeather, _lastWaterTemp, _lastAlerts, _lastSwell);
+      startClock();
+      const ageMin = Math.round((Date.now() - cached.savedAt) / 60000);
+      const ageStr = ageMin < 60 ? `${ageMin}m ago` : `${Math.round(ageMin/60)}h ago`;
+      const notice = document.createElement('div');
+      notice.className = 'cache-banner';
+      notice.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Live data unavailable — showing cached data from ${ageStr}.
+        <button onclick="load()" style="background:none;border:none;color:inherit;font:inherit;text-decoration:underline;cursor:pointer;padding:0;margin-left:4px;">Retry</button>`;
+      main.prepend(notice);
+    } else {
+      const name = getStationName();
+      const msg = (e.message || '').toLowerCase();
+      const detail = msg.includes('504') || msg.includes('timeout') || msg.includes('failed to fetch') || msg.includes('networkerror')
+        ? 'Tide data is temporarily unavailable — the NOAA service may be down. Try again in a few minutes.'
+        : msg.includes('no data') || msg.includes('not found') || msg.includes('invalid')
+          ? 'No tide data is available for this location right now. Try refreshing or selecting another station.'
+          : 'Couldn\'t load tide data. Check your connection and try again.';
+      const banner = document.createElement('div');
+      banner.className = 'error-banner';
+      banner.innerHTML = `
+        <span class="error-banner-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </span>
+        <div class="error-banner-body">
+          <div class="error-banner-title">${name} unavailable</div>
+          <div class="error-banner-detail">${detail}</div>
+          <button class="error-banner-retry" onclick="load()">Retry</button>
+        </div>`;
+      if (!main.querySelector('.current-card')) main.innerHTML = '';
+      main.prepend(banner);
+    }
+  } finally {
+    btn.classList.remove('spinning');
   }
 }
 
-init();
+document.getElementById('stationSelect').addEventListener('change', () => {
+  localStorage.setItem('tides_station', document.getElementById('stationSelect').value);
+  load();
+});
+document.getElementById('refreshBtn').addEventListener('click', () => load());
+document.getElementById('themeBtn').addEventListener('click', toggleTheme);
+
+// auto-refresh every 5 minutes, paused when tab is hidden
+let _refreshTimer = null;
+function startAutoRefresh() {
+  stopAutoRefresh();
+  _refreshTimer = setInterval(() => load(), 5 * 60 * 1000);
+}
+function stopAutoRefresh() {
+  if (_refreshTimer) { clearInterval(_refreshTimer); _refreshTimer = null; }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    stopAutoRefresh();
+  } else {
+    load();
+    startAutoRefresh();
+  }
+});
+
+const saved = localStorage.getItem('tides_station');
+if (saved) {
+  const sel = document.getElementById('stationSelect');
+  if ([...sel.options].some(o => o.value === saved)) sel.value = saved;
+}
+initTheme();
+load(true).then(() => startAutoRefresh());
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
 </script>
 </body>
 </html>
