@@ -175,12 +175,22 @@ header{text-align:center;padding:18px 0 22px;}
   padding:10px 14px;
   margin-bottom:14px;
 }
+.money-box.debt{
+  background:#110000;
+  border:2px solid #880000;
+  box-shadow:inset 0 0 20px rgba(200,0,0,.08);
+}
 .money-lbl{font-size:8px;color:#b09000;letter-spacing:2px;margin-bottom:7px;}
+.money-box.debt .money-lbl{color:#aa3333;}
 .money-val{
   font-size:clamp(16px,5.5vw,22px);
   color:var(--gold);
   text-shadow:3px 3px 0 var(--gold-dk);
   display:flex;align-items:center;gap:10px;
+}
+.money-box.debt .money-val{
+  color:#ff4444;
+  text-shadow:3px 3px 0 #660000;
 }
 .coin{
   display:inline-block;
@@ -194,6 +204,14 @@ header{text-align:center;padding:18px 0 22px;}
   54% {transform:scaleX(.08);}
   72% {transform:scaleX(1);}
 }
+@keyframes cshake{
+  0%,100%{transform:translateX(0);}
+  20%{transform:translateX(-3px);}
+  40%{transform:translateX(3px);}
+  60%{transform:translateX(-2px);}
+  80%{transform:translateX(2px);}
+}
+.coin.debt{animation:cshake 1.8s ease-in-out infinite;}
 
 /* ── Month earnings ── */
 .month-earn{
@@ -519,8 +537,9 @@ function parseCSV(text) {
 
 function money(s) {
   if (!s) return null;
-  const c = s.replace(/[\s$,]/g, '');
+  let c = s.replace(/[\s$,]/g, '');
   if (!c || c === '-') return null;
+  if (c.startsWith('(') && c.endsWith(')')) c = '-' + c.slice(1, -1);
   const n = parseFloat(c);
   return isNaN(n) ? null : n;
 }
@@ -793,11 +812,11 @@ function buildCard(weeks, name, num) {
 
     ${gridHtml}
 
-    <div class="money-box">
-      <div class="money-lbl">COINS OWED</div>
+    <div class="money-box${owed < 0 ? ' debt' : ''}">
+      <div class="money-lbl">${owed < 0 ? 'YOU OWE' : 'COINS OWED'}</div>
       <div class="money-val">
-        <span class="coin">🪙</span>
-        $${owed.toFixed(2)}
+        <span class="coin${owed < 0 ? ' debt' : ''}">${owed < 0 ? '💸' : '🪙'}</span>
+        ${owed < 0 ? `&#x2212;$${Math.abs(owed).toFixed(2)}` : `$${owed.toFixed(2)}`}
       </div>
     </div>
 
