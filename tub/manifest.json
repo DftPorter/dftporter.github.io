@@ -1,0 +1,14 @@
+{
+  "name": "Spa Care",
+  "short_name": "Spa Care",
+  "description": "Track hot tub filter, water, and chemical maintenance.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f4ee",
+  "theme_color": "#1f9a8e",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
