@@ -2,1084 +2,479 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Chore Quest">
-<meta name="theme-color" content="#0a0a1a">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Chore Quest</title>
 <link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
-<title>CHORE QUEST</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<meta name="theme-color" content="#FFF6E9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Chores">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-
-:root{
-  --bg:#0a0a1a;
-  --surface:#0d0d2a;
-  --p1:#00c8ff;
-  --p1-glow:rgba(0,200,255,.12);
-  --p1-dim:#003a55;
-  --p2:#00ff88;
-  --p2-glow:rgba(0,255,136,.12);
-  --p2-dim:#003a25;
-  --gold:#ffd700;
-  --gold-dk:#7a4200;
-  --done-bg:#002800;
-  --done-bd:#00aa00;
-  --done-txt:#00ee00;
-  --miss-bg:#2a0000;
-  --miss-bd:#880000;
-  --miss-txt:#ff3333;
-  --pend-bg:#10102e;
-  --pend-bd:#4040a0;
-  --pend-txt:#8888cc;
-  --excused-bg:#0e0e20;
-  --excused-bd:#383870;
-  --excused-txt:#505090;
-  --dim:#8888b8;
-  --font:'Press Start 2P',monospace;
-}
-
-body{
-  font-family:var(--font);
-  background:var(--bg);
-  background-image:repeating-linear-gradient(
-    0deg,transparent,transparent 3px,
-    rgba(0,0,0,.18) 3px,rgba(0,0,0,.18) 4px
-  );
-  color:#c8c8e8;
-  min-height:100vh;
-  padding:12px 10px 32px;
-  font-size:10px;
-  line-height:1.6;
-}
-
-/* ── Title ── */
-header{text-align:center;padding:18px 0 22px;}
-.title{
-  font-size:clamp(12px,5.5vw,18px);
-  color:var(--gold);
-  text-shadow:4px 4px 0 var(--gold-dk);
-  letter-spacing:4px;
-  margin-bottom:8px;
-}
-.subtitle{font-size:8px;color:var(--dim);letter-spacing:4px;}
-
-/* ── Season bar ── */
-.season-bar{
-  text-align:center;
-  font-size:9px;
-  color:#9090c8;
-  background:#0c0c26;
-  border:2px solid #181858;
-  padding:7px 12px;
-  margin-bottom:22px;
-  letter-spacing:1px;
-}
-
-/* ── Layout ── */
-.players{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:22px;
-  max-width:460px;
-  margin:0 auto;
-}
-@media(min-width:820px){
-  .players{grid-template-columns:1fr 1fr;max-width:900px;}
-}
-
-/* ── Card ── */
-.card{
-  background:var(--surface);
-  padding:16px 14px;
-  position:relative;
-}
-.card-p1{
-  border:3px solid var(--p1);
-  box-shadow:0 0 0 2px #0a0a1a,0 0 0 5px var(--p1-dim),
-             inset 0 0 30px var(--p1-glow);
-}
-.card-p2{
-  border:3px solid var(--p2);
-  box-shadow:0 0 0 2px #0a0a1a,0 0 0 5px var(--p2-dim),
-             inset 0 0 30px var(--p2-glow);
-}
-.card::before,.card::after{content:'';position:absolute;width:7px;height:7px;}
-.card-p1::before{top:-3px;right:-3px;background:var(--p1);}
-.card-p1::after {bottom:-3px;left:-3px;background:var(--p1);}
-.card-p2::before{top:-3px;right:-3px;background:var(--p2);}
-.card-p2::after {bottom:-3px;left:-3px;background:var(--p2);}
-
-/* ── Card header ── */
-.card-head{
-  display:flex;align-items:center;gap:10px;
-  margin-bottom:14px;padding-bottom:10px;
-  border-bottom:2px solid #181848;
-}
-.card-icon{font-size:20px;line-height:1;}
-.card-name{font-size:clamp(12px,4vw,15px);line-height:1;}
-.card-p1 .card-name{color:var(--p1);}
-.card-p2 .card-name{color:var(--p2);}
-.summary-btn{
-  margin-left:auto;background:none;border:1px solid #303060;
-  color:#505088;font-family:var(--font);font-size:7px;
-  letter-spacing:1px;padding:5px 7px;cursor:pointer;line-height:1;
-  flex-shrink:0;
-}
-.summary-btn:active{background:#0d0d2a;color:#8080c0;border-color:#5050a0;}
-
-/* ── Section label ── */
-.slbl{font-size:8px;color:var(--dim);letter-spacing:2px;margin-bottom:6px;}
-
-/* ── Pips ── */
-.pips{display:flex;gap:3px;margin-bottom:16px;flex-wrap:wrap;}
-.pip{width:13px;height:13px;background:#101030;border:1px solid #202060;flex-shrink:0;}
-.card-p1 .pip.on{background:var(--p1);border-color:#008aaa;}
-.card-p2 .pip.on{background:var(--p2);border-color:#00aa55;}
-
-/* ── Week grid ── */
-.week-lbl{font-size:9px;margin-bottom:8px;}
-.week-lbl.cur{color:var(--gold);}
-.week-lbl.past{color:#6060a0;}
-
-.chore-grid{
-  display:grid;
-  grid-template-columns:repeat(8,1fr);
-  gap:3px;
-  margin-bottom:8px;
-}
-.day-cell{display:flex;flex-direction:column;align-items:center;gap:2px;}
-.day-lbl{font-size:7px;color:var(--dim);}
-.day-box{
-  width:100%;aspect-ratio:1;
-  display:flex;align-items:center;justify-content:center;
-  font-size:clamp(10px,3.5vw,13px);
-  border:1px solid;
-}
-.day-box.done   {background:var(--done-bg);border-color:var(--done-bd);color:var(--done-txt);}
-.day-box.missed {background:var(--miss-bg);border-color:var(--miss-bd);color:var(--miss-txt);}
-.day-box.pend   {background:var(--pend-bg);border-color:var(--pend-bd);color:var(--pend-txt);}
-.day-box.excused{background:var(--excused-bg);border-color:var(--excused-bd);color:var(--excused-txt);border-style:dashed;}
-
-.week-pay{font-size:9px;color:var(--gold);margin-bottom:14px;}
-
-/* ── Money box ── */
-.money-box{
-  background:#110e00;
-  border:2px solid #4a3200;
-  padding:10px 14px;
-  margin-bottom:14px;
-}
-.money-box.debt{
-  background:#110000;
-  border:2px solid #880000;
-  box-shadow:inset 0 0 20px rgba(200,0,0,.08);
-}
-.money-lbl{font-size:8px;color:#b09000;letter-spacing:2px;margin-bottom:7px;}
-.money-box.debt .money-lbl{color:#aa3333;}
-.money-val{
-  font-size:clamp(16px,5.5vw,22px);
-  color:var(--gold);
-  text-shadow:3px 3px 0 var(--gold-dk);
-  display:flex;align-items:center;gap:10px;
-}
-.money-box.debt .money-val{
-  color:#ff4444;
-  text-shadow:3px 3px 0 #660000;
-}
-.coin{
-  display:inline-block;
-  font-size:clamp(18px,6vw,24px);
-  animation:cspin 1.4s linear infinite;
-}
-@keyframes cspin{
-  0%  {transform:scaleX(1);}
-  18% {transform:scaleX(.08);}
-  36% {transform:scaleX(1);}
-  54% {transform:scaleX(.08);}
-  72% {transform:scaleX(1);}
-}
-@keyframes cshake{
-  0%,100%{transform:translateX(0);}
-  20%{transform:translateX(-3px);}
-  40%{transform:translateX(3px);}
-  60%{transform:translateX(-2px);}
-  80%{transform:translateX(2px);}
-}
-.coin.debt{animation:cshake 1.8s ease-in-out infinite;}
-
-/* ── Month earnings ── */
-.month-earn{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:8px 12px;margin-bottom:12px;
-  background:#0f0a00;border:2px solid #3a2800;
-}
-.month-earn-lbl{font-size:8px;color:#b09000;letter-spacing:2px;}
-.month-earn-val{font-size:13px;color:var(--gold);}
-
-/* ── History ── */
-.hist-section{border-top:2px solid #181848;padding-top:10px;}
-.hist-row{display:flex;align-items:center;gap:5px;margin-bottom:6px;}
-.hist-date{font-size:8px;color:#8080b8;min-width:50px;flex-shrink:0;}
-.hist-dots{display:flex;gap:2px;flex:1;}
-.hdot{width:11px;height:11px;flex-shrink:0;}
-.hdot.done   {background:#006600;}
-.hdot.missed {background:#2a0000;border:1px solid #660000;}
-.hdot.pend   {background:#101030;border:1px solid #3030a0;}
-.hdot.excused{background:#0e0e20;border:1px dashed #383870;}
-.hdot.tr.done   {background:#556600;}
-.hdot.tr.missed {background:#2a1800;border:1px solid #5a3000;}
-.hdot.tr.excused{background:#0e0e20;border:1px dashed #383870;}
-.hdot.tr       {margin-right:6px;}
-
-/* TR cell — dashed border + gap to separate from weekdays */
-.tr-cell{margin-right:6px;}
-.tr-cell .day-box{border-style:dashed;}
-.hist-pay{font-size:8px;color:#aa8800;min-width:36px;text-align:right;flex-shrink:0;}
-
-/* ── Streak ── */
-.streak{
-  margin-bottom:14px;padding:8px 10px;
-  background:#120800;border:2px solid #3a1800;
-  display:flex;align-items:center;gap:10px;
-}
-.streak-fire{font-size:16px;line-height:1;}
-.streak-num{font-size:14px;color:#ff6600;text-shadow:2px 2px 0 #7a3000;}
-.streak-lbl{font-size:8px;color:#994400;line-height:1.4;}
-.streak-go{margin-bottom:14px;padding:8px 10px;font-size:8px;color:#505088;background:#0e0e20;border:2px solid #252550;}
-
-/* ── Streak tiers ── */
-/* Tier 1 (5–9): warm glow */
-.streak-t1{border-color:#7a2800;background:#1a0a00;}
-.streak-t1 .streak-num{color:#ff8800;text-shadow:2px 2px 0 #7a3000,0 0 10px rgba(255,136,0,.5);}
-.streak-t1 .streak-lbl{color:#cc5500;}
-.streak-t1 .streak-fire{animation:sfPulse 1.2s ease-in-out infinite;}
-
-/* Tier 2 (10–14): hot orange pulse */
-.streak-t2{border-color:#c04000;background:#1f0800;box-shadow:inset 0 0 20px rgba(255,100,0,.1);}
-.streak-t2 .streak-num{font-size:18px;color:#ff6600;text-shadow:2px 2px 0 #7a2000,0 0 14px rgba(255,80,0,.7);}
-.streak-t2 .streak-lbl{color:#dd6600;}
-.streak-t2 .streak-fire{font-size:20px;animation:sfPulse .9s ease-in-out infinite;}
-.streak-t2 .streak-num{animation:sfOrangePulse 1.4s ease-in-out infinite;}
-
-/* Tier 3 (15–24): high — larger text, intense glow, border flicker */
-.streak-t3{border-color:#ff5500;background:#240800;box-shadow:inset 0 0 30px rgba(255,80,0,.15),0 0 8px rgba(255,80,0,.2);}
-.streak-t3 .streak-num{font-size:24px;color:#ff4400;text-shadow:2px 2px 0 #aa2000,0 0 20px #ff4400,0 0 40px rgba(255,68,0,.4);animation:sfIntensePulse 1s ease-in-out infinite;}
-.streak-t3 .streak-lbl{font-size:9px;color:#ff6600;}
-.streak-t3 .streak-fire{font-size:24px;animation:sfPulse .7s ease-in-out infinite;}
-
-/* Tier 4 (25+): legendary — rainbow fire, intense box glow */
-.streak-t4{background:#200400;animation:sfBorderCycle 2s linear infinite;}
-.streak-t4 .streak-num{font-size:28px;animation:sfRainbowFire .8s linear infinite;}
-.streak-t4 .streak-lbl{color:#ffaa00;font-size:9px;}
-.streak-t4 .streak-fire{font-size:28px;animation:sfFireSpin .6s ease-in-out infinite;}
-
-@keyframes sfPulse{
-  0%,100%{transform:scale(1);}
-  50%{transform:scale(1.2);}
-}
-@keyframes sfFireSpin{
-  0%,100%{transform:scale(1) rotate(-8deg);}
-  50%{transform:scale(1.3) rotate(8deg);}
-}
-@keyframes sfOrangePulse{
-  0%,100%{text-shadow:2px 2px 0 #7a2000,0 0 14px rgba(255,80,0,.7);}
-  50%{text-shadow:2px 2px 0 #7a2000,0 0 24px #ff6600,0 0 40px rgba(255,100,0,.4);}
-}
-@keyframes sfIntensePulse{
-  0%,100%{text-shadow:2px 2px 0 #aa2000,0 0 20px #ff4400,0 0 40px rgba(255,68,0,.4);}
-  50%{text-shadow:2px 2px 0 #aa2000,0 0 30px #ff2200,0 0 60px rgba(255,34,0,.6),0 0 80px rgba(255,0,0,.2);}
-}
-@keyframes sfRainbowFire{
-  0%  {color:#ff2200;text-shadow:2px 2px 0 #800000,0 0 20px #ff0000,0 0 40px rgba(255,0,0,.5);}
-  25% {color:#ff8800;text-shadow:2px 2px 0 #804000,0 0 20px #ff6600,0 0 40px rgba(255,100,0,.5);}
-  50% {color:#ffff00;text-shadow:2px 2px 0 #808000,0 0 20px #ffcc00,0 0 40px rgba(255,200,0,.5);}
-  75% {color:#ff8800;text-shadow:2px 2px 0 #804000,0 0 20px #ff6600,0 0 40px rgba(255,100,0,.5);}
-  100%{color:#ff2200;text-shadow:2px 2px 0 #800000,0 0 20px #ff0000,0 0 40px rgba(255,0,0,.5);}
-}
-@keyframes sfBorderCycle{
-  0%  {border-color:#ff2200;box-shadow:inset 0 0 30px rgba(255,34,0,.2),0 0 12px rgba(255,34,0,.3);}
-  33% {border-color:#ff8800;box-shadow:inset 0 0 30px rgba(255,136,0,.2),0 0 12px rgba(255,136,0,.3);}
-  66% {border-color:#ffff00;box-shadow:inset 0 0 30px rgba(255,255,0,.15),0 0 12px rgba(255,255,0,.25);}
-  100%{border-color:#ff2200;box-shadow:inset 0 0 30px rgba(255,34,0,.2),0 0 12px rgba(255,34,0,.3);}
-}
-
-/* ── Celebration ── */
-.cel-box{
-  text-align:center;padding:18px 10px 16px;
-  margin-bottom:14px;
-  animation:celPulse .8s steps(1) infinite;
-}
-.card-p1 .cel-box{background:#001a00;border:3px solid var(--p1);}
-.card-p2 .cel-box{background:#001a00;border:3px solid var(--p2);}
-@keyframes celPulse{0%{filter:brightness(1);}50%{filter:brightness(1.35);}}
-.cel-stars{font-size:20px;color:var(--gold);letter-spacing:10px;margin-bottom:12px;}
-.cel-msg{
-  font-size:clamp(15px,5vw,20px);color:var(--gold);
-  text-shadow:3px 3px 0 var(--gold-dk);
-  line-height:1.9;margin-bottom:12px;letter-spacing:2px;
-}
-.cel-earn{font-size:9px;color:var(--done-txt);letter-spacing:1px;}
-
-/* ── Loading / Error ── */
-#app{min-height:200px;}
-.loading{
-  text-align:center;padding:50px 20px;
-  color:var(--dim);font-size:9px;
-  animation:blink .9s step-start infinite;
-}
-@keyframes blink{50%{opacity:0;}}
-.err-box{
-  border:2px solid #660000;background:#110000;
-  padding:18px;color:#ff5555;font-size:8px;
-  text-align:center;max-width:380px;
-  margin:40px auto;line-height:2.2;
-}
-
-/* ── Extras (one-off credits/debits) ── */
-.extras-section{border-top:2px solid #181848;padding-top:10px;margin-top:10px;}
-.extra-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
-.extra-date{font-size:8px;color:#8080b8;min-width:50px;flex-shrink:0;}
-.extra-note{font-size:8px;color:#c8c8e8;flex:1;letter-spacing:1px;text-transform: uppercase;}
-.extra-amt{font-size:9px;min-width:48px;text-align:right;flex-shrink:0;}
-.extra-amt.pos{color:var(--done-txt);}
-.extra-amt.neg{color:var(--miss-txt);}
-
-/* ── Refresh button ── */
-.refresh-btn{
-  display:block;margin:24px auto 0;
-  background:none;border:2px solid #303060;
-  color:#505088;font-family:var(--font);font-size:8px;
-  letter-spacing:2px;padding:10px 20px;cursor:pointer;
-}
-.refresh-btn:active{background:#0d0d2a;color:#8080c0;border-color:#5050a0;}
-
-/* ── Weekly Summary Overlay ── */
-#summary-overlay{
-  position:fixed;inset:0;z-index:200;
-  background:rgba(0,0,0,.93);
-  display:flex;align-items:flex-start;justify-content:center;
-  overflow-y:auto;padding:20px 12px 40px;
-  animation:smFadeIn .5s ease forwards;
-  cursor:pointer;
-}
-@keyframes smFadeIn{from{opacity:0}to{opacity:1}}
-
-.sm-panel{
-  background:var(--surface);
-  border:3px solid var(--gold);
-  box-shadow:0 0 0 2px #0a0a1a,0 0 0 5px var(--gold-dk),0 0 50px rgba(255,215,0,.18);
-  padding:22px 18px 18px;
-  max-width:480px;width:100%;
-  cursor:default;
-  position:relative;
-}
-
-.sm-title{
-  text-align:center;
-  font-size:clamp(11px,4.5vw,15px);
-  color:var(--gold);
-  text-shadow:3px 3px 0 var(--gold-dk);
-  letter-spacing:3px;
-  margin-bottom:6px;
-}
-.sm-week{
-  text-align:center;font-size:7px;color:var(--dim);
-  letter-spacing:3px;margin-bottom:22px;
-}
-.sm-divider{border:none;border-top:2px solid #181848;margin:16px 0;}
-
-.sm-player-name{
-  font-size:10px;letter-spacing:2px;margin-bottom:12px;
-}
-.sm-p1 .sm-player-name{color:var(--p1);}
-.sm-p2 .sm-player-name{color:var(--p2);}
-
-.sm-step{opacity:0;transform:translateX(-24px);transition:opacity .45s ease,transform .45s ease;}
-.sm-step.sm-vis{opacity:1;transform:none;}
-
-.sm-line{
-  display:flex;justify-content:space-between;align-items:center;
-  font-size:9px;margin-bottom:8px;padding:3px 0;
-}
-.sm-line-lbl{color:#a0a0c8;letter-spacing:1px;}
-.sm-line-val{letter-spacing:1px;}
-.sm-line.pos .sm-line-val{color:var(--done-txt);}
-.sm-line.dim .sm-line-val{color:#404060;}
-.sm-line.neg .sm-line-val{color:var(--miss-txt);}
-
-.sm-subtotal{
-  display:flex;justify-content:space-between;align-items:center;
-  font-size:10px;
-  border-top:1px solid #303060;padding-top:9px;
-  margin-top:2px;margin-bottom:12px;
-}
-.sm-subtotal-lbl{color:var(--gold);}
-.sm-subtotal-val{color:var(--gold);}
-
-.sm-extras-lbl{
-  font-size:8px;color:var(--dim);letter-spacing:2px;margin-bottom:8px;
-}
-
-.sm-grand{
-  background:#110e00;border:2px solid #4a3200;
-  padding:11px 14px;margin-top:6px;
-  display:flex;justify-content:space-between;align-items:center;
-}
-.sm-grand-lbl{font-size:9px;color:var(--gold);letter-spacing:2px;}
-.sm-grand-val{font-size:clamp(17px,5.5vw,22px);color:var(--gold);text-shadow:3px 3px 0 var(--gold-dk);}
-
-.sm-tier-msg{font-size:8px;letter-spacing:2px;text-align:center;margin-top:8px;}
-
-/* Tier 0 — nothing earned */
-.sm-tier-zero .sm-grand-val{color:#404060;text-shadow:none;}
-.sm-tier-zero .sm-grand{border-color:#252540;}
-.sm-tier-zero .sm-tier-msg{color:#404060;}
-
-/* Tier 1 — a little ($1–$3) */
-.sm-tier-low .sm-grand-val{color:var(--p1);text-shadow:0 0 12px var(--p1),2px 2px 0 #004466;}
-.sm-tier-low .sm-tier-msg{color:var(--p1);}
-
-/* Tier 2 — decent ($4–$6) */
-.sm-tier-mid .sm-grand-val{animation:smGoldPulse 1.6s ease-in-out infinite;}
-.sm-tier-mid .sm-tier-msg{color:var(--gold);}
-@keyframes smGoldPulse{
-  0%,100%{text-shadow:3px 3px 0 var(--gold-dk);}
-  50%{text-shadow:3px 3px 0 var(--gold-dk),0 0 18px var(--gold),0 0 36px rgba(255,215,0,.4);}
-}
-
-/* Tier 3 — legendary ($7+) */
-.sm-tier-high .sm-grand-val{animation:smRainbow .9s linear infinite;}
-.sm-tier-high .sm-grand{border-color:var(--gold);}
-.sm-tier-high .sm-tier-msg{animation:smRainbow .9s linear infinite;}
-.sm-tier-high .sm-panel{animation:smBorderRainbow 2s linear infinite;}
-@keyframes smRainbow{
-  0%  {color:#ff4444;text-shadow:2px 2px 0 #800000,0 0 16px #ff0000;}
-  20% {color:#ffaa00;text-shadow:2px 2px 0 #804400,0 0 16px #ff8800;}
-  40% {color:#ffff00;text-shadow:2px 2px 0 #808000,0 0 16px #ffff00;}
-  60% {color:#00ff88;text-shadow:2px 2px 0 #008040,0 0 16px #00ff88;}
-  80% {color:#00ccff;text-shadow:2px 2px 0 #006688,0 0 16px #00ccff;}
-  100%{color:#ff4444;text-shadow:2px 2px 0 #800000,0 0 16px #ff0000;}
-}
-@keyframes smBorderRainbow{
-  0%  {border-color:#ff4444;box-shadow:0 0 0 2px #0a0a1a,0 0 0 5px #800000,0 0 40px rgba(255,68,68,.25);}
-  33% {border-color:#ffff00;box-shadow:0 0 0 2px #0a0a1a,0 0 0 5px #808000,0 0 40px rgba(255,255,0,.25);}
-  66% {border-color:#00ff88;box-shadow:0 0 0 2px #0a0a1a,0 0 0 5px #008040,0 0 40px rgba(0,255,136,.25);}
-  100%{border-color:#ff4444;box-shadow:0 0 0 2px #0a0a1a,0 0 0 5px #800000,0 0 40px rgba(255,68,68,.25);}
-}
-
-.sm-footer{
-  text-align:center;font-size:7px;color:#404068;
-  letter-spacing:2px;margin-top:22px;
-  animation:smBlink 1.2s step-start infinite;
-}
-@keyframes smBlink{50%{opacity:0;}}
-
-/* ── Footer ── */
-footer{
-  text-align:center;font-size:7px;color:#505080;
-  margin-top:20px;padding-top:12px;
-  border-top:2px solid #0e0e30;letter-spacing:1px;
-}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:#FFF6E9;font-family:Fredoka,system-ui,sans-serif;color:#1A1712;-webkit-font-smoothing:antialiased;}
+button{font-family:inherit;}
+@keyframes pulseGlow{0%,100%{transform:scale(1);}50%{transform:scale(1.12);}}
+@keyframes todayBob{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
+.wrap{min-height:100vh;display:flex;justify-content:center;}
+.col{width:100%;max-width:480px;padding:max(22px,env(safe-area-inset-top)) 18px calc(48px + env(safe-area-inset-bottom));display:flex;flex-direction:column;}
+.hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;}
+.title{font-weight:700;font-size:26px;letter-spacing:-.01em;line-height:1.1;}
+.sub{font-size:13px;color:#8A7B62;font-family:Nunito,sans-serif;font-weight:700;}
+.refresh{background:#fff;border:2.5px solid #1A1712;color:#1A1712;border-radius:14px;width:46px;height:46px;font-size:18px;cursor:pointer;box-shadow:3px 3px 0 #1A1712;flex-shrink:0;}
+.refresh:active{transform:translate(3px,3px);box-shadow:none;}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.tab{display:flex;align-items:center;gap:9px;padding:12px 13px;min-height:48px;border-radius:16px;border:2.5px solid #1A1712;font-weight:600;font-size:16px;cursor:pointer;text-align:left;}
+.ring{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;}
+.ring i{width:14px;height:14px;border-radius:50%;display:block;}
+.hero{background:#E4572E;border:3px solid #1A1712;border-radius:24px;padding:20px;margin-bottom:16px;box-shadow:5px 5px 0 #1A1712;color:#FFF6E9;}
+.hero h2{font-size:14px;font-weight:600;}
+.hero .big{font-size:60px;font-weight:700;line-height:.85;}
+.bar{height:16px;border-radius:99px;background:#8C2A10;border:2.5px solid #1A1712;overflow:hidden;}
+.bar i{display:block;height:100%;background:#FFD166;transition:width .5s ease;}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:10px;}
+.day{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.day .l{font-size:12px;font-family:Nunito,sans-serif;font-weight:800;}
+.tile{width:100%;aspect-ratio:1/1.15;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.tile .n{font-size:13px;font-family:Nunito,sans-serif;font-weight:800;line-height:1.1;}
+.tile .s{font-size:17px;font-weight:700;line-height:1;}
+.day .t{font-size:9px;font-family:Nunito,sans-serif;font-weight:800;letter-spacing:.06em;color:#E4572E;height:11px;}
+.row{display:flex;align-items:center;gap:10px;border:2.5px solid #1A1712;border-radius:16px;padding:12px 14px;min-height:48px;}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin:10px 0 18px;font-family:Nunito,sans-serif;font-weight:700;font-size:12px;color:#6B5D48;}
+.legend span{display:flex;align-items:center;gap:5px;}
+.legend b{width:16px;height:16px;border-radius:5px;border:2px solid #1A1712;display:grid;place-items:center;font-family:Fredoka,sans-serif;font-size:10px;font-weight:700;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.card{background:#fff;border:2.5px solid #1A1712;border-radius:18px;padding:14px;box-shadow:3px 3px 0 #1A1712;display:flex;flex-direction:column;}
+.card .k{font-size:13px;color:#8A7B62;font-weight:600;}
+.card .v{font-size:32px;font-weight:700;line-height:1;margin-top:2px;}
+.card .d{font-size:13px;color:#6B5D48;font-family:Nunito,sans-serif;font-weight:700;}
+.money{border:3px solid #1A1712;border-radius:24px;padding:18px 20px;margin-bottom:10px;box-shadow:5px 5px 0 #1A1712;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.strip{background:#fff;border:2.5px solid #1A1712;border-radius:18px;padding:14px 16px;min-height:48px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;box-shadow:3px 3px 0 #1A1712;}
+.extra{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #1A1712;border-radius:14px;padding:11px 12px;font-family:Nunito,sans-serif;font-weight:700;}
+.more{width:100%;background:#fff;border:2.5px solid #1A1712;color:#1A1712;border-radius:16px;padding:14px;min-height:50px;font-weight:600;font-size:15px;cursor:pointer;box-shadow:3px 3px 0 #1A1712;}
+.more:active{transform:translate(3px,3px);box-shadow:none;}
+.panel{background:#fff;border:2.5px solid #1A1712;border-radius:16px;padding:16px;}
+.panel .k{font-size:14px;font-weight:600;color:#8A7B62;}
+.line{display:flex;justify-content:space-between;gap:12px;font-size:13px;font-family:Nunito,sans-serif;font-weight:700;}
+.hrow{display:flex;align-items:center;gap:8px;}
+.hrow .dt{font-size:12px;color:#8A7B62;min-width:46px;font-family:Nunito,sans-serif;font-weight:700;}
+.cells{display:flex;gap:3px;flex:1;}
+.cells i{width:13px;height:13px;border-radius:4px;border:1.5px solid #1A1712;}
+.warn{margin-top:16px;background:#FFD9CF;border:2.5px solid #1A1712;border-radius:16px;padding:13px 15px;font-family:Nunito,sans-serif;font-weight:700;font-size:13px;color:#8C2A10;}
 </style>
 </head>
 <body>
-
-<header>
-  <h1 class="title">★ CHORE QUEST ★</h1>
-  <p class="subtitle">HOUSEHOLD HEROES</p>
-</header>
-
-<div id="app"><div class="loading">LOADING DATA...</div></div>
-
-<button class="refresh-btn" onclick="location.reload()">&#8635; REFRESH</button>
-
-<footer>INSERT COIN TO CONTINUE &nbsp;·&nbsp; LIVE DATA FROM HEADQUARTERS</footer>
+<div class="wrap"><div class="col" id="app"></div></div>
 
 <script>
-const SHEET_ID = '1dAmlZqyuLw1SSuRTHwXO0fXBnTWLvB-Hb79ImoAtXLg';
-const DAY_LABELS = ['SU','MO','TU','WE','TH','FR','SA'];
-const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+// ─── config ───────────────────────────────────────────────────────────────
+var SHEET_ID = '1dAmlZqyuLw1SSuRTHwXO0fXBnTWLvB-Hb79ImoAtXLg';
+var PLAYERS = [['simon','Simon'],['desmond','Desmond']];
+var BED_RATE = 1, TRASH_RATE = 2;
+var TIERS = [5,10,15,25];
 
-const NOW   = new Date();
-const TODAY = new Date(NOW);
-TODAY.setHours(0,0,0,0);
-// ET time parts — used for noon cutoff and Saturday summary gating
-const ET_PARTS = new Intl.DateTimeFormat('en-US', {
-  timeZone: 'America/New_York',
-  weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit', hour: 'numeric', hour12: false
-}).formatToParts(NOW).reduce((o, p) => { o[p.type] = p.value; return o; }, {});
-const ET_HOUR    = parseInt(ET_PARTS.hour, 10);
-const ET_WEEKDAY = ET_PARTS.weekday;                                    // e.g. 'Saturday'
-const ET_DAY_KEY = `${ET_PARTS.year}${ET_PARTS.month}${ET_PARTS.day}`; // e.g. '20260531'
-const BEFORE_NOON = ET_HOUR < 12;
+var DAY_LBL = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var SYM = { done:'\u2713', missed:'\u2717', pend:'\u00b7', excused:'\u2013' };
+var CACHE_KEY = 'choreQuest.cache.v1';
+var TAB_KEY = 'choreQuest.tab';
 
-// ── CSV parser ──────────────────────────────────────────────
-function parseCSV(text) {
-  return text.split('\n').map(raw => {
-    const line = raw.replace(/\r$/, '');
-    const cols = [];
-    let field = '', inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      if (line[i] === '"') { inQ = !inQ; }
-      else if (line[i] === ',' && !inQ) { cols.push(field.trim()); field = ''; }
-      else { field += line[i]; }
-    }
-    cols.push(field.trim());
-    return cols;
-  });
-}
-
-function money(s) {
-  if (!s) return null;
-  let c = s.replace(/[\s$,]/g, '');
-  if (!c || c === '-') return null;
-  if (c.startsWith('(') && c.endsWith(')')) c = '-' + c.slice(1, -1);
-  const n = parseFloat(c);
-  return isNaN(n) ? null : n;
-}
-
-// ── Sheet parser ────────────────────────────────────────────
-// Column layout (0-indexed):
-//  0=week date  2=name  3-9=S/M/T/W/T/F/S  10=trash  11=pay
-//  13=simonOwed  O(14)=simonAdj  P(15)=simonNote  Q(16)=simonAdjDate
-//  18=desOwed    T(19)=desAdj    U(20)=desNote    V(21)=desAdjDate
-// Extras are collected from EVERY row in a week section (named or not),
-// so additional credit/debit rows can be added freely in the sheet.
-function parseSheet(rows) {
-  const weeks = [];
-  let cur = null;
-  for (const c of rows) {
-    if (!c.length) continue;
-    if (c[0] && /^\d{2}\/\d{2}\/\d{2}$/.test(c[0])) {
-      cur = { date: c[0], simon: null, desmond: null, extras: [] };
-      weeks.push(cur);
-      // Still scan for extras on the week-header row itself before moving on
-      const sa0 = money(c[14]);
-      if (sa0 != null) cur.extras.push({ player:'simon',   amt:sa0, note:(c[15]||'').trim(), date:(c[16]||'').trim() });
-      const da0 = money(c[19]);
-      if (da0 != null) cur.extras.push({ player:'desmond', amt:da0, note:(c[20]||'').trim(), date:(c[21]||'').trim() });
-      continue;
-    }
-    if (!cur) continue;
-    const nm = (c[2] || '').trim().toLowerCase();
-    if (nm === 'simon' || nm === 'desmond') {
-      cur[nm] = {
-        days:      DAY_LABELS.map((_, i) => { if (isExcused(c[3+i])) return 'excused'; const v = money(c[3+i]); return v != null && v > 0; }),
-        trash:     (() => { if (isExcused(c[10])) return 'excused'; const v = money(c[10]); return v != null && v > 0; })(),
-        pay:       money(c[11]) || 0,
-        simonOwed: money(c[13]),
-        desOwed:   money(c[18]),
-      };
-    }
-    // Scan O/P/Q (Simon) and T/U/V (Desmond) on every row
-    const sa = money(c[14]);
-    if (sa != null) cur.extras.push({ player:'simon',   amt:sa, note:(c[15]||'').trim(), date:(c[16]||'').trim() });
-    const da = money(c[19]);
-    if (da != null) cur.extras.push({ player:'desmond', amt:da, note:(c[20]||'').trim(), date:(c[21]||'').trim() });
-  }
-  return weeks.filter(w => w.simon || w.desmond);
-}
-
-// ── Money calculation ───────────────────────────────────────
-// Strategy: take first snapshot found (in Simon's row for both players),
-// then add all weekly pays. Desmond's row may carry a payout adjustment.
-function calcOwed(weeks, key) {
-  // Use the sheet's authoritative running balance from completed weeks only,
-  // then add any one-off adjustments (e.g. mowing bonus) from the current week.
-  let last = 0;
-  let adj = 0;
-  for (const w of weeks) {
-    const sat = parseWDate(w.date);
-    sat.setDate(sat.getDate() + 6);
-    if (sat > TODAY) {
-      // Week still in progress — pick up one-off adjustments only
-      for (const e of w.extras) if (e.player === key) adj += e.amt;
-      // Quest complete mid-week? Pay is earned — add it now
-      const r = w[key];
-      if (r && isAllDone(r)) adj += r.pay;
-      continue;
-    }
-    if (w.simon) {
-      const snap = key === 'simon' ? w.simon.simonOwed : w.simon.desOwed;
-      if (snap !== null) last = snap;
-    }
-    if (key === 'desmond' && w.desmond && w.desmond.desOwed !== null)
-      last = w.desmond.desOwed;
-  }
-  return last + adj;
-}
-
-// ── Date helpers ────────────────────────────────────────────
-function parseWDate(str) {
-  const [m,d,y] = str.split('/').map(Number);
-  return new Date(2000+y, m-1, d);
-}
-function fmtDate(str) {
-  const [m,,] = str.split('/').map(Number);
-  const d = parseInt(str.split('/')[1]);
-  return `${MONTHS[m-1]} ${d}`;
-}
-function dayState(weekStr, dayIdx, done) {
-  if (done === 'excused') return 'excused';
-  if (done) return 'done';
-  const dt = parseWDate(weekStr);
-  dt.setDate(dt.getDate() + dayIdx);
-  if (dt > TODAY) return 'pend';
-  if (dt.getTime() === TODAY.getTime() && BEFORE_NOON) return 'pend';
-  return 'missed';
-}
-function trashState(weekStr, done) {
-  if (done === 'excused') return 'excused';
-  if (done) return 'done';
-  const sat = parseWDate(weekStr);
-  sat.setDate(sat.getDate() + 6);
-  return sat > TODAY ? 'pend' : 'missed';
-}
-const SYM = { done:'✓', missed:'✗', pend:'?', excused:'—' };
-function isExcused(raw) { return (raw || '').trim().toUpperCase() === 'N/A'; }
-
-function isEmptyRow(r) {
-  return !r || (r.pay === 0 && !r.days.some(Boolean) && !r.trash);
-}
-
-function calcStreak(weeks, key) {
-  // Iterate every week's daily slots directly — a missing row (no data yet)
-  // counts as all-missed, so a new week with no entries breaks the streak.
-  const days = [];
-  for (const w of weeks) {
-    const r = w[key]; // null if player has no row this week
-    for (let i = 0; i < DAY_LABELS.length; i++) {
-      const dt = parseWDate(w.date);
-      dt.setDate(dt.getDate() + i);
-      if (dt > TODAY) continue; // future — skip
-      const done = r ? r.days[i] : false;
-      if (done === 'excused') continue; // excused — skip, don't break streak
-      // Before noon grace: skip today's undone tasks rather than penalising
-      if (dt.getTime() === TODAY.getTime() && BEFORE_NOON && !done) continue;
-      days.push({ dt, done });
-    }
-  }
-  days.sort((a, b) => b.dt - a.dt);
-  let streak = 0;
-  for (const { done } of days) {
-    if (done) streak++;
-    else break;
-  }
-  return streak;
-}
-
-function isAllDone(row) {
-  if (!row) return false;
-  const hasDone = row.days.some(d => d === true) || row.trash === true;
-  return hasDone
-    && row.days.every(d => d === true || d === 'excused')
-    && (row.trash === true || row.trash === 'excused');
-}
-
-// ── Past-30-day earnings ────────────────────────────────────
-function calcMonthEarnings(weeks, key) {
-  const cutoff = new Date(TODAY);
-  cutoff.setDate(cutoff.getDate() - 30);
-  let total = 0;
-  for (const w of weeks) {
-    const r = w[key];
-    if (!r || isEmptyRow(r)) continue;
-    const sat = parseWDate(w.date);
-    sat.setDate(sat.getDate() + 6);
-    if (sat >= cutoff && sat <= TODAY) total += r.pay || 0;
-  }
-  return total;
-}
-
-// ── Card builder ────────────────────────────────────────────
-function buildCard(weeks, name, num) {
-  const key = name.toLowerCase();
-  const owed = calcOwed(weeks, key);
-  const streak = calcStreak(weeks, key);
-  const monthEarned = calcMonthEarnings(weeks, key);
-
-  // Completion rate — only count days that have already occurred
-  let total = 0, done = 0;
-  for (const w of weeks) {
-    const r = w[key];
-    if (!r || isEmptyRow(r)) continue;
-    r.days.forEach((d, i) => {
-      const dt = parseWDate(w.date);
-      dt.setDate(dt.getDate() + i);
-      if (dt > TODAY) return;
-      if (dt.getTime() === TODAY.getTime() && BEFORE_NOON) return;
-      if (d === 'excused') return;
-      total++;
-      if (d === true) done++;
-    });
-    const sat = parseWDate(w.date);
-    sat.setDate(sat.getDate() + 6);
-    if (sat <= TODAY && r.trash !== 'excused') { total++; if (r.trash === true) done++; }
-  }
-  const pct = total ? done / total : 0;
-  const pips = Array.from({length:10}, (_,i) =>
-    `<div class="pip${i < Math.round(pct*10) ? ' on' : ''}"></div>`
-  ).join('');
-
-  // The calendar week that contains today (may have no data yet for this player)
-  const thisWeek = weeks.find(w => {
-    const start = parseWDate(w.date);
-    const sat = new Date(start); sat.setDate(sat.getDate() + 6);
-    return TODAY >= start && TODAY <= sat;
-  });
-
-  // Non-empty weeks for this player (used for history)
-  const filled = weeks.filter(w => w[key] && !isEmptyRow(w[key]));
-
-  // Always show the current calendar week — avoids stale "Quest Complete"
-  // from last week when the new week has no entries yet
-  const curW = thisWeek || (filled.length ? filled[filled.length - 1] : null);
-
-  // Streak badge
-  const streakTier = streak >= 25 ? 'streak-t4' : streak >= 15 ? 'streak-t3' : streak >= 10 ? 'streak-t2' : streak >= 5 ? 'streak-t1' : '';
-  const streakHtml = streak > 1
-    ? `<div class="streak ${streakTier}">
-        <span class="streak-fire">🔥</span>
-        <span class="streak-num">${streak}</span>
-        <span class="streak-lbl">DAY${streak !== 1 ? 'S' : ''}<br>STREAK</span>
-       </div>`
-    : `<div class="streak-go">&#9733; DO YOUR CHORES AND START A STREAK!</div>`;
-
-  // Current week: celebration or normal grid
-  let gridHtml = '';
-  if (curW) {
-    const r = curW[key]; // null if player has no entries yet this week
-    if (r && isAllDone(r)) {
-      gridHtml = `
-        <div class="cel-box">
-          <div class="cel-stars">&#9733; &#9733; &#9733;</div>
-          <div class="cel-msg">QUEST<br>COMPLETE!</div>
-          <div class="cel-earn">ALL CHORES DONE &mdash; $${r.pay.toFixed(2)} EARNED</div>
-        </div>`;
-    } else {
-      const days = r ? r.days : Array(7).fill(false);
-      const cells = days.map((d,i) => {
-        const st = dayState(curW.date, i, d);
-        return `<div class="day-cell">
-          <span class="day-lbl">${DAY_LABELS[i]}</span>
-          <div class="day-box ${st}">${SYM[st]}</div>
-        </div>`;
-      }).join('');
-      const tst = trashState(curW.date, r ? r.trash : false);
-      const trCell = `<div class="day-cell tr-cell">
-        <span class="day-lbl">TRASH</span>
-        <div class="day-box ${tst}">${SYM[tst]}</div>
-      </div>`;
-      gridHtml = `
-        <div class="slbl">CURRENT WEEK</div>
-        <div class="week-lbl cur">&#9658; WEEK OF ${fmtDate(curW.date)}</div>
-        <div class="chore-grid">${trCell}${cells}</div>
-        ${r ? `<div class="week-pay">QUEST IN PROGRESS &nbsp;&middot;&nbsp; $${r.pay.toFixed(2)} SO FAR</div>` : ''}`;
-    }
-  }
-
-  // History (all filled weeks, newest first, excluding curW)
-  const histRows = [...filled].reverse().filter(w => w !== curW).map(w => {
-    const r = w[key];
-    const dots = r.days.map(d => `<div class="hdot ${d===true?'done':d==='excused'?'excused':'missed'}"></div>`).join('');
-    const tr = `<div class="hdot tr ${r.trash===true?'done':r.trash==='excused'?'excused':'missed'}"></div>`;
-    return `<div class="hist-row">
-      <span class="hist-date">${fmtDate(w.date)}</span>
-      <div class="hist-dots">${tr}${dots}</div>
-      <span class="hist-pay">$${r.pay.toFixed(2)}</span>
-    </div>`;
-  }).join('');
-
-  const icon = num === 1 ? '🎮' : '🕹️';
-  return `
-  <div class="card card-p${num}">
-    <div class="card-head">
-      <span class="card-icon">${icon}</span>
-      <span class="card-name">${name.toUpperCase()}</span>
-      <button class="summary-btn" onclick="showSummary('${key}')">📊 LAST WEEK</button>
-    </div>
-
-    <div class="slbl">COMPLETION RATE — ${Math.round(pct*100)}%</div>
-    <div class="pips">${pips}</div>
-
-    ${streakHtml}
-
-    ${gridHtml}
-
-    <div class="money-box${owed < 0 ? ' debt' : ''}">
-      <div class="money-lbl">${owed < 0 ? 'YOU OWE' : 'COINS OWED'}</div>
-      <div class="money-val">
-        <span class="coin${owed < 0 ? ' debt' : ''}">${owed < 0 ? '💸' : '🪙'}</span>
-        ${owed < 0 ? `&#x2212;$${Math.abs(owed).toFixed(2)}` : `$${owed.toFixed(2)}`}
-      </div>
-    </div>
-
-    ${histRows ? `
-    <div class="month-earn">
-      <span class="month-earn-lbl">PAST 30 DAYS</span>
-      <span class="month-earn-val">$${monthEarned.toFixed(2)}</span>
-    </div>
-    <div class="hist-section">
-      <div class="slbl">HISTORY &nbsp; TR &middot; SU MO TU WE TH FR SA</div>
-      ${histRows}
-    </div>` : ''}
-
-    ${(() => {
-      const entries = [];
-      for (const w of weeks) {
-        for (const e of w.extras) {
-          if (e.player === key) entries.push({ date: e.date || w.date, amt: e.amt, note: e.note });
-        }
-      }
-      if (!entries.length) return '';
-      const rows = entries.map(e => `
-        <div class="extra-row">
-          <span class="extra-date">${fmtDate(e.date)}</span>
-          <span class="extra-note">${e.note || '—'}</span>
-          <span class="extra-amt ${e.amt > 0 ? 'pos' : 'neg'}">${e.amt > 0 ? '+' : '−'}$${Math.abs(e.amt).toFixed(2)}</span>
-        </div>`).join('');
-      return '<div class="extras-section"><div class="slbl">EXTRAS</div>' + rows + '</div>';
-    })()}
-  </div>`;
-}
-
-// ── Saturday Summary ────────────────────────────────────────
-function shouldShowSummary() {
-  if (ET_WEEKDAY !== 'Saturday') return false;
-  if (ET_HOUR < 20) return false;
-  const key = `wkSummary_${ET_DAY_KEY}`;
-  if (localStorage.getItem(key)) return false;
-  localStorage.setItem(key, '1');
-  return true;
-}
-
-function tierClass(amt) {
-  if (amt <= 0)  return 'sm-tier-zero';
-  if (amt < 4)   return 'sm-tier-low';
-  if (amt < 7)   return 'sm-tier-mid';
-  return 'sm-tier-high';
-}
-
-const TIER_MSG = {
-  'sm-tier-low':  '— KEEP IT UP! —',
-  'sm-tier-mid':  '— GREAT WEEK! —',
-  'sm-tier-high': '— LEGENDARY WEEK!! —',
+var P = {
+  done:{bg:'#0F6B47',fg:'#FFFFFF',num:'#FFFFFF'},
+  missed:{bg:'#FFD9CF',fg:'#B03A1A',num:'#8C2A10'},
+  pend:{bg:'#FFFDF7',fg:'#B8A98F',num:'#5C503C'},
+  excused:{bg:'#EDE7DC',fg:'#6B6355',num:'#6B6355'},
+  pos:'#0F6B47', neg:'#C4381A', muted:'#8A7B62',
+  money:{bg:'#FFD166',fg:'#1A1712',lbl:'#7A5E0D'},
+  debt:{bg:'#FFD9CF',fg:'#8C2A10',lbl:'#A33314'},
+  streak:['#8A7B62','#E8A317','#F07B22','#E4572E','#D6246E']
 };
 
-function buildSummaryModal(weeks, playerKey) {
-  // Find the week before the current calendar week
-  const curIdx = weeks.findIndex(w => {
-    const start = parseWDate(w.date);
-    const sat = new Date(start); sat.setDate(sat.getDate() + 6);
-    return TODAY >= start && TODAY <= sat;
-  });
-  const targetW = curIdx > 0 ? weeks[curIdx - 1]
-                : curIdx === -1 && weeks.length ? weeks[weeks.length - 1]
-                : null;
-  if (!targetW) return;
+// ─── state ────────────────────────────────────────────────────────────────
+var S = { weeks:null, sample:false, fetchedAt:null, loading:true, tab:0, more:false };
+try { S.tab = parseInt(localStorage.getItem(TAB_KEY),10) || 0; } catch(e){}
 
-  const ALL_PLAYERS = [
-    { key: 'simon',   label: '🎮 SIMON',   cls: 'sm-p1' },
-    { key: 'desmond', label: '🕹️ DESMOND', cls: 'sm-p2' },
-  ];
-  const players = (playerKey ? ALL_PLAYERS.filter(p => p.key === playerKey) : ALL_PLAYERS)
-  .map(p => {
-    const r = targetW[p.key];
-    const availDays   = r ? r.days.filter(d => d !== 'excused').length : 7;
-    const bedDays     = r ? r.days.filter(d => d === true).length : 0;
-    const bedEarned   = bedDays * 1.0;
-    const trashExcused = r ? r.trash === 'excused' : false;
-    const trashDone   = r ? r.trash === true : false;
-    const trashEarned = trashDone ? 2.0 : 0;
-    const choreTotal  = bedEarned + trashEarned;
-    const weekStart = parseWDate(targetW.date);
-    const weekEnd   = new Date(weekStart); weekEnd.setDate(weekEnd.getDate() + 6);
-    function parseAnyDate(str) {
-      const [m, d, y] = str.split('/').map(Number);
-      return new Date(y > 999 ? y : 2000 + y, m - 1, d);
+// ─── sheet parsing ────────────────────────────────────────────────────────
+function parseCSV(text){
+  return text.split('\n').map(function(raw){
+    var line = raw.replace(/\r$/,''), cols=[], f='', q=false;
+    for(var i=0;i<line.length;i++){
+      if(line[i]==='"') q=!q;
+      else if(line[i]===',' && !q){ cols.push(f.trim()); f=''; }
+      else f+=line[i];
     }
-    const extras    = weeks
-      .flatMap(w => w.extras.map(e => ({ ...e, _week: w })))
-      .filter(e => {
-        if (e.player !== p.key) return false;
-        if (e.date) {
-          const d = parseAnyDate(e.date);
-          return d >= weekStart && d <= weekEnd;
-        }
-        return e._week === targetW;
-      });
-    const extrasTotal = extras.reduce((s, e) => s + e.amt, 0);
-    const grandTotal  = choreTotal + extrasTotal;
-    return { ...p, availDays, bedDays, bedEarned, trashExcused, trashDone, trashEarned, choreTotal, extras, extrasTotal, grandTotal };
+    cols.push(f.trim()); return cols;
   });
+}
+function money(s){
+  if(!s) return null;
+  var c = String(s).replace(/[\s$,]/g,'');
+  if(!c || c==='-') return null;
+  if(c.charAt(0)==='(' && c.charAt(c.length-1)===')') c = '-'+c.slice(1,-1);
+  var n = parseFloat(c); return isNaN(n) ? null : n;
+}
+function isExcused(raw){ return (raw||'').trim().toUpperCase()==='N/A'; }
 
-  // Build HTML — all step elements start invisible, values show ···
-  const playerBlocks = players.map((p, pi) => {
-    const tier = tierClass(p.grandTotal);
-    const k = p.key;
-    let html = '';
-
-    html += `<div class="sm-player-name ${p.cls} sm-step" id="${k}-name">${p.label}</div>`;
-
-    html += `<div class="sm-line ${p.bedEarned > 0 ? 'pos' : 'dim'} sm-step" id="${k}-bed-row">
-      <span class="sm-line-lbl">&#x1F6CF; BED (${p.bedDays}/${p.availDays} DAYS)</span>
-      <span class="sm-line-val" id="${k}-bed">&#xB7;&#xB7;&#xB7;</span>
-    </div>`;
-
-    html += `<div class="sm-line ${p.trashDone ? 'pos' : 'dim'} sm-step" id="${k}-trash-row">
-      <span class="sm-line-lbl">&#x1F5D1; TRASH${p.trashExcused ? ' (N/A)' : ''}</span>
-      <span class="sm-line-val" id="${k}-trash">&#xB7;&#xB7;&#xB7;</span>
-    </div>`;
-
-    html += `<div class="sm-subtotal sm-step" id="${k}-sub-row">
-      <span class="sm-subtotal-lbl">CHORES</span>
-      <span class="sm-subtotal-val" id="${k}-sub">&#xB7;&#xB7;&#xB7;</span>
-    </div>`;
-
-    if (p.extras.length) {
-      html += `<div class="sm-extras-lbl sm-step" id="${k}-xlbl">EXTRAS</div>`;
-      p.extras.forEach((e, ei) => {
-        const ecls = e.amt >= 0 ? 'pos' : 'neg';
-        const label = e.note ? e.note.toUpperCase() : 'BONUS';
-        html += `<div class="sm-line ${ecls} sm-step" id="${k}-x${ei}-row">
-          <span class="sm-line-lbl">${label}</span>
-          <span class="sm-line-val" id="${k}-x${ei}">&#xB7;&#xB7;&#xB7;</span>
-        </div>`;
-      });
+function parseSheet(rows){
+  var weeks=[], cur=null;
+  rows.forEach(function(c){
+    if(!c.length) return;
+    if(c[0] && /^\d{2}\/\d{2}\/\d{2}$/.test(c[0])){ cur={date:c[0],simon:null,desmond:null,extras:[]}; weeks.push(cur); }
+    if(!cur) return;
+    var nm = (c[2]||'').trim().toLowerCase();
+    if(nm==='simon' || nm==='desmond'){
+      cur[nm] = {
+        days: DAY_LBL.map(function(_,i){ if(isExcused(c[3+i])) return 'excused'; var v=money(c[3+i]); return v!=null && v>0; }),
+        trash: (function(){ if(isExcused(c[10])) return 'excused'; var v=money(c[10]); return v!=null && v>0; })(),
+        pay: money(c[11]) || 0,
+        simonOwed: money(c[13]), desOwed: money(c[18])
+      };
     }
-
-    html += `<div class="sm-grand ${tier} sm-step" id="${k}-grand-row">
-      <span class="sm-grand-lbl">TOTAL EARNED</span>
-      <span class="sm-grand-val" id="${k}-grand">&#xB7;&#xB7;&#xB7;</span>
-    </div>`;
-
-    if (TIER_MSG[tier]) html += `<div class="sm-tier-msg ${tier} sm-step" id="${k}-tier">${TIER_MSG[tier]}</div>`;
-
-    if (pi === 0 && players.length > 1) html += '<hr class="sm-divider">';
-    return `<div class="${p.cls}">${html}</div>`;
-  }).join('');
-
-  const titleName = playerKey ? ` · ${playerKey.toUpperCase()}` : '';
-  const overlay = document.createElement('div');
-  overlay.id = 'summary-overlay';
-  overlay.innerHTML = `
-    <div class="sm-panel">
-      <div class="sm-title">&#x2605; WEEKLY REPORT${titleName} &#x2605;</div>
-      <div class="sm-week">WEEK OF ${fmtDate(targetW.date)}</div>
-      ${playerBlocks}
-      <div class="sm-footer sm-step" id="sm-footer-hint">TAP ANYWHERE TO CONTINUE</div>
-    </div>`;
-
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-  overlay.querySelector('.sm-panel').addEventListener('click', () => overlay.remove());
-  document.body.appendChild(overlay);
-
-  // ── Sequenced animation ─────────────────────────────────────
-  const STEP     = 420;  // ms between row reveals
-  const DELAY    = 100;  // ms after row appears before countup starts
-  const COUNT_SM = 380;  // countup duration for line items
-  const COUNT_LG = 1300; // countup duration for grand total
-
-  const q    = s  => overlay.querySelector(s);
-  const show = id => { const el = q('#' + id); if (el) el.classList.add('sm-vis'); };
-
-  function countUp(id, target, prefix, duration, onDone) {
-    const el = q('#' + id);
-    if (!el) { onDone && setTimeout(onDone, duration); return; }
-    if (target === null) { el.textContent = '—'; onDone && onDone(); return; }
-    const t0 = performance.now();
-    (function frame(now) {
-      const p = Math.min((now - t0) / duration, 1);
-      el.textContent = prefix + (target * (1 - Math.pow(1 - p, 3))).toFixed(2);
-      if (p < 1) requestAnimationFrame(frame);
-      else { el.textContent = prefix + target.toFixed(2); onDone && onDone(); }
-    })(performance.now());
-  }
-
-  const acts = [];
-  const at = (ms, fn) => acts.push({ ms, fn });
-  let t = 350;
-
-  players.forEach(p => {
-    const k = p.key;
-
-    at(t, () => show(`${k}-name`));
-    t += STEP;
-
-    at(t,          () => show(`${k}-bed-row`));
-    at(t + DELAY,  () => countUp(`${k}-bed`, p.bedEarned, p.bedEarned > 0 ? '+$' : '$', COUNT_SM));
-    t += STEP;
-
-    at(t,          () => show(`${k}-trash-row`));
-    at(t + DELAY,  () => countUp(`${k}-trash`, p.trashDone ? 2 : null, '+$', COUNT_SM));
-    t += STEP + 80;
-
-    at(t,          () => show(`${k}-sub-row`));
-    at(t + DELAY,  () => countUp(`${k}-sub`, p.choreTotal, '$', COUNT_SM));
-    t += STEP;
-
-    if (p.extras.length) {
-      at(t, () => show(`${k}-xlbl`));
-      t += STEP;
-      p.extras.forEach((e, ei) => {
-        at(t,         () => show(`${k}-x${ei}-row`));
-        at(t + DELAY, () => countUp(`${k}-x${ei}`, Math.abs(e.amt), e.amt >= 0 ? '+$' : '−$', COUNT_SM));
-        t += STEP;
-      });
-    }
-
-    t += 140;
-    at(t,         () => show(`${k}-grand-row`));
-    at(t + DELAY, () => countUp(`${k}-grand`, p.grandTotal, '$', COUNT_LG, () => show(`${k}-tier`)));
-    t += COUNT_LG + 500;
+    var sa = money(c[14]); if(sa!=null) cur.extras.push({player:'simon',amt:sa,note:(c[15]||'').trim(),date:(c[16]||'').trim()});
+    var da = money(c[19]); if(da!=null) cur.extras.push({player:'desmond',amt:da,note:(c[20]||'').trim(),date:(c[21]||'').trim()});
   });
-
-  at(t + 100, () => show('sm-footer-hint'));
-  acts.forEach(({ ms, fn }) => setTimeout(fn, ms));
+  return weeks.filter(function(w){ return w.simon || w.desmond; });
 }
 
-// ── Main ────────────────────────────────────────────────────
-async function init() {
-  const app = document.getElementById('app');
-  try {
-    const res = await fetch(
-      `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&t=${Date.now()}`
-    );
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const text = await res.text();
-    const weeks = parseSheet(parseCSV(text));
-    if (!weeks.length) throw new Error('No data found in sheet');
+// ─── date helpers ─────────────────────────────────────────────────────────
+function today(){ var d=new Date(); d.setHours(0,0,0,0); return d; }
+function beforeNoon(){ return new Date().getHours() < 12; }
+function wdate(str){ var p=str.split('/').map(Number); return new Date(p[2]>999?p[2]:2000+p[2], p[0]-1, p[1]); }
+function fmt(str){ var p=str.split('/').map(Number); return MONTHS[p[0]-1]+' '+p[1]; }
+function fmtD(d){ return MONTHS[d.getMonth()]+' '+d.getDate(); }
+function ago(ts){
+  if(!ts) return 'loading\u2026';
+  var mins = Math.floor((Date.now()-ts)/60000);
+  if(mins < 1) return 'updated just now';
+  if(mins < 60) return 'updated '+mins+'m ago';
+  var hrs = Math.floor(mins/60);
+  if(hrs < 24) return 'updated '+hrs+'h ago';
+  var d = new Date(ts);
+  return 'updated '+DAY_LBL[d.getDay()]+' '+fmtD(d);
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-    const season = `${fmtDate(weeks[0].date)} &#8212; ${fmtDate(weeks[weeks.length-1].date)}`;
-    app.innerHTML = `
-      <div class="season-bar">&#128197; SEASON: ${season}</div>
-      <div class="players">
-        ${buildCard(weeks, 'Simon', 1)}
-        ${buildCard(weeks, 'Desmond', 2)}
-      </div>`;
-    window.showSummary = (playerKey) => {
-      const existing = document.getElementById('summary-overlay');
-      if (existing) existing.remove();
-      buildSummaryModal(weeks, playerKey);
+// ─── chore state ──────────────────────────────────────────────────────────
+function dayState(weekStr,i,done){
+  if(done==='excused') return 'excused';
+  if(done) return 'done';
+  var dt = wdate(weekStr); dt.setDate(dt.getDate()+i);
+  var T = today();
+  if(dt > T) return 'pend';
+  if(dt.getTime()===T.getTime() && beforeNoon()) return 'pend';
+  return 'missed';
+}
+function trashState(weekStr,done){
+  if(done==='excused') return 'excused';
+  if(done) return 'done';
+  var sat = wdate(weekStr); sat.setDate(sat.getDate()+6);
+  return sat > today() ? 'pend' : 'missed';
+}
+function emptyRow(r){ return !r || (r.pay===0 && r.days.indexOf(true)===-1 && !r.trash); }
+
+function streakOf(weeks,key){
+  var T = today(), days=[];
+  weeks.forEach(function(w){
+    var r = w[key];
+    for(var i=0;i<7;i++){
+      var dt = wdate(w.date); dt.setDate(dt.getDate()+i);
+      if(dt > T) continue;
+      var done = r ? r.days[i] : false;
+      if(done==='excused') continue;
+      if(dt.getTime()===T.getTime() && beforeNoon() && !done) continue;
+      days.push({dt:dt,done:done});
+    }
+  });
+  days.sort(function(a,b){ return b.dt-a.dt; });
+  var n=0;
+  for(var j=0;j<days.length;j++){ if(days[j].done) n++; else break; }
+  return n;
+}
+
+// The sheet's owed cell is the source of truth — take the last one filled in
+// and show it verbatim. Never add pay or extras on top; the cell already has them.
+function owedOf(weeks,key){
+  var amount = 0;
+  weeks.forEach(function(w){
+    var snap = null;
+    if(w.simon){ var s = key==='simon' ? w.simon.simonOwed : w.simon.desOwed; if(s!=null) snap = s; }
+    if(key==='desmond' && w.desmond && w.desmond.desOwed!=null) snap = w.desmond.desOwed;
+    if(snap!=null) amount = snap;
+  });
+  return { amount:amount };
+}
+
+function monthOf(weeks,key){
+  var T = today(), cut = new Date(T); cut.setDate(cut.getDate()-30);
+  var t=0;
+  weeks.forEach(function(w){
+    var r = w[key]; if(emptyRow(r)) return;
+    var sat = wdate(w.date); sat.setDate(sat.getDate()+6);
+    if(sat >= cut && sat <= T) t += r.pay || 0;
+  });
+  return t;
+}
+
+function build(weeks,key,name){
+  var T = today();
+  var cur = weeks.filter(function(w){
+    var s = wdate(w.date), e = new Date(s); e.setDate(e.getDate()+6);
+    return T>=s && T<=e;
+  })[0] || weeks[weeks.length-1];
+  var row = cur ? cur[key] : null;
+
+  var days = (row ? row.days : [0,0,0,0,0,0,0]).map(function(d,i){
+    var st = dayState(cur.date,i,d);
+    var dt = wdate(cur.date); dt.setDate(dt.getDate()+i);
+    var isToday = dt.getTime()===T.getTime();
+    return {
+      lbl:DAY_LBL[i].charAt(0), num:dt.getDate(), sym:SYM[st],
+      bg:P[st].bg, fg:P[st].fg, numFg:P[st].num,
+      lblFg: isToday ? '#E4572E' : '#6B5D48',
+      border: isToday ? '4px solid #E4572E' : '2.5px solid #1A1712',
+      shadow: isToday ? '0 0 0 2.5px #1A1712' : 'none',
+      anim: isToday ? 'todayBob 2.4s ease-in-out infinite' : 'none',
+      tag: isToday ? 'TODAY' : ''
     };
-    if (shouldShowSummary()) buildSummaryModal(weeks);
-  } catch (err) {
-    app.innerHTML = `
-      <div class="err-box">
-        &#9888; LOAD ERROR<br><br>
-        ${err.message}<br><br>
-        SHEET MUST BE SET TO<br>"ANYONE WITH LINK CAN VIEW"
-      </div>`;
+  });
+  var tst = trashState(cur.date, row ? row.trash : false);
+  var trash = { sym:SYM[tst], bg:P[tst].bg, fg:P[tst].fg };
+
+  var wDone=0, wTot=0;
+  days.forEach(function(d){ if(d.sym===SYM.done){wDone++;wTot++;} else if(d.sym===SYM.missed){wTot++;} });
+  if(tst==='done'){wDone++;wTot++;} else if(tst==='missed'){wTot++;}
+  var pct = wTot ? wDone/wTot : 0;
+
+  var aDone=0, aTot=0;
+  weeks.forEach(function(w){
+    var r = w[key]; if(emptyRow(r)) return;
+    r.days.forEach(function(d,i){
+      var dt = wdate(w.date); dt.setDate(dt.getDate()+i);
+      if(dt > T || d==='excused') return;
+      if(dt.getTime()===T.getTime() && beforeNoon()) return;
+      aTot++; if(d===true) aDone++;
+    });
+    var sat = wdate(w.date); sat.setDate(sat.getDate()+6);
+    if(sat <= T && r.trash!=='excused'){ aTot++; if(r.trash===true) aDone++; }
+  });
+
+  var streak = streakOf(weeks,key);
+  var tier = streak>=25?4:streak>=15?3:streak>=10?2:streak>=5?1:0;
+  var next = null;
+  for(var i=0;i<TIERS.length;i++){ if(TIERS[i] > streak){ next = TIERS[i]; break; } }
+  var tierLine = next ? (next-streak)+' more day'+((next-streak)===1?'':'s')+' to level '+(TIERS.indexOf(next)+1) : 'Top level reached';
+
+  var o = owedOf(weeks,key), owed = o.amount, debt = owed<0, m = debt ? P.debt : P.money;
+
+  var extras=[];
+  weeks.forEach(function(w){
+    w.extras.forEach(function(e){
+      if(e.player!==key) return;
+      extras.push({ date: fmt(e.date||w.date), note: e.note||'Adjustment',
+        amtLabel:(e.amt>0?'+$':'\u2212$')+Math.abs(e.amt).toFixed(2), color: e.amt>0?P.pos:P.neg });
+    });
+  });
+  extras.reverse();
+
+  var history = weeks.filter(function(w){ return w[key] && !emptyRow(w[key]) && w!==cur; }).reverse().map(function(w){
+    var r = w[key];
+    var cells = [{ bg: r.trash===true?P.done.bg : r.trash==='excused'?P.excused.bg : P.missed.bg }]
+      .concat(r.days.map(function(d){ return { bg: d===true?P.done.bg : d==='excused'?P.excused.bg : P.missed.bg }; }));
+    return { date: fmt(w.date), payLabel:'$'+r.pay.toFixed(2), cells:cells };
+  });
+
+  var ci = weeks.indexOf(cur), lw = ci>0 ? weeks[ci-1] : null, lr = lw ? lw[key] : null;
+  var report=[], rTot=0;
+  if(lr){
+    var bedDays = lr.days.filter(function(d){ return d===true; }).length;
+    var avail = lr.days.filter(function(d){ return d!=='excused'; }).length;
+    report.push({ label:'Bed made ('+bedDays+' of '+avail+' days)', valLabel:'+$'+(bedDays*BED_RATE).toFixed(2), color: bedDays?P.pos:P.muted });
+    report.push({ label: lr.trash==='excused' ? 'Trash and Recycling (skipped)' : 'Trash and Recycling',
+      valLabel: lr.trash===true ? '+$'+TRASH_RATE.toFixed(2) : '$0.00', color: lr.trash===true?P.pos:P.muted });
+    rTot = bedDays*BED_RATE + (lr.trash===true?TRASH_RATE:0);
+    lw.extras.forEach(function(e){
+      if(e.player!==key) return;
+      report.push({ label:e.note||'Bonus', valLabel:(e.amt>0?'+$':'\u2212$')+Math.abs(e.amt).toFixed(2), color:e.amt>0?P.pos:P.neg });
+      rTot += e.amt;
+    });
   }
+
+  return {
+    name:name, deg: Math.round(pct*360)+'deg',
+    weekPctLabel: Math.round(pct*100)+'%', weekBarW: Math.round(pct*100)+'%',
+    weekDoneLabel: wDone+' of '+wTot+' chores done',
+    days:days, trash:trash,
+    streak:streak,
+    streakLine: streak===1 ? 'day in a row' : streak ? 'days in a row' : 'Make your bed to start one',
+    streakColor: P.streak[tier], tierLine:tierLine, tierColor: next ? '#E4572E' : '#0F6B47',
+    completionLabel: Math.round((aTot ? aDone/aTot : 0)*100)+'%',
+    owedLead: debt ? 'You owe' : 'Saved up',
+    owedLabel: (debt?'\u2212$':'$')+Math.abs(owed).toFixed(2),
+    moneyIcon: debt ? '\ud83d\udcb8' : '\ud83d\udcb0',
+    moneyBg:m.bg, moneyFg:m.fg, moneyLbl:m.lbl,
+    extras:extras, monthLabel:'$'+monthOf(weeks,key).toFixed(2),
+    history:history, report:report, reportTotal:'$'+rTot.toFixed(2)
+  };
 }
 
-init();
+// ─── render ───────────────────────────────────────────────────────────────
+function render(){
+  var app = document.getElementById('app');
+  if(!S.weeks){
+    app.innerHTML = '<div class="sub" style="padding:40px 0;text-align:center">Loading\u2026</div>';
+    return;
+  }
+  var players = PLAYERS.map(function(pp){ return build(S.weeks, pp[0], pp[1]); });
+  var p = players[S.tab] || players[0];
+  var cur = S.weeks.filter(function(w){
+    var s = wdate(w.date), e = new Date(s); e.setDate(e.getDate()+6);
+    var T = today(); return T>=s && T<=e;
+  })[0] || S.weeks[S.weeks.length-1];
+
+  var freshness = S.loading ? 'checking sheet\u2026' : S.sample ? 'example data' : ago(S.fetchedAt);
+
+  var h = '';
+  h += '<div class="hdr"><div><div class="title">Chore Quest</div>'
+     + '<div class="sub">Week of '+fmt(cur.date)+' \u00b7 '+freshness+'</div></div>'
+     + '<button class="refresh" id="reload">'+(S.loading?'\u22ef':'\u21bb')+'</button></div>';
+
+  h += '<div class="tabs">' + players.map(function(pl,i){
+    var on = i===S.tab;
+    var bg = on ? '#FFD166' : '#fff', fg = on ? '#1A1712' : '#6B5D48', sh = on ? '3px 3px 0 #1A1712' : 'none';
+    return '<button class="tab" data-tab="'+i+'" style="background:'+bg+';color:'+fg+';box-shadow:'+sh+'">'
+      + '<span class="ring" style="background:conic-gradient(#E4572E '+pl.deg+', #E3D9C6 0)"><i style="background:'+bg+'"></i></span>'
+      + esc(pl.name) + '</button>';
+  }).join('') + '</div>';
+
+  h += '<div class="hero"><h2>This week</h2>'
+     + '<div style="display:flex;align-items:flex-end;gap:10px;margin:6px 0 14px">'
+     + '<span class="big">'+p.weekPctLabel+'</span>'
+     + '<span style="font-size:15px;font-family:Nunito,sans-serif;font-weight:700;padding-bottom:8px">'+p.weekDoneLabel+'</span></div>'
+     + '<div class="bar"><i style="width:'+p.weekBarW+'"></i></div></div>';
+
+  h += '<div class="grid">' + p.days.map(function(d){
+    return '<div class="day"><span class="l" style="color:'+d.lblFg+'">'+d.lbl+'</span>'
+      + '<div class="tile" style="background:'+d.bg+';border:'+d.border+';box-shadow:'+d.shadow+';animation:'+d.anim+'">'
+      + '<span class="n" style="color:'+d.numFg+'">'+d.num+'</span>'
+      + '<span class="s" style="color:'+d.fg+'">'+d.sym+'</span></div>'
+      + '<span class="t">'+d.tag+'</span></div>';
+  }).join('') + '</div>';
+
+  h += '<div class="row" style="background:'+p.trash.bg+'"><span style="font-size:18px">\ud83d\uddd1\ufe0f</span>'
+     + '<span style="font-size:15px;font-weight:600;color:'+p.trash.fg+'">Trash and Recycling</span>'
+     + '<span style="margin-left:auto;font-size:18px;font-weight:700;color:'+p.trash.fg+'">'+p.trash.sym+'</span></div>';
+
+  h += '<div class="legend">'
+     + [['done','Done'],['missed','Missed'],['pend','Not yet'],['excused','Excused \u2014 doesn\u2019t count']].map(function(l){
+         var c = P[l[0]];
+         return '<span><b style="background:'+c.bg+';color:'+(l[0]==='pend'?'#5C503C':c.fg)+'">'+SYM[l[0]]+'</b>'+l[1]+'</span>';
+       }).join('') + '</div>';
+
+  h += '<div class="two"><div class="card"><span class="k">Streak</span>'
+     + '<div style="display:flex;align-items:center;gap:8px;margin-top:2px">'
+     + '<span style="font-size:24px;animation:pulseGlow 1.4s ease-in-out infinite">\ud83d\udd25</span>'
+     + '<span style="font-size:32px;font-weight:700;line-height:1;color:'+p.streakColor+'">'+p.streak+'</span></div>'
+     + '<span class="d">'+p.streakLine+'</span>'
+     + '<span style="font-size:12px;font-family:Nunito,sans-serif;font-weight:800;margin-top:6px;color:'+p.tierColor+'">'+p.tierLine+'</span></div>'
+     + '<div class="card"><span class="k">All-time</span><div class="v">'+p.completionLabel+'</div>'
+     + '<span class="d">of chores done</span></div></div>';
+
+  h += '<div class="money" style="background:'+p.moneyBg+'"><div>'
+     + '<div style="font-size:14px;font-weight:600;color:'+p.moneyLbl+'">'+p.owedLead+'</div>'
+     + '<div style="font-size:42px;font-weight:700;line-height:1.1;color:'+p.moneyFg+'">'+p.owedLabel+'</div>'
+     + '</div>'
+     + '<span style="font-size:36px">'+p.moneyIcon+'</span></div>';
+
+  h += '<div class="strip"><span style="font-size:14px;font-family:Nunito,sans-serif;font-weight:700;color:#6B5D48">Earned in the last 30 days</span>'
+     + '<span style="font-size:22px;font-weight:700;color:#0F6B47">'+p.monthLabel+'</span></div>';
+
+  if(p.extras.length){
+    h += '<div style="margin-bottom:16px"><span style="font-size:14px;font-weight:600;color:#8A7B62">Extras</span>'
+       + '<div style="display:flex;flex-direction:column;gap:7px;margin-top:8px">'
+       + p.extras.map(function(x){
+           return '<div class="extra"><span style="font-size:12px;color:#8A7B62;min-width:48px">'+esc(x.date)+'</span>'
+             + '<span style="font-size:13px;flex:1">'+esc(x.note)+'</span>'
+             + '<span style="font-size:14px;color:'+x.color+'">'+x.amtLabel+'</span></div>';
+         }).join('') + '</div></div>';
+  }
+
+  h += '<button class="more" id="moreBtn">'+(S.more ? 'Hide history \u25b2' : 'More: history &amp; last week \u25bc')+'</button>';
+
+  if(S.more){
+    h += '<div style="display:flex;flex-direction:column;gap:14px;margin-top:16px">';
+    h += '<div class="panel"><span class="k">Last week\u2019s report</span>'
+       + '<div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">'
+       + p.report.map(function(r){
+           return '<div class="line"><span style="color:#6B5D48">'+esc(r.label)+'</span><span style="color:'+r.color+'">'+r.valLabel+'</span></div>';
+         }).join('')
+       + '</div><div style="display:flex;justify-content:space-between;border-top:2px solid #E3D9C6;padding-top:10px">'
+       + '<span style="font-size:14px;font-weight:600">Total</span>'
+       + '<span style="font-size:19px;font-weight:700;color:#0F6B47">'+p.reportTotal+'</span></div></div>';
+    h += '<div class="panel"><span class="k">Week by week</span>'
+       + '<div style="display:flex;flex-direction:column;gap:9px;margin-top:10px">'
+       + p.history.map(function(hh){
+           return '<div class="hrow"><span class="dt">'+esc(hh.date)+'</span><div class="cells">'
+             + hh.cells.map(function(c){ return '<i style="background:'+c.bg+'"></i>'; }).join('')
+             + '</div><span style="font-size:12px;font-family:Nunito,sans-serif;font-weight:700;color:#6B5D48">'+hh.payLabel+'</span></div>';
+         }).join('') + '</div></div>';
+    h += '</div>';
+  }
+
+  if(S.sample) h += '<div class="warn">Can\u2019t reach the sheet and nothing saved yet \u2014 showing example numbers.</div>';
+
+  app.innerHTML = h;
+
+  document.getElementById('reload').onclick = load;
+  document.getElementById('moreBtn').onclick = function(){ S.more = !S.more; render(); };
+  Array.prototype.forEach.call(document.querySelectorAll('[data-tab]'), function(b){
+    b.onclick = function(){
+      S.tab = parseInt(b.getAttribute('data-tab'),10);
+      try{ localStorage.setItem(TAB_KEY, S.tab); }catch(e){}
+      render();
+    };
+  });
+}
+
+// ─── load ─────────────────────────────────────────────────────────────────
+function load(){
+  S.loading = true; render();
+  fetch('https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/export?format=csv&t='+Date.now())
+    .then(function(res){ if(!res.ok) throw new Error('http'); return res.text(); })
+    .then(function(text){
+      var weeks = parseSheet(parseCSV(text));
+      if(!weeks.length) throw new Error('empty');
+      S.weeks = weeks; S.sample = false; S.fetchedAt = Date.now(); S.loading = false;
+      try{ localStorage.setItem(CACHE_KEY, JSON.stringify({ weeks:weeks, ts:S.fetchedAt })); }catch(e){}
+      render();
+    })
+    .catch(function(){
+      S.loading = false;
+      if(!S.weeks){ S.weeks = []; S.sample = true; }
+      render();
+    });
+}
+
+try{
+  var raw = localStorage.getItem(CACHE_KEY);
+  if(raw){
+    var c = JSON.parse(raw);
+    if(c && c.weeks && c.weeks.length){ S.weeks = c.weeks; S.fetchedAt = c.ts; }
+  }
+}catch(e){}
+
+render();
+load();
+
+document.addEventListener('visibilitychange', function(){
+  if(!document.hidden && S.fetchedAt && Date.now()-S.fetchedAt > 120000) load();
+});
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+}
 </script>
 </body>
 </html>
