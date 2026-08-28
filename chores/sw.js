@@ -1,5 +1,5 @@
 // Offline shell for Chore Quest. Bump CACHE_V after changing index.html.
-var CACHE_V = 'chore-quest-v2';
+var CACHE_V = 'chore-quest-v4';
 var SHELL = ['./', './index.html', './manifest.json', './icon.svg', './icon-180.png', './icon-192.png', './icon-512.png',
   './money-cash-pile.png', './money-cash-fan.png', './money-coins-cash.png',
   './money-coins.png', './money-cash-stack.png', './money-coins-pile.png'];

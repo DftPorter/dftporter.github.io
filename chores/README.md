@@ -48,6 +48,20 @@ Rates for the last-week report are also at the top of `index.html`:
 var BED_RATE = 1, TRASH_RATE = 2;
 ```
 
+## Dark mode
+
+Follows the device setting via `prefers-color-scheme`, which is best practice — iOS and
+Android already schedule dark mode around sunset, so the app inherits that for free. The
+moon/sun button in the header cycles a manual override for shared devices:
+
+- 🌗 **Auto** — match the device (default)
+- ☀️ **Light** — always light
+- 🌙 **Dark** — always dark
+
+The choice is saved per device in `localStorage`. Colors are CSS custom properties in the
+`:root` block at the top of `index.html`; the dark values are duplicated in the
+`@media (prefers-color-scheme:dark)` rule and the `[data-theme="dark"]` rule, so edit both.
+
 ## The picture on the balance card
 
 Pick one of the six `money-*.png` files at the top of `index.html`:
