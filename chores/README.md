@@ -11,6 +11,7 @@ subfolder like `/chores/`) and enable GitHub Pages.
 | `manifest.json` | Home-screen install metadata |
 | `sw.js` | Service worker; caches the app shell so it opens offline |
 | `icon.svg`, `icon-180.png`, `icon-192.png`, `icon-512.png` | App icons |
+| `money-*.png` | Six cut-out money illustrations for the balance card |
 
 ## Setup
 
@@ -46,6 +47,19 @@ Rates for the last-week report are also at the top of `index.html`:
 ```js
 var BED_RATE = 1, TRASH_RATE = 2;
 ```
+
+## The picture on the balance card
+
+Pick one of the six `money-*.png` files at the top of `index.html`:
+
+```js
+var MONEY_ART = 'money-cash-pile.png';
+```
+
+Options: `money-cash-pile`, `money-cash-fan`, `money-coins-cash`, `money-coins`,
+`money-cash-stack`, `money-coins-pile`. Set it to `''` to go back to the emoji. The image
+is anchored to the bottom-right of the card and cropped by it, so the text stays clear.
+When someone owes money the card turns pink and shows the emoji instead.
 
 ## How the balance is calculated
 

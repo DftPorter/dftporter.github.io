@@ -51,7 +51,9 @@ button{font-family:inherit;}
 .card .k{font-size:13px;color:#8A7B62;font-weight:600;}
 .card .v{font-size:32px;font-weight:700;line-height:1;margin-top:2px;}
 .card .d{font-size:13px;color:#6B5D48;font-family:Nunito,sans-serif;font-weight:700;}
-.money{border:3px solid #1A1712;border-radius:24px;padding:18px 20px;margin-bottom:10px;box-shadow:5px 5px 0 #1A1712;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.money{position:relative;overflow:hidden;border:3px solid #1A1712;border-radius:24px;padding:18px 20px;margin-bottom:16px;min-height:112px;box-shadow:5px 5px 0 #1A1712;display:flex;align-items:center;}
+.money img{position:absolute;right:-14px;bottom:-10px;height:132%;width:auto;max-width:none;pointer-events:none;user-select:none;}
+.money .txt{position:relative;display:flex;flex-direction:column;}
 .strip{background:#fff;border:2.5px solid #1A1712;border-radius:18px;padding:14px 16px;min-height:48px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;box-shadow:3px 3px 0 #1A1712;}
 .extra{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #1A1712;border-radius:14px;padding:11px 12px;font-family:Nunito,sans-serif;font-weight:700;}
 .more{width:100%;background:#fff;border:2.5px solid #1A1712;color:#1A1712;border-radius:16px;padding:14px;min-height:50px;font-weight:600;font-size:15px;cursor:pointer;box-shadow:3px 3px 0 #1A1712;}
@@ -74,6 +76,9 @@ button{font-family:inherit;}
 var SHEET_ID = '1dAmlZqyuLw1SSuRTHwXO0fXBnTWLvB-Hb79ImoAtXLg';
 var PLAYERS = [['simon','Simon'],['desmond','Desmond']];
 var BED_RATE = 1, TRASH_RATE = 2;
+// Illustration on the balance card. Swap for any of the money-*.png files in
+// this folder, or set to '' to fall back to the emoji.
+var MONEY_ART = 'money-cash-pile.png';
 var TIERS = [5,10,15,25];
 
 var DAY_LBL = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -314,6 +319,7 @@ function build(weeks,key,name){
     owedLead: debt ? 'You owe' : 'Saved up',
     owedLabel: (debt?'\u2212$':'$')+Math.abs(owed).toFixed(2),
     moneyIcon: debt ? '\ud83d\udcb8' : '\ud83d\udcb0',
+    hasArt: !debt && !!MONEY_ART,
     moneyBg:m.bg, moneyFg:m.fg, moneyLbl:m.lbl,
     extras:extras, monthLabel:'$'+monthOf(weeks,key).toFixed(2),
     history:history, report:report, reportTotal:'$'+rTot.toFixed(2)
@@ -349,6 +355,15 @@ function render(){
       + esc(pl.name) + '</button>';
   }).join('') + '</div>';
 
+  h += '<div class="money" style="background:'+p.moneyBg+'">'
+     + (p.hasArt ? '<img src="'+MONEY_ART+'" alt="">' : '')
+     + '<div class="txt">'
+     + '<div style="font-size:14px;font-weight:600;color:'+p.moneyLbl+'">'+p.owedLead+'</div>'
+     + '<div style="font-size:42px;font-weight:700;line-height:1.1;color:'+p.moneyFg+'">'+p.owedLabel+'</div>'
+     + '</div>'
+     + (p.hasArt ? '' : '<span style="margin-left:auto;font-size:36px;position:relative">'+p.moneyIcon+'</span>')
+     + '</div>';
+
   h += '<div class="hero"><h2>This week</h2>'
      + '<div style="display:flex;align-items:flex-end;gap:10px;margin:6px 0 14px">'
      + '<span class="big">'+p.weekPctLabel+'</span>'
@@ -381,12 +396,6 @@ function render(){
      + '<span style="font-size:12px;font-family:Nunito,sans-serif;font-weight:800;margin-top:6px;color:'+p.tierColor+'">'+p.tierLine+'</span></div>'
      + '<div class="card"><span class="k">All-time</span><div class="v">'+p.completionLabel+'</div>'
      + '<span class="d">of chores done</span></div></div>';
-
-  h += '<div class="money" style="background:'+p.moneyBg+'"><div>'
-     + '<div style="font-size:14px;font-weight:600;color:'+p.moneyLbl+'">'+p.owedLead+'</div>'
-     + '<div style="font-size:42px;font-weight:700;line-height:1.1;color:'+p.moneyFg+'">'+p.owedLabel+'</div>'
-     + '</div>'
-     + '<span style="font-size:36px">'+p.moneyIcon+'</span></div>';
 
   h += '<div class="strip"><span style="font-size:14px;font-family:Nunito,sans-serif;font-weight:700;color:#6B5D48">Earned in the last 30 days</span>'
      + '<span style="font-size:22px;font-weight:700;color:#0F6B47">'+p.monthLabel+'</span></div>';

@@ -1,6 +1,8 @@
 // Offline shell for Chore Quest. Bump CACHE_V after changing index.html.
-var CACHE_V = 'chore-quest-v1';
-var SHELL = ['./', './index.html', './manifest.json', './icon.svg', './icon-180.png', './icon-192.png', './icon-512.png'];
+var CACHE_V = 'chore-quest-v2';
+var SHELL = ['./', './index.html', './manifest.json', './icon.svg', './icon-180.png', './icon-192.png', './icon-512.png',
+  './money-cash-pile.png', './money-cash-fan.png', './money-coins-cash.png',
+  './money-coins.png', './money-cash-stack.png', './money-coins-pile.png'];
 
 self.addEventListener('install', function(e){
   e.waitUntil(caches.open(CACHE_V).then(function(c){ return c.addAll(SHELL); }).then(function(){ return self.skipWaiting(); }));
