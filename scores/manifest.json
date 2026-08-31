@@ -1,11 +1,11 @@
 {
   "name": "The Score",
   "short_name": "The Score",
-  "description": "The Score",
-  "start_url": "/scores/index.html",
+  "description": "Tim's Philly Sports Scores",
+  "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#090b13",
-  "theme_color": "#090b13",
+  "background_color": "#08090d",
+  "theme_color": "#08090d",
   "icons": [
     { "src": "icon.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
     { "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
