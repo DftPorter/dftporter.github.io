@@ -21,6 +21,23 @@ function fmtFull(ms){
   return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})+', '+
          d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
 }
+function fmtTime(ms){
+  return new Date(ms).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
+    .replace(':00','').replace(' AM','a').replace(' PM','p');
+}
+// Compact next-game line: "9:40p @ ARI" today, "Sun 1p vs WSH" this week,
+// "Sep 7 1p vs DAL" beyond, "Oct 22 vs MIL" when the opener is months out.
+function fmtNextShort(ms,isHome,oppAbbr){
+  const d=new Date(ms), now=new Date();
+  const opp=(isHome?'vs ':'@ ')+oppAbbr;
+  const days=Math.round((d-now)/86400000);
+  if(d.toDateString()===now.toDateString()) return fmtTime(ms)+' '+opp;
+  if(days>14) return d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+opp;
+  const when=days<6
+    ? d.toLocaleDateString('en-US',{weekday:'short'})
+    : d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  return when+' '+fmtTime(ms)+' '+opp;
+}
 function parseScore(s){
   if(s==null) return 0;
   if(typeof s==='object') return s.value??(parseInt(s.displayValue)||0);
@@ -345,7 +362,7 @@ async function fetchTeamData(key){
     }:null,
     lastResult,
     nextGame:nextGame&&fs!=='starting'&&fs!=='live'
-      ?(nextGame.isHome?'vs ':'@ ')+nextGame.oppAbbr+' · '+fmtFull(nextGame.dateMs):null,
+      ?fmtNextShort(nextGame.dateMs,nextGame.isHome,nextGame.oppAbbr):null,
     nextGameIsPlayoff:!!(nextGame?.isPlayoff),
     nextGameToday:nextGame?new Date(nextGame.dateMs).toDateString()===new Date().toDateString():false,
     featuredDateMs:featured?.dateMs||0,
@@ -523,7 +540,7 @@ function renderWire(items){
     '<a class="wire-item" href="'+safeUrl(item.link)+'" target="_blank" rel="noopener noreferrer">'
     +'<div class="wire-title">'+escHtml(item.title)+'</div>'
     +'<div class="wire-meta">'
-      +'<span class="wire-tag" style="color:'+item.color+';background:'+item.color+'22;border:1px solid '+item.color+'44">'+escHtml(item.team)+'</span>'
+      +'<span class="wire-tag" style="color:'+item.color+';border-bottom-color:'+item.color+'b3">'+escHtml(item.team)+'</span>'
       +'<span class="wire-time">'+timeAgo(item.pubDate)+'</span>'
     +'</div></a>').join('');
 }

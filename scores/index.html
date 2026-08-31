@@ -81,9 +81,8 @@
     color:rgba(255,255,255,.7);text-align:center;}
 
   /* ── Cards ── */
-  main{padding:24px 32px 8px;display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));
-    grid-auto-rows:auto;column-gap:14px;row-gap:13px;align-items:start;}
-  .card{position:relative;overflow:hidden;grid-row:span 4;display:grid;grid-template-rows:subgrid;
+  main{padding:24px 32px 8px;display:flex;flex-wrap:wrap;justify-content:center;column-gap:14px;row-gap:13px;align-items:stretch;}
+  .card{position:relative;overflow:hidden;flex:1 1 232px;max-width:470px;display:flex;flex-direction:column;
     background:linear-gradient(160deg,color-mix(in srgb,var(--team-color) 12%,transparent),#0d1017 62%);
     border:1px solid var(--line);border-radius:3px;padding:15px 16px 14px;animation:tsRise .45s ease both;}
   .card.off{background:linear-gradient(160deg,color-mix(in srgb,var(--team-color) 7%,transparent),#0d1017 62%);
@@ -95,20 +94,20 @@
     background-size:contain;background-repeat:no-repeat;background-position:center;}
   .card-wm.lift{opacity:.2;filter:grayscale(1) contrast(1.4) brightness(2.6);}
   .card-spine{position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--team-color);}
-  .card-head{position:relative;display:flex;align-items:baseline;justify-content:space-between;gap:8px;}
+  .card-head{position:relative;display:flex;align-items:baseline;justify-content:space-between;gap:8px;min-height:27px;}
   .card-name{font-family:'Bebas Neue',sans-serif;font-size:27px;line-height:1;letter-spacing:.04em;color:#fff;}
   .card-sport{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.16em;color:var(--muted);}
-  .card-meta{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .card-meta{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:17px;margin-top:9px;}
   .card-meta-text{display:flex;align-items:baseline;gap:7px;font-family:'DM Mono',monospace;font-size:11px;
     letter-spacing:.1em;text-transform:uppercase;}
   .card-record{color:#e2e5ea;font-variant-numeric:tabular-nums;}
   .card-place{color:#8b90a0;}
   .card-offlabel{color:var(--muted);letter-spacing:.2em;}
-  .pill{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;
-    padding:3px 7px;border-radius:999px;white-space:nowrap;color:var(--team-color);
-    background:color-mix(in srgb,var(--team-color) 14%,transparent);
-    border:1px solid color-mix(in srgb,var(--team-color) 32%,transparent);}
-  .card-body{position:relative;align-self:end;}
+  .pill{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+    white-space:nowrap;color:var(--team-color);padding:0 0 2px 0;
+    border-bottom:2px solid color-mix(in srgb,var(--team-color) 70%,transparent);}
+  .card-body{position:relative;flex:1;display:flex;flex-direction:column;justify-content:flex-end;min-height:70px;margin-top:12px;}
+  main.no-hero .card-body{min-height:88px;}
   .card-scoreline{display:flex;align-items:flex-end;gap:10px;}
   .card-score{font-family:'Bebas Neue',sans-serif;font-size:38px;line-height:.9;letter-spacing:.02em;color:#fff;font-variant-numeric:tabular-nums;}
   main.no-hero .card-score{font-size:50px;}
@@ -122,11 +121,14 @@
   main.no-hero .card-count b{font-size:64px;}
   .card-count span{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:14px;letter-spacing:.14em;
     text-transform:uppercase;color:#8b90a0;padding-bottom:5px;}
-  .card-foot{position:relative;display:flex;align-items:center;gap:8px;padding-top:11px;border-top:1px solid rgba(255,255,255,.07);}
+  .card-foot{position:relative;display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:11px;border-top:1px solid rgba(255,255,255,.07);}
+  .card-foot-label{flex-shrink:0;}
+  .card-foot-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .card-foot-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--team-color);}
   .card-foot-text{font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:.03em;color:#d1d5db;}
-  .today-badge{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;color:#f59e0b;
-    background:rgba(251,191,36,.18);border:1px solid rgba(251,191,36,.4);border-radius:999px;padding:1px 6px;margin-left:6px;}
+  .today-badge{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:#f59e0b;padding:0 0 2px 0;border-bottom:2px solid rgba(245,158,11,.7);
+    margin-left:8px;white-space:nowrap;flex-shrink:0;}
 
   /* ── Off-season collapse strip ── */
   .collapse{margin:10px 32px 0;padding:15px 18px 4px;border:1px solid rgba(255,255,255,.06);border-radius:3px;
@@ -157,7 +159,8 @@
   .wire-item:hover{background:rgba(255,255,255,.04);}
   .wire-title{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:13.5px;line-height:1.42;color:#d5d8e0;text-wrap:pretty;}
   .wire-meta{display:flex;align-items:center;gap:8px;}
-  .wire-tag{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;padding:2px 7px;border-radius:999px;}
+  .wire-tag{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+    padding:0 0 2px 0;border-bottom:2px solid;}
   .wire-time{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
   .wire-loading{padding:20px;font-family:'DM Mono',monospace;font-size:11px;color:#4b5563;text-align:center;}
 
@@ -187,7 +190,8 @@
     .hero-rule{height:34px;}
     .hero-foot{gap:10px;padding:0 16px 16px;}
     .hero-clock{font-size:24px;}
-    main{padding:16px 16px 4px;grid-template-columns:1fr;}
+    main{padding:16px 16px 4px;flex-direction:column;}
+    .card{max-width:none;}
     .card,main.no-hero .card{padding:19px 20px 17px;}
     .card-score,main.no-hero .card-score{font-size:50px;}
     .card-count b,main.no-hero .card-count b{font-size:64px;}
