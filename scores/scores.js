@@ -336,7 +336,7 @@ async function fetchTeamData(key){
   const lastResult=lastCompleted?{
     opp:lastCompleted.oppAbbr, home:lastCompleted.isHome,
     phiScore:lastCompleted.phiScore, oppScore:lastCompleted.oppScore,
-    date:fmtShort(lastCompleted.dateMs),
+    date:fmtShort(lastCompleted.dateMs), dateMs:lastCompleted.dateMs,
   }:null;
 
   return {
@@ -396,20 +396,28 @@ function timeAgo(dateStr){
   if(hrs<24) return hrs+'h ago';
   return Math.floor(hrs/24)+'d ago';
 }
+let newsFailed=false;
+function fetchWithTimeout(url,ms){
+  const ac=new AbortController();
+  const t=setTimeout(()=>ac.abort(),ms);
+  return fetch(url,{signal:ac.signal}).finally(()=>clearTimeout(t));
+}
 async function fetchNews(){
   if(Date.now()-newsCache.fetchedAt<NEWS_TTL) return newsCache.items;
   try{
     const results=await Promise.all(NEWS_FEEDS.map(async feed=>{
-      const d=await fetch(RSS_PROXY+encodeURIComponent(feed.url)+'&_='+Math.floor(Date.now()/300000)).then(r=>r.json()).catch(()=>null);
+      const d=await fetchWithTimeout(RSS_PROXY+encodeURIComponent(feed.url)+'&_='+Math.floor(Date.now()/300000),9000)
+        .then(r=>r.json()).catch(()=>null);
       return (d?.items||[]).slice(0,5).map(item=>({title:item.title?.trim(),link:item.link,pubDate:item.pubDate,team:feed.team,color:feed.color}));
     }));
     const allItems=results.flat().filter(i=>i.title&&i.pubDate).sort((a,b)=>parseRssDate(b.pubDate)-parseRssDate(a.pubDate));
     const byTeam={};
     allItems.forEach(item=>{ if(!byTeam[item.team]) byTeam[item.team]=[]; if(byTeam[item.team].length<4) byTeam[item.team].push(item); });
     const merged=allItems.slice(0,9);
+    newsFailed=!merged.length;
     newsCache={items:merged,byTeam,fetchedAt:Date.now()};
     return merged;
-  } catch(err){ console.warn('News fetch failed',err); return newsCache.items; }
+  } catch(err){ console.warn('News fetch failed',err); newsFailed=true; return newsCache.items; }
 }
 
 // ── Snapshot cache (paint last known state instantly on cold open) ──
@@ -488,6 +496,27 @@ function renderHero(key,data){
   +'</section>';
 }
 
+function soonText(ms){
+  const min=Math.round((ms-Date.now())/60000);
+  if(min<=0) return 'Starting now';
+  if(min===1) return 'In 1 min';
+  return 'In '+min+' min';
+}
+function nextBadge(data){
+  const ms=data.nextGameDateMs, left=ms-Date.now();
+  if(ms&&left>-60000&&left<=60*60*1000)
+    return '<span class="soon-badge" data-start="'+ms+'">'+soonText(ms)+'</span>';
+  return data.nextGameToday?'<span class="today-badge">Today</span>':'';
+}
+function tickSoonBadges(){
+  document.querySelectorAll('.soon-badge').forEach(el=>{
+    const ms=+el.dataset.start;
+    if(ms-Date.now()>60*60*1000||ms-Date.now()<-60000){ el.remove(); return; }
+    const txt=soonText(ms);
+    if(el.textContent!==txt) el.textContent=txt;
+  });
+}
+
 function renderCard(key,data){
   const t=TEAMS[key];
   const off=data.featuredStatus==='offseason';
@@ -514,7 +543,8 @@ function renderCard(key,data){
     const g=data.lastResult;
     if(g){
       const r=g.phiScore>g.oppScore?{c:'w',l:'W'}:g.phiScore<g.oppScore?{c:'l',l:'L'}:{c:'d',l:'D'};
-      body='<div class="card-scoreline"><div class="card-score">'+g.phiScore+'–'+g.oppScore+'</div>'
+      const aged=(Date.now()-g.dateMs)>24*60*60*1000?' aged':'';
+      body='<div class="card-scoreline'+aged+'"><div class="card-score">'+g.phiScore+'–'+g.oppScore+'</div>'
         +'<div class="card-result '+r.c+'">'+r.l+'</div></div>'
         +'<div class="card-last">Last · '+(g.home?'vs ':'@ ')+escHtml(g.opp)+' · '+escHtml(g.date)+' · '+g.phiScore+'–'+g.oppScore+'</div>';
     } else {
@@ -525,9 +555,16 @@ function renderCard(key,data){
   const footLabel=off?'Opens':'Next';
   const footText=off
     ? (data.nextGame||data.offseasonNote||'TBD')
-    : (data.nextGame?data.nextGame+(data.nextGameToday?'<span class="today-badge">Today</span>':''):'Schedule TBD');
+    : (data.nextGame?data.nextGame+nextBadge(data):'Schedule TBD');
 
-  return '<article class="card'+(off?' off':'')+'" data-team="'+key+'" style="--team-color:'+t.color+'">'
+  // In season but nothing happening: last game is old and nothing is imminent.
+  const nextMs=data.nextGameDateMs||0;
+  const idle=!off && data.featuredStatus!=='live' && data.featuredStatus!=='starting'
+    && !data.nextGameToday
+    && !!data.lastResult && (Date.now()-(data.lastResult.dateMs||0))>24*60*60*1000
+    && !(nextMs && nextMs-Date.now()<=60*60*1000);
+
+  return '<article class="card'+(off?' off':'')+(idle?' idle':'')+'" data-team="'+key+'" style="--team-color:'+t.color+'">'
     +'<div class="card-wm'+(t.liftLogo?' lift':'')+'" style="background-image:url('+t.logo+')"></div>'
     +'<div class="card-spine"></div>'
     +'<div class="card-head"><div class="card-name">'+escHtml(t.name)+'</div><div class="card-sport">'+t.sport+'</div></div>'
@@ -558,14 +595,24 @@ function renderCollapse(entries){
   +'</section>';
 }
 
+async function retryNews(){
+  document.getElementById('wire-grid').innerHTML='<div class="wire-loading">Loading headlines…</div>';
+  newsCache.fetchedAt=0; newsFailed=false;
+  renderWire(await fetchNews());
+}
 function renderWire(items){
   const grid=document.getElementById('wire-grid');
-  if(!items.length){ grid.innerHTML='<div class="wire-loading">Headlines unavailable</div>'; return; }
+  if(!items.length){
+    grid.innerHTML=newsFailed
+      ? '<div class="wire-loading">Headlines unavailable · <button type="button" class="wire-retry" onclick="retryNews()">Retry</button></div>'
+      : '<div class="wire-loading">No headlines right now</div>';
+    return;
+  }
   grid.innerHTML=items.map(item=>
     '<a class="wire-item" href="'+safeUrl(item.link)+'" target="_blank" rel="noopener noreferrer">'
     +'<div class="wire-title">'+escHtml(item.title)+'</div>'
     +'<div class="wire-meta">'
-      +'<span class="wire-tag" style="color:'+item.color+';border-bottom-color:'+item.color+'b3">'+escHtml(item.team)+'</span>'
+      +'<span class="wire-tag" style="--tag:'+item.color+';border-bottom-color:'+item.color+'b3">'+escHtml(item.team)+'</span>'
       +'<span class="wire-time">'+timeAgo(item.pubDate)+'</span>'
     +'</div></a>').join('');
 }
@@ -605,6 +652,26 @@ function balanceCards(){
 window.addEventListener('resize',balanceCards);
 
 // ── Countdown & refresh ──
+let hiddenAt=0;
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){
+    hiddenAt=Date.now();
+    clearInterval(countdownInterval); clearTimeout(refreshTimeout);
+    setStatus('idle',lastOkTime?'Paused · '+lastOkTime:'Paused');
+  } else {
+    // Away long enough that the numbers could have moved — refetch now,
+    // otherwise resume both the clock and the pending refresh where they left off.
+    if(Date.now()-hiddenAt>60*1000){ fetchScores(); }
+    else {
+      const secs=Math.max(1,countdownSeconds);
+      startCountdown(secs);
+      clearTimeout(refreshTimeout);
+      refreshTimeout=setTimeout(()=>fetchScores(true),secs*1000);
+      setStatus('ok',lastOkTime?'Updated '+lastOkTime:'Updated');
+    }
+  }
+});
+
 let countdownSeconds=300, countdownInterval=null, refreshTimeout=null, prevScores={};
 
 function getRefreshInterval(scores){
@@ -627,6 +694,7 @@ function startCountdown(seconds){
     const m=Math.floor(countdownSeconds/60);
     const s=String(countdownSeconds%60).padStart(2,'0');
     document.getElementById('countdown').textContent=m+':'+s;
+    if(countdownSeconds%15===0) tickSoonBadges();
   },1000);
 }
 
@@ -732,6 +800,9 @@ async function fetchScores(silent=false){
     if(!silent){ btn.disabled=false; btn.classList.remove('spinning'); }
   }
 }
+
+if('serviceWorker' in navigator && location.protocol!=='file:')
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 
 if(!paintSnapshot()) showSkeletons();
 fetchScores();
