@@ -7,6 +7,7 @@ const TEAMS = {
 };
 const TEAM_ORDER = ['eagles','sixers','flyers','phillies','union'];
 
+const TEAM_LOGO_BY_NAME={Sixers:'sixers',Eagles:'eagles',Flyers:'flyers',Phillies:'phillies',Union:'union'};
 const NEWS_FEEDS = [
   { team:'Sixers',   color:'#2e8fd6', url:'https://www.libertyballers.com/rss/index.xml'      },
   { team:'Eagles',   color:'#3d7a6c', url:'https://www.bleedinggreennation.com/rss/index.xml' },
@@ -244,17 +245,21 @@ async function fetchTeamData(key){
     else if(!nextGame&&!p.completed){ if(p.dateMs>now-30*60*1000) nextGame=p; }
   }
 
-  if(!nextGame && !isOffseason){
-    for(let daysAhead = 1; daysAhead <= 7; daysAhead++){
-      const dt = new Date(now + daysAhead*24*60*60*1000);
-      const dateStr = dt.toISOString().slice(0,10).replace(/-/g,'');
-      const sb = await espnFetch(base+'/scoreboard?dates='+dateStr).catch(()=>null);
-      if(!sb?.events) continue;
-      for(const ev of sb.events){
+  if(!nextGame){
+    // The team-schedule endpoint sometimes stops at the end of the current
+    // season type (e.g. preseason) and omits the next one's opener, even
+    // though it's only days away — pull a dated range directly as a backstop.
+    const spanDays = isOffseason ? 35 : 21;
+    const endDt = new Date(now + spanDays*24*60*60*1000);
+    const startStr = new Date(now).toISOString().slice(0,10).replace(/-/g,'');
+    const endStr = endDt.toISOString().slice(0,10).replace(/-/g,'');
+    const sb = await espnFetch(base+'/scoreboard?dates='+startStr+'-'+endStr+'&limit=300').catch(()=>null);
+    if(sb?.events){
+      const teamEvents=sb.events.filter(e=>e.competitions?.[0]?.competitors?.some(c=>String(c.team?.id)===String(teamId)));
+      for(const ev of teamEvents.sort((a,b)=>new Date(a.date)-new Date(b.date))){
         const p = parseEvent(ev, teamId);
         if(p && !p.completed && p.dateMs > now - 30*60*1000){ nextGame = p; break; }
       }
-      if(nextGame) break;
     }
   }
   if(!lastCompleted && !isOffseason){
@@ -630,7 +635,7 @@ function initWireNav(){
   const stopAuto=()=>{ clearInterval(wireAutoTimer); wireAutoTimer=null; };
   const startAuto=()=>{
     if(reduced||wireAutoTimer||grid.scrollWidth<=grid.clientWidth+2) return;
-    wireAutoTimer=setInterval(advance,7000);
+    wireAutoTimer=setInterval(advance,9500);
   };
   grid.onscroll=update;
   grid.addEventListener('mouseenter',stopAuto);
@@ -652,13 +657,18 @@ function renderWire(items){
     return;
   }
   requestAnimationFrame(initWireNav);
-  grid.innerHTML=items.map(item=>
-    '<a class="wire-item" href="'+safeUrl(item.link)+'" target="_blank" rel="noopener noreferrer">'
-    +'<div class="wire-title">'+escHtml(item.title)+'</div>'
-    +'<div class="wire-meta">'
-      +'<span class="wire-tag" style="--tag:'+item.color+';border-bottom-color:'+item.color+'b3">'+escHtml(item.team)+'</span>'
-      +'<span class="wire-time">'+timeAgo(item.pubDate)+'</span>'
-    +'</div></a>').join('');
+  grid.innerHTML=items.map(item=>{
+    const tk=TEAM_LOGO_BY_NAME[item.team], tt=TEAMS[tk];
+    return '<a class="wire-item" style="--tag:'+item.color+'" href="'+safeUrl(item.link)+'" target="_blank" rel="noopener noreferrer">'
+    +(tt?.logo?'<div class="wire-logo" style="background-image:url('+tt.logo+')"></div>':'')
+    +'<div class="wire-item-text">'
+      +'<div class="wire-title">'+escHtml(item.title)+'</div>'
+      +'<div class="wire-meta">'
+        +'<span class="wire-tag" style="--tag:'+item.color+';border-bottom-color:'+item.color+'b3">'+escHtml(item.team)+'</span>'
+        +'<span class="wire-time">'+timeAgo(item.pubDate)+'</span>'
+      +'</div>'
+    +'</div></a>';
+  }).join('');
 }
 
 function renderAll(sorted,newsItems){

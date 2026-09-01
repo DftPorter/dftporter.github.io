@@ -24,7 +24,14 @@ Then open http://localhost:8000. Opening `index.html` via `file://` will fail be
 | `index.html` | Markup and all styles |
 | `scores.js` | Fetching, parsing, rendering, refresh loop |
 | `manifest.json` | PWA manifest (installable, standalone, dark) |
+| `sw.js` | Service worker — caches the app shell for offline launch |
 | `icon.png`, `icon-192.png`, `icon-512.png` | App icons |
+
+## Deploying
+
+Any static host works; GitHub Pages is fine (the service worker needs HTTPS, which Pages provides). Paths are relative, so a project subpath like `user.github.io/the-score/` works without changes.
+
+When you push updated files, bump `VERSION` at the top of `sw.js` — otherwise installed clients keep serving the previously cached shell.
 
 ## Refresh
 
