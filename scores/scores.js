@@ -322,13 +322,14 @@ async function fetchTeamData(key){
   const soccerPhiRecord=isSoccer?(mlsRecords[String(teamId)]||schRes?.team?.recordSummary||phiRecordFallback||null):null;
   const soccerOppRecord=isSoccer?(mlsRecords[featured?.oppId||'']||null):null;
 
-  let streak=null;
+  let streak=null, form=null;
   const allParsed=[...schedEvents].reverse().map(ev=>parseEvent(ev,teamId)).filter(p=>p?.completed);
   if(allParsed.length){
     const outcomes=allParsed.map(p=>p.phiScore>p.oppScore?'W':p.phiScore<p.oppScore?'L':'D');
     let count=1;
     for(let i=1;i<outcomes.length;i++){ if(outcomes[i]===outcomes[0]) count++; else break; }
     streak=outcomes[0]+count;
+    form=outcomes.slice(0,5).reverse();   // oldest → most recent
   }
 
   const completedDateMs=lastCompleted?.dateMs||0;
@@ -368,6 +369,7 @@ async function fetchTeamData(key){
     featuredDateMs:featured?.dateMs||0,
     nextGameDateMs:nextGame?.dateMs||0,
     streak:effectiveOffseason?null:streak,
+    form:effectiveOffseason?null:form,
     standing:effectiveOffseason?null:(schRes?.team?.standingSummary||null),
     offseasonNote:fs==='offseason'?(nextGame&&!nextIsNear?(seasonTypeNum===1?'Preseason':'Season')+' opens '+new Date(nextGame.dateMs).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):nextSeasonNote(path)):null,
     isPreseason:!effectiveOffseason&&seasonTypeNum===1,
@@ -410,14 +412,32 @@ async function fetchNews(){
   } catch(err){ console.warn('News fetch failed',err); return newsCache.items; }
 }
 
+// ── Snapshot cache (paint last known state instantly on cold open) ──
+const SNAPSHOT_TTL=12*60*60*1000;
+function saveSnapshot(sorted,newsItems,t){
+  try{ localStorage.setItem('snapshot',JSON.stringify({ts:Date.now(),time:t,sorted,newsItems})); }catch(e){}
+}
+function paintSnapshot(){
+  try{
+    const s=JSON.parse(localStorage.getItem('snapshot')||'null');
+    if(!s||Date.now()-s.ts>SNAPSHOT_TTL||!s.sorted?.length) return false;
+    renderAll(s.sorted,s.newsItems||[]);
+    hasPaint=true;
+    setStatus('loading','Updated '+s.time);
+    return true;
+  }catch(e){ return false; }
+}
+
 // ── Rendering ──
 const _cardData={};
 
+let hasPaint=false;
 function showSkeletons(){
   document.getElementById('cards-container').innerHTML=TEAM_ORDER.map(()=>
     '<div class="sk-card"><div class="sk" style="width:55%;height:22px"></div><div class="sk" style="width:70%;height:11px"></div>'
     +'<div class="sk" style="width:45%;height:40px"></div><div class="sk" style="width:80%"></div></div>').join('');
 }
+let lastOkTime=null;
 function setStatus(state,text){
   document.getElementById('status-dot').className='dot'+(state!=='ok'?' '+state:'');
   document.getElementById('update-time').textContent=text;
@@ -477,8 +497,13 @@ function renderCard(key,data){
     ? '<span class="card-offlabel">Off-season</span>'
     : '<span class="card-record">'+escHtml(data.teamRecord||'—')+'</span>'
       +(data.standing?'<span class="card-place">'+escHtml(data.standing)+'</span>':'');
-  const pillText=off?null:(data.nextGameIsPlayoff?'Playoffs':data.isPreseason?'Preseason':data.streak);
-  const pill=pillText?'<span class="pill">'+escHtml(pillText)+'</span>':'';
+  const pillText=off?null:(data.nextGameIsPlayoff?'Playoffs':data.isPreseason?'Preseason':null);
+  const pill=pillText?'<span class="pill">'+escHtml(pillText)+'</span>'
+    :(!off&&data.form&&data.form.length
+      ?'<span class="form" role="img" aria-label="Last '+data.form.length+' results, oldest first: '+data.form.map(o=>o==='W'?'win':o==='L'?'loss':'draw').join(', ')+'" title="Last '+data.form.length+': '+data.form.join(' ')+'">'
+        +data.form.map((o,i)=>'<i class="f'+o.toLowerCase()+(i===data.form.length-1?' cur':'')+'"></i>').join('')
+        +'</span>'
+      :'');
 
   let body;
   if(off){
@@ -491,7 +516,7 @@ function renderCard(key,data){
       const r=g.phiScore>g.oppScore?{c:'w',l:'W'}:g.phiScore<g.oppScore?{c:'l',l:'L'}:{c:'d',l:'D'};
       body='<div class="card-scoreline"><div class="card-score">'+g.phiScore+'–'+g.oppScore+'</div>'
         +'<div class="card-result '+r.c+'">'+r.l+'</div></div>'
-        +'<div class="card-last">Last · '+(g.home?'vs ':'@ ')+escHtml(g.opp)+' · '+escHtml(g.date)+'</div>';
+        +'<div class="card-last">Last · '+(g.home?'vs ':'@ ')+escHtml(g.opp)+' · '+escHtml(g.date)+' · '+g.phiScore+'–'+g.oppScore+'</div>';
     } else {
       body='<div class="card-count"><span style="padding-bottom:0">No games played yet</span></div>';
     }
@@ -559,9 +584,25 @@ function renderAll(sorted,newsItems){
   const main=document.getElementById('cards-container');
   main.className=heroEntry?'':'no-hero';
   main.innerHTML=cardEntries.map(({key,data})=>renderCard(key,data)).join('');
+  balanceCards();
   document.getElementById('collapse-slot').innerHTML=collapse?renderCollapse(offEntries):'';
   renderWire(newsItems);
 }
+
+// ── Balance card rows so the last row is never a lone orphan ──
+function balanceCards(){
+  const main=document.getElementById('cards-container');
+  const n=main.children.length;
+  if(!n) return;
+  const gap=14, minW=232;
+  const cs=getComputedStyle(main);
+  const avail=main.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
+  const fit=Math.max(1,Math.min(n,Math.floor((avail+gap)/(minW+gap))));
+  let cols=Math.ceil(n/Math.ceil(n/fit));
+  while(cols>2&&n%cols===1) cols--;   // never leave a lone card on its own row
+  main.style.setProperty('--cols',cols);
+}
+window.addEventListener('resize',balanceCards);
 
 // ── Countdown & refresh ──
 let countdownSeconds=300, countdownInterval=null, refreshTimeout=null, prevScores={};
@@ -633,7 +674,7 @@ document.addEventListener('visibilitychange', () => {
 
 async function fetchScores(silent=false){
   const btn=document.getElementById('refresh-btn');
-  if(!silent){ btn.disabled=true; btn.classList.add('spinning'); hideError(); setStatus('loading','Fetching live scores…'); showSkeletons(); }
+  if(!silent){ btn.disabled=true; btn.classList.add('spinning'); hideError(); setStatus('loading','Fetching live scores…'); if(!hasPaint) showSkeletons(); }
   if(Date.now()-mlsRecordsFetchedAt>MLS_RECORDS_TTL) fetchMlsRecords();
   lastFetchAt=Date.now();
   try{
@@ -660,6 +701,7 @@ async function fetchScores(silent=false){
       return (b.data.completedDateMs||0)-(a.data.completedDateMs||0);
     });
     renderAll(sorted,newsItems);
+    hasPaint=true;
 
     // Motion on score change — flash the hero, or the card, whose score moved.
     TEAM_ORDER.forEach(k=>{
@@ -672,7 +714,9 @@ async function fetchScores(silent=false){
     });
     prevScores=scores;
     const t=new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    lastOkTime=t;
     setStatus('ok','Updated '+t);
+    saveSnapshot(sorted,newsItems,t);
     firstLoadDone=true;
     clearTimeout(startupRetryTimer);
     scheduleNextRefresh(scores);
@@ -681,7 +725,7 @@ async function fetchScores(silent=false){
     if(!firstLoadDone){
       scheduleStartupRetry();
     } else {
-      setStatus('error','Update failed');
+      setStatus('error',lastOkTime?'Stale · '+lastOkTime:'Update failed');
       if(!silent) showError('Could not fetch scores: '+err.message);
     }
   } finally{
@@ -689,4 +733,5 @@ async function fetchScores(silent=false){
   }
 }
 
+if(!paintSnapshot()) showSkeletons();
 fetchScores();
