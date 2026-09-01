@@ -600,6 +600,49 @@ async function retryNews(){
   newsCache.fetchedAt=0; newsFailed=false;
   renderWire(await fetchNews());
 }
+let wireAutoTimer=null;
+function initWireNav(){
+  const grid=document.getElementById('wire-grid'), prev=document.getElementById('wire-prev'), next=document.getElementById('wire-next');
+  if(!grid||!prev||!next) return;
+  const step=()=>grid.querySelector('.wire-item')?.getBoundingClientRect().width||240;
+  const atEnd=()=>grid.scrollLeft>=grid.scrollWidth-grid.clientWidth-2;
+  const update=()=>{
+    prev.disabled=grid.scrollLeft<=2;
+    next.disabled=atEnd();
+  };
+  const smoothTo=(target,ms)=>{
+    const start=grid.scrollLeft, dist=target-start, t0=performance.now();
+    const ease=x=>1-Math.pow(1-x,3);
+    const tick=now=>{
+      const p=Math.min(1,(now-t0)/ms);
+      grid.scrollLeft=start+dist*ease(p);
+      if(p<1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
+  const advance=()=>{
+    if(atEnd()) smoothTo(0,1400);
+    else smoothTo(grid.scrollLeft+step(),1400);
+  };
+  prev.onclick=()=>{ stopAuto(); smoothTo(Math.max(0,grid.scrollLeft-step()),1400); };
+  next.onclick=()=>{ stopAuto(); smoothTo(grid.scrollLeft+step(),1400); };
+  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const stopAuto=()=>{ clearInterval(wireAutoTimer); wireAutoTimer=null; };
+  const startAuto=()=>{
+    if(reduced||wireAutoTimer||grid.scrollWidth<=grid.clientWidth+2) return;
+    wireAutoTimer=setInterval(advance,7000);
+  };
+  grid.onscroll=update;
+  grid.addEventListener('mouseenter',stopAuto);
+  grid.addEventListener('mouseleave',startAuto);
+  grid.addEventListener('focusin',stopAuto);
+  grid.addEventListener('focusout',startAuto);
+  document.addEventListener('visibilitychange',()=>{ if(document.hidden) stopAuto(); else startAuto(); });
+  new ResizeObserver(update).observe(grid);
+  update();
+  stopAuto();
+  startAuto();
+}
 function renderWire(items){
   const grid=document.getElementById('wire-grid');
   if(!items.length){
@@ -608,6 +651,7 @@ function renderWire(items){
       : '<div class="wire-loading">No headlines right now</div>';
     return;
   }
+  requestAnimationFrame(initWireNav);
   grid.innerHTML=items.map(item=>
     '<a class="wire-item" href="'+safeUrl(item.link)+'" target="_blank" rel="noopener noreferrer">'
     +'<div class="wire-title">'+escHtml(item.title)+'</div>'

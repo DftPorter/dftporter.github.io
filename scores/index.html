@@ -186,8 +186,15 @@
   .wire-label{display:flex;align-items:center;padding:0 16px;font-family:'DM Mono',monospace;font-size:10px;
     letter-spacing:.2em;text-transform:uppercase;color:var(--muted);white-space:nowrap;
     border-right:1px solid rgba(255,255,255,.09);}
-  .wire-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));flex:1;}
-  .wire-item{display:flex;flex-direction:column;gap:5px;padding:13px 18px;border-left:1px solid rgba(255,255,255,.06);transition:background .15s;}
+  .wire-grid{display:flex;flex-wrap:nowrap;overflow-x:auto;flex:1;scrollbar-width:none;scroll-behavior:smooth;scroll-snap-type:x mandatory;}
+  .wire-grid::-webkit-scrollbar{display:none;}
+  .wire-item{display:flex;flex-direction:column;gap:5px;padding:13px 18px;border-left:1px solid rgba(255,255,255,.06);transition:background .15s;flex:0 0 240px;scroll-snap-align:start;}
+  .wire-nav{display:flex;align-items:center;justify-content:center;flex:0 0 34px;background:none;border:0;border-left:1px solid rgba(255,255,255,.09);
+    color:var(--muted);cursor:pointer;transition:color .15s,background .15s;}
+  .wire-nav:hover{color:var(--text);background:rgba(255,255,255,.04);}
+  .wire-nav:disabled{opacity:.25;cursor:default;}
+  .wire-nav:disabled:hover{background:none;}
+  .wire-nav svg{width:14px;height:14px;}
   .wire-item:hover{background:rgba(255,255,255,.04);}
   .wire-title{font-family:'Barlow',sans-serif;font-size:14.5px;line-height:1.45;color:#d5d8e0;text-wrap:pretty;}
   .wire-meta{display:flex;align-items:center;gap:8px;}
@@ -236,7 +243,9 @@
     .collapse-row{padding:11px 0;}
     .wire{flex-direction:column;margin:18px 16px 0;}
     .wire-label{padding:11px 0 0;border-right:none;}
-    .wire-grid{grid-template-columns:1fr;}
+    .wire-grid{flex-direction:column;overflow-x:visible;}
+    .wire-item{flex:0 0 auto;}
+    .wire-nav{display:none;}
     .refresh-btn{min-height:44px;}
     .wire-item{padding:13px 0;border-left:none;border-top:1px solid rgba(255,255,255,.06);}
     #error-banner{margin:14px 16px 0;}
@@ -275,6 +284,12 @@
 <section class="wire" id="wire" aria-label="News wire">
   <div class="wire-label">Wire</div>
   <div class="wire-grid" id="wire-grid"><div class="wire-loading">Loading headlines…</div></div>
+  <button type="button" class="wire-nav" id="wire-prev" aria-label="Previous headlines" disabled>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 6l-6 6 6 6"/></svg>
+  </button>
+  <button type="button" class="wire-nav" id="wire-next" aria-label="Next headlines">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg>
+  </button>
 </section>
 
 <footer>
