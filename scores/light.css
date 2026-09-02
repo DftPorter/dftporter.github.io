@@ -33,10 +33,18 @@ header{background:rgba(245,243,239,.9);border-bottom-color:rgba(0,0,0,.14);}
 .hero{border-bottom-color:rgba(0,0,0,.16);}
 
 /* ── Cards ── */
-.card{background:linear-gradient(160deg,color-mix(in srgb,var(--team-color) 14%,transparent),#fff 62%);}
-.card.off{background:linear-gradient(160deg,color-mix(in srgb,var(--team-color) 8%,transparent),#fff 62%);
-  border-color:rgba(0,0,0,.09);}
-.card.idle{background:linear-gradient(160deg,rgba(0,0,0,.025),#fbfaf8 64%);border-color:rgba(0,0,0,.09);}
+.card{background:linear-gradient(160deg,color-mix(in srgb,var(--team-color) var(--tint,14%),transparent),#fff 62%);}
+.card.off{background:linear-gradient(160deg,rgba(0,0,0,.02),#fff 62%);border-color:rgba(0,0,0,.09);}
+.card.off.soon{background:linear-gradient(160deg,color-mix(in srgb,var(--team-color) var(--tint,14%),transparent),#fff 62%);}
+.card.off .card-spine{background:var(--muted-dim);}
+.card.off .card-count b{color:var(--muted-dim);}
+.card.off .card-foot-label{color:var(--muted-dim);}
+.card.off.soon .card-spine{background:var(--team-color);}
+.card.off.soon .card-count b{color:var(--team-color);}
+.card.off.soon .card-foot-label{color:color-mix(in srgb,var(--team-color) 82%,#000);}
+[data-team=eagles]{--tint:28%;}
+[data-team=union]{--tint:32%;}
+.card.idle{background:linear-gradient(160deg,color-mix(in srgb,var(--team-color) calc(var(--tint,14%) * .55),transparent),#fbfaf8 64%);border-color:rgba(0,0,0,.09);}
 .card.idle .card-name,.card.off .card-name{color:#40454f;}
 /* Watermarks keep their team color here — grayscale reads as dirt on white,
    and a little hue is the only thing breaking up the paper. The --wm weights
@@ -77,6 +85,7 @@ header{background:rgba(245,243,239,.9);border-bottom-color:rgba(0,0,0,.14);}
 
 .soon-badge{color:#b45309;border-bottom-color:rgba(180,83,9,.7);}
 .today-badge{color:#b45309;border-bottom-color:rgba(180,83,9,.6);}
+.bye-badge{border-bottom-color:rgba(0,0,0,.15);}
 
 /* ── Off-season strip ── */
 .collapse{background:linear-gradient(160deg,rgba(0,0,0,.02),#fbfaf8 70%);border-color:rgba(0,0,0,.1);}

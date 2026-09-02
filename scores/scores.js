@@ -1,9 +1,9 @@
 const TEAMS = {
-  eagles:   { name:'Eagles',   sport:'NFL', color:'#3d7a6c', logo:'https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/phi.png', path:'football/nfl',   teamId:'21'    },
-  sixers:   { name:'76ers',    sport:'NBA', color:'#2e8fd6', logo:'https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/phi.png', path:'basketball/nba', teamId:'20',    liftLogo:true },
-  flyers:   { name:'Flyers',   sport:'NHL', color:'#F74902', logo:'https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/phi.png', path:'hockey/nhl',     teamId:'15'    },
-  phillies: { name:'Phillies', sport:'MLB', color:'#E81828', logo:'https://a.espncdn.com/i/teamlogos/mlb/500/scoreboard/phi.png', path:'baseball/mlb',   teamId:'22',    liftLogo:true },
-  union:    { name:'Union',    sport:'MLS', color:'#b49759', logo:'https://a.espncdn.com/i/teamlogos/soccer/500/10739.png',       path:'soccer/usa.1',   teamId:'10739' },
+  eagles:   { name:'Eagles',   sport:'NFL', color:'#3d7a6c', logo:'https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/phi.png', path:'football/nfl',   teamId:'21',    cadenceDays:7 },
+  sixers:   { name:'76ers',    sport:'NBA', color:'#2e8fd6', logo:'https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/phi.png', path:'basketball/nba', teamId:'20',    liftLogo:true, cadenceDays:2 },
+  flyers:   { name:'Flyers',   sport:'NHL', color:'#F74902', logo:'https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/phi.png', path:'hockey/nhl',     teamId:'15',    cadenceDays:2 },
+  phillies: { name:'Phillies', sport:'MLB', color:'#E81828', logo:'https://a.espncdn.com/i/teamlogos/mlb/500/scoreboard/phi.png', path:'baseball/mlb',   teamId:'22',    liftLogo:true, cadenceDays:1.3 },
+  union:    { name:'Union',    sport:'MLS', color:'#b49759', logo:'https://a.espncdn.com/i/teamlogos/soccer/500/10739.png',       path:'soccer/usa.1',   teamId:'10739', cadenceDays:6 },
 };
 const TEAM_ORDER = ['eagles','sixers','flyers','phillies','union'];
 
@@ -526,6 +526,7 @@ function renderCard(key,data){
   const t=TEAMS[key];
   const off=data.featuredStatus==='offseason';
   const days=off?daysUntil(data.nextGameDateMs):null;
+  const soon=off&&days!=null&&days<=30;
 
   const meta=off
     ? '<span class="card-offlabel">Off-season</span>'
@@ -558,18 +559,22 @@ function renderCard(key,data){
   }
 
   const footLabel=off?'Opens':'Next';
+  const cadenceMs=(t.cadenceDays||1.5)*24*60*60*1000;
+  const bye=!off&&!!data.lastResult&&!!data.nextGameDateMs
+    &&(data.nextGameDateMs-(data.lastResult.dateMs||0))>cadenceMs*1.6;
   const footText=off
     ? (data.nextGame||data.offseasonNote||'TBD')
-    : (data.nextGame?data.nextGame+nextBadge(data):'Schedule TBD');
+    : (data.nextGame?(bye?'<span class="bye-badge">Bye</span> ':'')+data.nextGame+nextBadge(data):'Schedule TBD');
 
-  // In season but nothing happening: last game is old and nothing is imminent.
+  // In season but nothing happening: last game is old (relative to how often
+  // this team plays) and nothing is imminent — a bye week still counts as "on".
   const nextMs=data.nextGameDateMs||0;
-  const idle=!off && data.featuredStatus!=='live' && data.featuredStatus!=='starting'
+  const idle=!off && !bye && data.featuredStatus!=='live' && data.featuredStatus!=='starting'
     && !data.nextGameToday
-    && !!data.lastResult && (Date.now()-(data.lastResult.dateMs||0))>24*60*60*1000
+    && !!data.lastResult && (Date.now()-(data.lastResult.dateMs||0))>cadenceMs*1.4
     && !(nextMs && nextMs-Date.now()<=60*60*1000);
 
-  return '<article class="card'+(off?' off':'')+(idle?' idle':'')+'" data-team="'+key+'" style="--team-color:'+t.color+'">'
+  return '<article class="card'+(off?' off':'')+(soon?' soon':'')+(idle?' idle':'')+'" data-team="'+key+'" style="--team-color:'+t.color+'">'
     +'<div class="card-wm'+(t.liftLogo?' lift':'')+'" style="background-image:url('+t.logo+')"></div>'
     +'<div class="card-spine"></div>'
     +'<div class="card-head"><div class="card-name">'+escHtml(t.name)+'</div><div class="card-sport">'+t.sport+'</div></div>'
@@ -682,6 +687,7 @@ function renderAll(sorted,newsItems){
   const cardEntries=sorted.filter(e=>e!==heroEntry&&!(collapse&&e.data.featuredStatus==='offseason'));
 
   document.getElementById('hero-slot').innerHTML=heroEntry?renderHero(heroEntry.key,heroEntry.data):'';
+  fitHeroWatermark();
   const main=document.getElementById('cards-container');
   main.className=heroEntry?'':'no-hero';
   main.innerHTML=cardEntries.map(({key,data})=>renderCard(key,data)).join('');
@@ -704,6 +710,21 @@ function balanceCards(){
   main.style.setProperty('--cols',cols);
 }
 window.addEventListener('resize',balanceCards);
+window.addEventListener('resize',fitHeroWatermark);
+
+// Size the hero watermarks off the hero-grid's real rendered height, not raw
+// viewport vh — fixed-height chrome (header, hero-top, hero-foot) eats a
+// growing share of short windows, so vh alone overshoots and the mark
+// touches the top edge.
+function fitHeroWatermark(){
+  const grid=document.querySelector('.hero-grid');
+  if(!grid) return;
+  const cs=getComputedStyle(grid);
+  const avail=grid.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
+  if(avail<=0) return;
+  const size=Math.max(60,Math.min(340,avail*0.94));
+  document.documentElement.style.setProperty('--wm-size',size+'px');
+}
 
 // ── Countdown & refresh ──
 let hiddenAt=0;

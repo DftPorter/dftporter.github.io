@@ -1,4 +1,4 @@
-const VERSION = 'the-score-v2';
+const VERSION = 'the-score-v3';
 const SHELL = ['./', './index.html', './scores.js', './light.css', './manifest.json', './icon.png', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
