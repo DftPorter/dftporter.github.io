@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
-<meta name="theme-color" content="#e3eef2">
+<meta name="theme-color" content="#dceef1">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -17,35 +17,28 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;800&display=swap" rel="stylesheet">
 
 <style>
   :root {
-    --bg-top: oklch(96% 0.022 205);
-    --bg-bottom: oklch(98.5% 0.008 95);
+    --bg: oklch(95% 0.022 195);
     --surface: oklch(100% 0 0);
-    --border: oklch(92% 0.012 225);
-    --rule: oklch(94% 0.01 225);
-    --track: oklch(93% 0.01 225);
-    --text: oklch(26% 0.03 235);
-    --text-strong: oklch(22% 0.035 235);
-    --text-muted: oklch(46% 0.02 235);
-    --text-faint: oklch(54% 0.02 235);
-    --accent: oklch(48% 0.11 210);
-    --accent-hover: oklch(43% 0.11 210);
-    --btn-border: oklch(88% 0.012 230);
-    --hover-tint: oklch(96.5% 0.012 220);
+    --text: oklch(26% 0.045 220);
+    --text-muted: oklch(48% 0.03 220);
+    --text-faint: oklch(52% 0.03 220);
+    --accent-deep: oklch(38% 0.11 228);
+    --tile-btn: oklch(96% 0.018 210);
+    --tile-btn-hover: oklch(91% 0.03 210);
   }
 
   * { box-sizing: border-box; }
-
   html, body { margin: 0; }
 
   body {
     min-height: 100vh;
-    background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 46%, var(--bg-bottom) 100%);
+    background: var(--bg);
     color: var(--text);
-    font-family: 'Work Sans', system-ui, -apple-system, sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     display: flex;
     justify-content: center;
@@ -54,147 +47,110 @@
   .page {
     width: 100%;
     max-width: 430px;
-    padding: calc(26px + env(safe-area-inset-top)) 18px calc(96px + env(safe-area-inset-bottom));
+    padding: calc(24px + env(safe-area-inset-top)) 16px calc(100px + env(safe-area-inset-bottom));
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 20px;
   }
 
   header {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-  }
-
-  .wordmark {
-    font-family: 'Instrument Serif', Georgia, serif;
-    font-size: 28px;
-    letter-spacing: -0.01em;
-    color: var(--text-strong);
-  }
-
-  .date-line {
-    font-size: 12.5px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-  }
-
-  .focus {
-    border-radius: 26px;
-    padding: 22px 20px 20px;
-    background: var(--surface);
-    box-shadow: 0 1px 2px oklch(30% 0.03 240 / 0.06), 0 14px 34px oklch(30% 0.04 240 / 0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-  }
-
-  .focus-top {
-    display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    padding: 0 4px;
   }
+
+  .wordmark { font-size: 21px; font-weight: 800; letter-spacing: -0.02em; }
+  .date-line { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+
+  .hero {
+    border-radius: 30px;
+    padding: 26px 24px 24px;
+    background: linear-gradient(150deg, oklch(58% 0.1 205) 0%, oklch(44% 0.11 235) 100%);
+    color: oklch(99% 0.008 210);
+    box-shadow: 0 16px 36px oklch(45% 0.08 225 / 0.32);
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .hero-top { display: flex; align-items: center; }
 
   .eyebrow {
-    font-size: 11.5px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: oklch(52% 0.1 210);
+    opacity: 0.82;
   }
 
-  .badge {
-    font-size: 13px;
-    font-weight: 600;
-    padding: 6px 12px;
-    border-radius: 999px;
-    white-space: nowrap;
-  }
-
-  .focus-main {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-  }
-
-  .icon-tile {
-    flex-shrink: 0;
-    width: 86px;
-    height: 86px;
-    border-radius: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .icon-tile svg { width: 44px; height: 44px; }
-
-  .focus-titles {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
+  .hero-main { display: flex; align-items: flex-end; gap: 16px; }
+  .hero-titles { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
 
   h1 {
     margin: 0;
-    font-family: 'Instrument Serif', Georgia, serif;
-    font-weight: 400;
-    font-size: 36px;
-    line-height: 1.04;
-    letter-spacing: -0.015em;
+    font-size: 33px;
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
     text-wrap: balance;
-    color: var(--text-strong);
   }
 
-  .interval {
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
+  .hero-meta { font-size: 13.5px; opacity: 0.82; }
+
+  .counter { flex-shrink: 0; text-align: center; padding-bottom: 2px; }
+  .counter-num { font-size: 52px; font-weight: 800; line-height: 0.86; letter-spacing: -0.045em; }
+  .counter-unit {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--text-faint);
+    opacity: 0.78;
+    padding-top: 6px;
   }
 
-  .focus-meta { font-size: 14px; color: var(--text-muted); }
-
-  .row-actions { display: flex; gap: 10px; }
+  .hero-actions { display: flex; gap: 10px; }
 
   .primary-btn {
     flex: 1;
-    min-height: 52px;
+    min-height: 56px;
     border: 0;
-    border-radius: 16px;
-    background: var(--accent);
-    color: oklch(99% 0.01 210);
+    border-radius: 18px;
+    background: oklch(100% 0 0);
+    color: var(--accent-deep);
     font-family: inherit;
-    font-size: 15px;
-    font-weight: 600;
+    font-size: 15.5px;
+    font-weight: 700;
     cursor: pointer;
     transition: transform 0.06s ease, background 0.15s ease;
   }
 
-  .primary-btn:hover { background: var(--accent-hover); }
-  .primary-btn:active { transform: scale(0.985); }
+  .primary-btn:hover { background: oklch(96% 0.02 210); }
+  .primary-btn:active { transform: scale(0.98); }
+
+  .hero .date-picker {
+    width: 56px;
+    min-height: 56px;
+    border-radius: 18px;
+    background: oklch(100% 0 0 / 0.18);
+    color: oklch(99% 0.008 210);
+  }
+
+  .hero .date-picker:hover { background: oklch(100% 0 0 / 0.28); }
+  .hero .date-picker svg { width: 21px; height: 21px; }
 
   .date-picker {
     position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 52px;
-    min-height: 52px;
-    border-radius: 16px;
-    border: 1.5px solid var(--btn-border);
-    color: var(--text-muted);
+    flex-shrink: 0;
     cursor: pointer;
+    border: 0;
   }
 
-  .date-picker:hover { background: var(--hover-tint); }
-  .date-picker svg { width: 20px; height: 20px; pointer-events: none; }
+  .date-picker svg { pointer-events: none; }
 
   .date-picker input[type="date"] {
     position: absolute;
@@ -209,112 +165,102 @@
     color-scheme: light;
   }
 
-  section.block { display: flex; flex-direction: column; gap: 10px; }
-
-  .section-label {
-    font-size: 11.5px;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-faint);
-  }
+  .block { display: flex; flex-direction: column; gap: 12px; }
 
   .block-head {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
+    padding: 0 4px;
   }
 
-  .count-line { font-size: 12.5px; color: var(--text-muted); }
+  .block-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: oklch(46% 0.035 220);
+  }
 
-  .peek { display: flex; gap: 10px; }
+  .count-line { font-size: 12.5px; font-weight: 600; color: var(--text-muted); }
 
-  .peek-card {
-    flex: 1;
-    min-width: 0;
-    padding: 14px;
-    border-radius: 18px;
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .tile {
+    border-radius: 24px;
+    padding: 16px 16px 12px;
     background: var(--surface);
-    border: 1px solid var(--border);
+    box-shadow: 0 2px 10px oklch(45% 0.05 225 / 0.09);
     display: flex;
     flex-direction: column;
+    gap: 12px;
+  }
+
+  .tile-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
     gap: 8px;
   }
 
-  .dot { width: 9px; height: 9px; border-radius: 999px; }
-
-  .peek-name { font-size: 14.5px; font-weight: 500; line-height: 1.25; color: var(--text); }
-  .peek-status { font-size: 12.5px; color: var(--text-muted); }
-
-  .list {
-    border-radius: 20px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    overflow: hidden;
-    box-shadow: 0 1px 2px oklch(30% 0.03 240 / 0.04);
-  }
-
-  .row {
+  .tile-icon {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 14px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 13px 12px 13px 16px;
+    justify-content: center;
   }
 
-  .row + .row { border-top: 1px solid var(--rule); }
+  .tile-icon svg { width: 22px; height: 22px; }
 
-  .row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
-  .row-top { display: flex; align-items: baseline; gap: 8px; }
+  .tile .date-picker {
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+    color: oklch(56% 0.03 220);
+  }
 
-  .row-name {
+  .tile .date-picker:hover { background: oklch(96% 0.015 210); }
+  .tile .date-picker svg { width: 16px; height: 16px; }
+
+  .tile-titles { display: flex; flex-direction: column; gap: 4px; }
+
+  .tile-name {
     font-size: 15px;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: var(--text);
+    font-weight: 700;
+    line-height: 1.18;
+    letter-spacing: -0.015em;
   }
 
-  .row-status { font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .tile-status { font-size: 12.5px; font-weight: 600; }
 
-  .track { height: 4px; border-radius: 999px; background: var(--track); overflow: hidden; }
-  .fill { height: 100%; border-radius: 999px; transition: width 0.25s ease, background 0.25s ease; }
-
-  .row-meta { font-size: 12px; color: var(--text-faint); }
-
-  .row .date-picker {
-    width: 44px;
+  .done-btn {
     min-height: 44px;
-    height: 44px;
-    border: 0;
-    border-radius: 12px;
-    color: var(--text-faint);
-  }
-
-  .row .date-picker svg { width: 18px; height: 18px; }
-
-  .check-btn {
-    width: 44px;
-    height: 44px;
-    flex-shrink: 0;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 12px;
-    border: 1.5px solid var(--btn-border);
-    background: var(--surface);
-    color: var(--accent);
+    gap: 7px;
+    border: 0;
+    border-radius: 14px;
+    background: var(--tile-btn);
+    color: var(--accent-deep);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
     cursor: pointer;
+    transition: background 0.15s ease;
   }
 
-  .check-btn:hover { background: oklch(96% 0.02 210); }
-  .check-btn svg { width: 18px; height: 18px; }
+  .done-btn:hover { background: var(--tile-btn-hover); }
+  .done-btn svg { width: 16px; height: 16px; }
 
   .storage-note {
     text-align: center;
     font-size: 12px;
     color: var(--text-faint);
-    padding-top: 4px;
+    padding-top: 6px;
   }
 
   .toast-wrap {
@@ -324,7 +270,7 @@
     bottom: calc(20px + env(safe-area-inset-bottom));
     display: flex;
     justify-content: center;
-    padding: 0 18px;
+    padding: 0 16px;
     pointer-events: none;
     opacity: 0;
     transform: translateY(8px);
@@ -337,13 +283,13 @@
     display: flex;
     align-items: center;
     gap: 14px;
-    max-width: 394px;
+    max-width: 398px;
     width: 100%;
-    padding: 10px 10px 10px 16px;
-    border-radius: 16px;
-    background: oklch(28% 0.03 235);
-    color: oklch(97% 0.01 235);
-    box-shadow: 0 10px 30px oklch(25% 0.04 240 / 0.28);
+    padding: 10px 10px 10px 18px;
+    border-radius: 20px;
+    background: oklch(32% 0.06 228);
+    color: oklch(98% 0.008 210);
+    box-shadow: 0 12px 30px oklch(35% 0.06 228 / 0.35);
     pointer-events: auto;
   }
 
@@ -351,6 +297,7 @@
     flex: 1;
     min-width: 0;
     font-size: 13.5px;
+    font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -359,29 +306,29 @@
   .undo-btn {
     flex-shrink: 0;
     min-height: 40px;
-    padding: 0 16px;
+    padding: 0 18px;
     border: 0;
-    border-radius: 12px;
-    background: oklch(100% 0 0 / 0.14);
-    color: oklch(99% 0.01 210);
+    border-radius: 14px;
+    background: oklch(100% 0 0 / 0.18);
+    color: oklch(99% 0.008 210);
     font-family: inherit;
     font-size: 13.5px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
   }
 
-  .undo-btn:hover { background: oklch(100% 0 0 / 0.22); }
+  .undo-btn:hover { background: oklch(100% 0 0 / 0.28); }
 
   .primary-btn:focus-visible,
-  .check-btn:focus-visible,
+  .done-btn:focus-visible,
   .undo-btn:focus-visible,
   .date-picker:focus-within {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--accent-deep);
     outline-offset: 2px;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .fill, .primary-btn, .toast-wrap { transition: none; }
+    .primary-btn, .done-btn, .toast-wrap { transition: none; }
   }
 </style>
 
@@ -392,19 +339,14 @@
     <div class="date-line" id="date-line"></div>
   </header>
 
-  <section class="focus" id="focus"></section>
-
-  <section class="block">
-    <div class="section-label">Then</div>
-    <div class="peek" id="peek"></div>
-  </section>
+  <section class="hero" id="hero"></section>
 
   <section class="block">
     <div class="block-head">
-      <div class="section-label">All tasks</div>
+      <div class="block-label">Everything else</div>
       <div class="count-line" id="count-line"></div>
     </div>
-    <div class="list" id="task-list"></div>
+    <div class="grid" id="grid"></div>
     <div class="storage-note" id="storage-note"></div>
   </section>
 </div>
@@ -418,23 +360,25 @@
 
 <script>
   const ICONS = {
-    filterClean: '<path stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M4 4h16L14 12v7l-4-2v-5L4 4Z"/>',
-    chemCheck: '<path stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M9 3h6M10 3v6l-4.3 8a2 2 0 0 0 1.75 3h9.1a2 2 0 0 0 1.75-3L14 9V3M7.5 15h9"/>',
-    shock: '<path stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M13 3 5 14h6l-1 7 9-12h-6l1-6Z"/>',
-    waterChange: '<path stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M12 3C12 3 6 10.5 6 15a6 6 0 0 0 12 0C18 10.5 12 3 12 3Z"/>',
-    filterReplace: '<path stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M20 11A8 8 0 1 0 18.6 16M20 4v6h-6"/>',
-    soakFilters: '<path stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M4 9h16v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9ZM3 9h18M8 13c.6-.6 1.4-.6 2 0s1.4.6 2 0 1.4-.6 2 0 1.4.6 2 0"/>'
+    filterClean: '<path stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M4 4h16L14 12v7l-4-2v-5L4 4Z"/>',
+    chemCheck: '<path stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M9 3h6M10 3v6l-4.3 8a2 2 0 0 0 1.75 3h9.1a2 2 0 0 0 1.75-3L14 9V3M7.5 15h9"/>',
+    shock: '<path stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M13 3 5 14h6l-1 7 9-12h-6l1-6Z"/>',
+    waterChange: '<path stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M12 3C12 3 6 10.5 6 15a6 6 0 0 0 12 0C18 10.5 12 3 12 3Z"/>',
+    filterReplace: '<path stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M20 11A8 8 0 1 0 18.6 16M20 4v6h-6"/>',
+    soakFilters: '<path stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M4 9h16v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9ZM3 9h18M8 13c.6-.6 1.4-.6 2 0s1.4.6 2 0 1.4-.6 2 0 1.4.6 2 0"/>',
+    testKit: '<path stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M7 3h4v11a2 2 0 0 1-4 0V3ZM6 3h6M7 9h4M15.5 4.5h4M15.5 9h4M15.5 13.5h4M15.5 18h4"/>'
   };
 
-  const CAL_ICON = '<svg viewBox="0 0 24 24" fill="none"><path stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" d="M8 3v3M16 3v3M4.5 9.5h15M5.5 6h13A1.5 1.5 0 0 1 20 7.5V19a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19V7.5A1.5 1.5 0 0 1 5.5 6Z"/></svg>';
+  const CAL_PATH = '<path stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M8 3v3M16 3v3M4.5 9.5h15M5.5 6h13A1.5 1.5 0 0 1 20 7.5V19a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19V7.5A1.5 1.5 0 0 1 5.5 6Z"/>';
 
   const TASKS = [
     { key: 'filterClean', name: 'Clean filter', interval: 7, intervalLabel: 'Every 7 days', defaultDaysAgo: 3 },
     { key: 'chemCheck', name: 'Check chemical balance', interval: 3, intervalLabel: 'Every 3 days', defaultDaysAgo: 1 },
     { key: 'shock', name: 'Shock treatment', interval: 7, intervalLabel: 'Every 7 days', defaultDaysAgo: 9 },
     { key: 'waterChange', name: 'Change water', interval: 120, intervalLabel: 'Every ~4 months', defaultDaysAgo: 132 },
-    { key: 'filterReplace', name: 'Swap filter', interval: 30, intervalLabel: 'Every 30 days', defaultDaysAgo: 15 },
-    { key: 'soakFilters', name: 'Soak filters', interval: 30, intervalLabel: 'Every 30 days', defaultDaysAgo: 12 }
+    { key: 'filterReplace', name: 'Replace filter cartridge', interval: 120, intervalLabel: 'Every ~4 months', defaultDaysAgo: 96 },
+    { key: 'soakFilters', name: 'Soak filters', interval: 30, intervalLabel: 'Every 30 days', defaultDaysAgo: 12 },
+    { key: 'testKit', name: 'Test Kit Analysis', interval: 14, intervalLabel: 'Every 2 weeks', defaultDaysAgo: 6 }
   ];
 
   const STORAGE_KEY = 'spa-care:last-done:v1';
@@ -477,16 +421,17 @@
   }
 
   function statusFor(daysAgo, interval) {
-    const ratio = daysAgo / interval;
-    const left = Math.max(1, Math.round(interval - daysAgo));
-    if (ratio > 1) {
-      const over = Math.round(daysAgo - interval);
-      return { label: over <= 1 ? 'Overdue' : 'Overdue ' + over + 'd', line: 'oklch(58% 0.16 28)', textStrong: 'oklch(48% 0.16 28)', tintBg: 'oklch(95% 0.035 35)', tintFg: 'oklch(43% 0.15 30)', key: 'overdue' };
+    const left = Math.round(interval - daysAgo);
+    if (left < 0) {
+      return { label: 'Overdue ' + (-left) + 'd', bigNum: String(-left), bigUnit: 'days over', tintBg: 'oklch(94% 0.045 30)', tintFg: 'oklch(45% 0.15 30)', key: 'overdue' };
     }
-    if (ratio >= 0.7) {
-      return { label: 'Due in ' + left + 'd', line: 'oklch(70% 0.14 75)', textStrong: 'oklch(52% 0.13 70)', tintBg: 'oklch(96% 0.04 85)', tintFg: 'oklch(44% 0.11 70)', key: 'soon' };
+    if (left === 0) {
+      return { label: 'Due today', bigNum: '0', bigUnit: 'days left', tintBg: 'oklch(95% 0.05 85)', tintFg: 'oklch(46% 0.12 70)', key: 'today' };
     }
-    return { label: 'Due in ' + left + 'd', line: 'oklch(65% 0.13 165)', textStrong: 'oklch(48% 0.11 165)', tintBg: 'oklch(95% 0.035 170)', tintFg: 'oklch(40% 0.1 168)', key: 'ok' };
+    if (daysAgo / interval >= 0.7) {
+      return { label: 'Due in ' + left + 'd', bigNum: String(left), bigUnit: 'days left', tintBg: 'oklch(95% 0.05 85)', tintFg: 'oklch(46% 0.12 70)', key: 'soon' };
+    }
+    return { label: 'Due in ' + left + 'd', bigNum: String(left), bigUnit: 'days left', tintBg: 'oklch(94% 0.04 180)', tintFg: 'oklch(43% 0.1 195)', key: 'ok' };
   }
 
   function lastDoneText(dateStr, daysAgo) {
@@ -505,10 +450,8 @@
       return {
         task: t,
         status: st,
-        daysAgo,
         daysLeft: t.interval - daysAgo,
         ratio: daysAgo / t.interval,
-        pct: Math.max(5, Math.min(100, Math.round((daysAgo / t.interval) * 100))),
         meta: lastDoneText(dateStr, daysAgo),
         today
       };
@@ -551,47 +494,45 @@
     render();
   });
 
-  function datePicker(key, today, cls) {
+  function datePicker(key, today, size) {
     const wrap = document.createElement('label');
-    wrap.className = 'date-picker' + (cls ? ' ' + cls : '');
+    wrap.className = 'date-picker';
     wrap.setAttribute('aria-label', 'Set a different last-done date');
-    wrap.innerHTML = CAL_ICON;
+    wrap.innerHTML = '<svg viewBox="0 0 24 24" fill="none">' + CAL_PATH + '</svg>';
     const input = document.createElement('input');
     input.type = 'date';
     input.max = today;
     input.addEventListener('change', () => {
       const v = input.value;
-      // Defer the re-render so iOS Safari's native picker isn't detached mid-interaction.
+      // Defer so iOS Safari's native picker isn't detached mid-interaction.
       setTimeout(() => setDone(key, v, 'date updated'), 0);
     });
     wrap.appendChild(input);
     return wrap;
   }
 
-  const focusEl = document.getElementById('focus');
-  const peekEl = document.getElementById('peek');
-  const listEl = document.getElementById('task-list');
+  const heroEl = document.getElementById('hero');
+  const gridEl = document.getElementById('grid');
 
-  function renderFocus(item) {
+  function renderHero(item) {
     const t = item.task, st = item.status;
-    focusEl.innerHTML = `
-      <div class="focus-top">
+    heroEl.innerHTML = `
+      <div class="hero-top">
         <div class="eyebrow">Up next</div>
-        <div class="badge" style="background:${st.tintBg}; color:${st.tintFg};">${st.label}</div>
       </div>
-      <div class="focus-main">
-        <div class="icon-tile" style="background:${st.tintBg}; color:${st.tintFg};">
-          <svg viewBox="0 0 24 24" fill="none">${ICONS[t.key]}</svg>
-        </div>
-        <div class="focus-titles">
+      <div class="hero-main">
+        <div class="hero-titles">
           <h1>${t.name}</h1>
-          <div class="interval">${t.intervalLabel}</div>
+          <div class="hero-meta">${item.meta}</div>
+        </div>
+        <div class="counter">
+          <div class="counter-num">${st.bigNum}</div>
+          <div class="counter-unit">${st.bigUnit}</div>
         </div>
       </div>
-      <div class="focus-meta">${item.meta}</div>
     `;
     const actions = document.createElement('div');
-    actions.className = 'row-actions';
+    actions.className = 'hero-actions';
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'primary-btn';
@@ -599,56 +540,58 @@
     btn.addEventListener('click', () => setDone(t.key, item.today, 'marked done today'));
     actions.appendChild(btn);
     actions.appendChild(datePicker(t.key, item.today));
-    focusEl.appendChild(actions);
+    heroEl.appendChild(actions);
   }
 
-  function renderPeek(items) {
-    peekEl.innerHTML = items.map((i) => `
-      <div class="peek-card">
-        <div class="dot" style="background:${i.status.line};"></div>
-        <div class="peek-name">${i.task.name}</div>
-        <div class="peek-status">${i.status.label}</div>
-      </div>
-    `).join('');
-  }
-
-  function renderList(items) {
-    listEl.innerHTML = '';
+  function renderGrid(items) {
+    gridEl.innerHTML = '';
     items.forEach((i) => {
-      const row = document.createElement('div');
-      row.className = 'row';
-      row.innerHTML = `
-        <div class="row-body">
-          <div class="row-top">
-            <div class="row-name">${i.task.name}</div>
-            <div class="row-status" style="color:${i.status.textStrong};">${i.status.label}</div>
-          </div>
-          <div class="track"><div class="fill" style="width:${i.pct}%; background:${i.status.line};"></div></div>
-          <div class="row-meta">${i.meta}</div>
+      const t = i.task, st = i.status;
+      const tile = document.createElement('div');
+      tile.className = 'tile';
+
+      const top = document.createElement('div');
+      top.className = 'tile-top';
+      top.innerHTML = `
+        <div class="tile-icon" style="background:${st.tintBg}; color:${st.tintFg};">
+          <svg viewBox="0 0 24 24" fill="none">${ICONS[t.key]}</svg>
         </div>
       `;
-      row.appendChild(datePicker(i.task.key, i.today));
-      const check = document.createElement('button');
-      check.type = 'button';
-      check.className = 'check-btn';
-      check.setAttribute('aria-label', 'Mark ' + i.task.name + ' done today');
-      check.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 12.5 10 17.5 19 7"/></svg>';
-      check.addEventListener('click', () => setDone(i.task.key, i.today, 'marked done today'));
-      row.appendChild(check);
-      listEl.appendChild(row);
+      top.appendChild(datePicker(t.key, i.today));
+      tile.appendChild(top);
+
+      const titles = document.createElement('div');
+      titles.className = 'tile-titles';
+      titles.innerHTML = `
+        <div class="tile-name">${t.name}</div>
+        <div class="tile-status" style="color:${st.tintFg};">${st.label}</div>
+      `;
+      tile.appendChild(titles);
+
+      const doneBtn = document.createElement('button');
+      doneBtn.type = 'button';
+      doneBtn.className = 'done-btn';
+      doneBtn.setAttribute('aria-label', 'Mark ' + t.name + ' done today');
+      doneBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M5 12.5 10 17.5 19 7"/></svg> Done';
+      doneBtn.addEventListener('click', () => setDone(t.key, i.today, 'marked done today'));
+      tile.appendChild(doneBtn);
+
+      gridEl.appendChild(tile);
     });
   }
 
   function render() {
     const items = computed();
-    renderFocus(items[0]);
-    renderPeek(items.slice(1).sort((a, b) => a.daysLeft - b.daysLeft).slice(0, 2));
-    renderList(items);
+    renderHero(items[0]);
+    renderGrid(items.slice(1).sort((a, b) => a.daysLeft - b.daysLeft));
     const overdue = items.filter((i) => i.status.key === 'overdue').length;
+    const dueToday = items.filter((i) => i.status.key === 'today').length;
     const soon = items.filter((i) => i.status.key === 'soon').length;
-    document.getElementById('count-line').textContent = overdue
-      ? overdue + ' overdue' + (soon ? ' · ' + soon + ' due soon' : '')
-      : soon ? soon + ' due soon' : 'All on track';
+    const parts = [];
+    if (overdue) parts.push(overdue + ' overdue');
+    if (dueToday) parts.push(dueToday + ' due today');
+    if (soon) parts.push(soon + ' due soon');
+    document.getElementById('count-line').textContent = parts.length ? parts.join(' · ') : 'All on track';
   }
 
   document.getElementById('date-line').textContent = new Date().toLocaleDateString('en-US', {
