@@ -10,7 +10,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="The Score">
-<meta name="theme-color" content="#08090d">
+<meta name="theme-color" content="#08090d" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f3ef" media="(prefers-color-scheme: light)">
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500&family=Barlow+Condensed:wght@300;400;600;700;900&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{--bg:#08090d;--surface:#0d1017;--line:rgba(255,255,255,.08);--text:#e8eaf0;--muted:#8a90a0;--muted-dim:#767d8c;}
@@ -100,15 +101,23 @@
   /* In season but idle: same footprint, less voltage. */
   .card.idle{background:linear-gradient(160deg,rgba(255,255,255,.02),#0b0e14 64%);border-color:rgba(255,255,255,.06);}
   .card.idle .card-spine,.card.off .card-spine{width:2px;opacity:.55;}
-  .card.idle .card-wm,.card.off .card-wm{opacity:.05;}
-  .card.idle .card-wm.lift,.card.off .card-wm.lift{opacity:.09;}
+  .card.idle .card-wm,.card.off .card-wm{opacity:calc(.05 * var(--wm,1));}
+  .card.idle .card-wm.lift,.card.off .card-wm.lift{opacity:calc(.09 * var(--wm,1));}
   .card.idle .card-name,.card.off .card-name{color:#c9cdd7;}
   .card.flash{animation:tsFlash 1.2s ease-out;}
   main.no-hero .card{padding:19px 20px 17px;}
-  .card-wm{position:absolute;right:-26px;bottom:-30px;width:150px;height:150px;opacity:.1;
+  /* Per-logo weight: ESPN's marks differ wildly in ink coverage and contrast,
+     so a single opacity reads unevenly. --wm calibrates each to the same
+     apparent strength. */
+  .card-wm{position:absolute;right:-26px;bottom:-30px;width:150px;height:150px;opacity:calc(.1 * var(--wm,1));
     filter:grayscale(1) contrast(1.4);pointer-events:none;
     background-size:contain;background-repeat:no-repeat;background-position:center;}
-  .card-wm.lift{opacity:.2;filter:grayscale(1) contrast(1.4) brightness(2.6);}
+  .card-wm.lift{opacity:calc(.2 * var(--wm,1));filter:grayscale(1) contrast(1.4) brightness(2.6);}
+  [data-team=eagles]{--wm:1.7;}
+  [data-team=flyers]{--wm:1.6;}
+  [data-team=union]{--wm:1.4;}
+  [data-team=sixers]{--wm:.85;}
+  [data-team=phillies]{--wm:.65;}
   .card-spine{position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--team-color);}
   .card-head{position:relative;display:flex;align-items:baseline;justify-content:space-between;gap:8px;min-height:27px;}
   .card-name{font-family:'Bebas Neue',sans-serif;font-size:27px;line-height:1;letter-spacing:.04em;color:#fff;}
@@ -260,6 +269,7 @@
     footer{padding:14px 16px 24px;}
   }
 </style>
+<link rel="stylesheet" href="light.css" media="(prefers-color-scheme: light)">
 </head>
 <body>
 <header>

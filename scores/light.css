@@ -1,0 +1,105 @@
+/* Light mode — loaded only when the OS asks for it (media attr on the <link>).
+   Dark remains the default; this file overrides just what needs inverting.
+   The live-game hero stays a dark saturated band on purpose: it's the one
+   inverted block on the page and reads as a masthead over paper. */
+
+:root{
+  --bg:#f5f3ef;
+  --surface:#ffffff;
+  --line:rgba(0,0,0,.12);
+  --text:#16181f;
+  --muted:#5c6270;
+  --muted-dim:#6d7380;
+}
+
+body{background-image:radial-gradient(rgba(0,0,0,.05) 1px,transparent 1px);}
+a:hover{color:#000;}
+:focus-visible{outline-color:#0369a1;}
+
+@keyframes tsFlash{0%{box-shadow:inset 0 0 0 0 rgba(0,0,0,0)}25%{box-shadow:inset 0 0 60px 0 rgba(0,0,0,.14)}100%{box-shadow:inset 0 0 0 0 rgba(0,0,0,0)}}
+@keyframes tsShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── Header ── */
+header{background:rgba(245,243,239,.9);border-bottom-color:rgba(0,0,0,.14);}
+.wordmark h1{color:var(--text);}
+.status{color:var(--muted);}
+.dot{background:#15803d;}
+.dot.loading{background:#b45309;}
+.dot.error{background:#b91c1c;}
+.refresh-btn{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.14);color:#3a3f4a;}
+.refresh-btn:hover:not(:disabled){background:rgba(0,0,0,.09);color:#000;}
+
+/* ── Hero ── */
+.hero{border-bottom-color:rgba(0,0,0,.16);}
+
+/* ── Cards ── */
+.card{background:linear-gradient(160deg,color-mix(in srgb,var(--team-color) 14%,transparent),#fff 62%);}
+.card.off{background:linear-gradient(160deg,color-mix(in srgb,var(--team-color) 8%,transparent),#fff 62%);
+  border-color:rgba(0,0,0,.09);}
+.card.idle{background:linear-gradient(160deg,rgba(0,0,0,.025),#fbfaf8 64%);border-color:rgba(0,0,0,.09);}
+.card.idle .card-name,.card.off .card-name{color:#40454f;}
+/* Watermarks keep their team color here — grayscale reads as dirt on white,
+   and a little hue is the only thing breaking up the paper. The --wm weights
+   are re-tuned for light: vivid marks (Phillies red, Flyers orange) carry
+   further on white than the muted Eagles green does. */
+.card-wm{opacity:calc(.17 * var(--wm,1));filter:saturate(1.25) contrast(1.05);}
+.card-wm.lift{opacity:calc(.22 * var(--wm,1));filter:saturate(1.7) brightness(.55) contrast(1.1);}
+.card.idle .card-wm,.card.off .card-wm{opacity:calc(.085 * var(--wm,1));}
+.card.idle .card-wm.lift,.card.off .card-wm.lift{opacity:calc(.11 * var(--wm,1));}
+[data-team=eagles]{--wm:1.25;}
+[data-team=flyers]{--wm:.9;}
+[data-team=union]{--wm:1;}
+[data-team=sixers]{--wm:.8;}
+[data-team=phillies]{--wm:.55;}
+.card-name{color:var(--text);}
+.card-record{color:#2a2e38;}
+.card-place{color:var(--muted);}
+.card-score{color:var(--text);}
+.card-result.w{color:#15803d;}
+.card-result.l{color:#b91c1c;}
+.card-result.d{color:#a16207;}
+.card-last{color:var(--muted);}
+.card-count span{color:var(--muted);}
+.card-foot{border-top-color:rgba(0,0,0,.11);}
+.card-foot-text{color:#3a3f4a;}
+
+/* Team-color text sits on white now — mix toward ink, not toward white. */
+.pill,.card-foot-label{color:color-mix(in srgb,var(--team-color) 82%,#000);}
+.pill{border-bottom-color:color-mix(in srgb,var(--team-color) 80%,transparent);}
+
+.form i{background:#ced2d9;}
+.form i.fw{background:rgba(21,128,61,.5);}
+.form i.fl{background:rgba(185,28,28,.45);}
+.form i.fd{background:rgba(161,98,7,.45);}
+.form i.cur.fw{background:#15803d;}
+.form i.cur.fl{background:#b91c1c;}
+.form i.cur.fd{background:#a16207;}
+
+.soon-badge{color:#b45309;border-bottom-color:rgba(180,83,9,.7);}
+.today-badge{color:#b45309;border-bottom-color:rgba(180,83,9,.6);}
+
+/* ── Off-season strip ── */
+.collapse{background:linear-gradient(160deg,rgba(0,0,0,.02),#fbfaf8 70%);border-color:rgba(0,0,0,.1);}
+.collapse-head{border-bottom-color:rgba(0,0,0,.11);}
+.collapse-row{border-bottom-color:rgba(0,0,0,.07);}
+.collapse-row .cname{color:var(--text);}
+
+/* ── Wire ── */
+.wire{border-top-color:rgba(0,0,0,.14);border-bottom-color:rgba(0,0,0,.14);}
+.wire-label{border-right-color:rgba(0,0,0,.12);}
+.wire-item{border-left-color:rgba(0,0,0,.08);
+  background:linear-gradient(90deg,color-mix(in srgb,var(--tag,#000) 16%,transparent),transparent 42%);}
+.wire-item:hover{background:rgba(0,0,0,.035);}
+.wire-title{color:var(--text);}
+.wire-tag{color:color-mix(in srgb,var(--tag,#000) 78%,#000);}
+.wire-nav{border-left-color:rgba(0,0,0,.12);}
+.wire-nav:hover{color:var(--text);background:rgba(0,0,0,.045);}
+.wire-retry:hover{color:#000;}
+
+/* ── Errors, skeletons, footer ── */
+#error-banner-inner{background:rgba(185,28,28,.07);border-color:rgba(185,28,28,.22);color:#991b1b;}
+.sk{background:linear-gradient(90deg,#e9e7e2 25%,#f4f2ee 50%,#e9e7e2 75%);background-size:200% 100%;}
+
+@media(max-width:560px){
+  .wire-item{border-top-color:rgba(0,0,0,.08);}
+}
