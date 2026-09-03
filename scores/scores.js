@@ -684,7 +684,8 @@ function renderAll(sorted,newsItems){
   // Three or more teams between seasons collapse into one strip so the teams
   // actually playing keep the cards to themselves.
   const collapse=offEntries.length>=3;
-  const cardEntries=sorted.filter(e=>e!==heroEntry&&!(collapse&&e.data.featuredStatus==='offseason'));
+  const nonOffEntries=sorted.filter(e=>e!==heroEntry&&e.data.featuredStatus!=='offseason');
+  const cardEntries=collapse?nonOffEntries:nonOffEntries.concat(offEntries);
 
   document.getElementById('hero-slot').innerHTML=heroEntry?renderHero(heroEntry.key,heroEntry.data):'';
   fitHeroWatermark();
