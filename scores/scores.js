@@ -209,6 +209,19 @@ async function fetchScoringPlays(path,eventId,teamId){
   const d=await espnFetch('https://site.api.espn.com/apis/site/v2/sports/'+path+'/summary?event='+eventId);
   const ord=n=>n===1?'1st':n===2?'2nd':n===3?'3rd':n+'th';
   const truncate=s=>s.length>72?s.slice(0,71).trimEnd()+'…':s;
+  // Drop trailing officiating/review sentences, but never split on abbreviations
+  // like "Jr." or "St." — sentence ends only where the next word is capitalized
+  // and the preceding token isn't a known abbreviation.
+  const ABBR=/(?:^|\s)(?:[A-Z]|Jr|Sr|St|Mr|Mrs|Ms|Dr|No)\.$/;
+  const firstSentence=s=>{
+    const parts=String(s||'').split(/(?<=[.!?])\s+(?=[A-Z0-9])/);
+    let out=parts[0]||'';
+    for(let i=1;i<parts.length;i++){
+      if(!ABBR.test(out)) break;
+      out+=' '+parts[i];
+    }
+    return out.trim();
+  };
 
   if(path.startsWith('soccer')){
     const raw=(d?.keyEvents||[]).filter(e=>/goal/i.test(e.type?.text||e.shortText||''));
@@ -238,7 +251,7 @@ async function fetchScoringPlays(path,eventId,teamId){
     } else {
       label=ord(p.period?.number||1);
     }
-    return { side:isUs?'us':'opp', label, text:truncate((p.text||'').split(/(?<=[.!])\s/)[0]||p.text||'') };
+    return { side:isUs?'us':'opp', label, text:truncate(firstSentence(p.text)||p.text||'') };
   }).filter(p=>p.text);
 }
 
@@ -472,7 +485,12 @@ async function fetchNews(){
 // ── Snapshot cache (paint last known state instantly on cold open) ──
 const SNAPSHOT_TTL=12*60*60*1000;
 function saveSnapshot(sorted,newsItems,t){
-  try{ localStorage.setItem('snapshot',JSON.stringify({ts:Date.now(),time:t,sorted,newsItems})); }catch(e){}
+  // Scoring plays are live-game state — never restore them from cache, or a cold
+  // open can paint yesterday's plays under today's score for a beat.
+  const clean=sorted.map(e=>e.data?.featured?.scoringPlays
+    ?{...e,data:{...e.data,featured:{...e.data.featured,scoringPlays:null}}}
+    :e);
+  try{ localStorage.setItem('snapshot',JSON.stringify({ts:Date.now(),time:t,sorted:clean,newsItems})); }catch(e){}
 }
 function paintSnapshot(){
   try{
@@ -784,15 +802,16 @@ window.addEventListener('resize',fitHeroWatermark);
 function fitHeroWatermark(){
   const grids=document.querySelectorAll('.hero-grid');
   if(!grids.length) return;
-  let minAvail=Infinity;
+  // Sized per hero: a countdown hero's grid is much shorter than a live one's,
+  // and one shared value would pin every logo to the smallest hero on screen.
   grids.forEach(grid=>{
     const cs=getComputedStyle(grid);
     const avail=grid.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
-    if(avail>0) minAvail=Math.min(minAvail,avail);
+    if(avail<=0) return;
+    const size=Math.max(60,Math.min(460,avail*1.02));
+    const hero=grid.closest('.hero');
+    if(hero) hero.style.setProperty('--wm-size',size+'px');
   });
-  if(!isFinite(minAvail)) return;
-  const size=Math.max(60,Math.min(340,minAvail*0.94));
-  document.documentElement.style.setProperty('--wm-size',size+'px');
 }
 
 // ── Countdown & refresh ──
@@ -822,13 +841,22 @@ function startHeroCountdown(key,targetMs){
   clearInterval(heroCountdownIntervals[key]);
   const el=document.getElementById('hero-countdown-'+key);
   if(!el) return;
+  const vs=el.closest('.hero-vs');
   const tick=()=>{
-    const diff=Math.max(0,targetMs-Date.now());
+    const diff=targetMs-Date.now();
+    if(diff<=0){
+      clearInterval(heroCountdownIntervals[key]);
+      // Timer's done but the feed hasn't flipped to live yet — drop the zeroed
+      // clock rather than parking on 00:00 until the next poll.
+      if(vs) vs.classList.add('countdown-done');
+      el.remove();
+      return;
+    }
     const m=Math.floor(diff/60000), s=Math.floor((diff%60000)/1000);
     el.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-    if(diff<=0) clearInterval(heroCountdownIntervals[key]);
   };
   tick();
+  if(!document.getElementById('hero-countdown-'+key)) return;
   heroCountdownIntervals[key]=setInterval(tick,1000);
 }
 
