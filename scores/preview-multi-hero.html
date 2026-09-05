@@ -75,6 +75,10 @@
     opacity:.13;filter:grayscale(1) contrast(1.4);pointer-events:none;
     background-size:contain;background-repeat:no-repeat;background-position:center;}
   .hero-wm.lift{opacity:.3;mix-blend-mode:screen;filter:grayscale(1) contrast(1.4) brightness(2.6);}
+  .hero-ticker{position:relative;padding:0 32px 14px;font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:15px;line-height:1.5;
+    color:rgba(255,255,255,.85);text-align:center;}
+  .hero-ticker b{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;color:#fff;font-weight:600;}
+  .hero-ticker-sep{margin:0 12px;color:rgba(255,255,255,.4);}
   .hero-abbr{position:relative;font-family:'Bebas Neue',sans-serif;font-size:clamp(30px,4.4vw,58px);
     line-height:1;letter-spacing:.07em;color:rgba(255,255,255,.82);}
   .hero-score{position:relative;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:clamp(88px,15vw,200px);
@@ -244,6 +248,7 @@
 
   /* ── Phone ── */
   @media(max-width:560px){
+    .hero-ticker{font-size:10px;padding:0 16px 12px;}
     header{flex-direction:column;align-items:flex-start;gap:12px;padding:16px 16px 13px;}
     .wordmark h1{font-size:34px;}
     .wordmark img{height:30px;}
@@ -335,7 +340,8 @@ window.addEventListener('load',()=>{
     flyers:{featuredStatus:'live',completedDateMs:0,teamRecord:'32-18-4',
       featured:{isHome:true,oppAbbr:'NYR',oppId:'3',oppLogo:'https://a.espncdn.com/i/teamlogos/nhl/500/nyr.png',
         phiScore:2,oppScore:1,note:'2nd Period · 8:14',venue:'Wells Fargo Center, Philadelphia',gameNote:null,isPlayoff:false,
-        seriesSummary:null,broadcast:'NBCSP',situation:null,possession:null,phiRecord:'32-18-4',oppRecord:'30-20-5'},
+        seriesSummary:null,broadcast:'NBCSP',situation:null,possession:null,phiRecord:'32-18-4',oppRecord:'30-20-5',
+        scoringPlays:[{side:'us',label:'2nd Period',text:'Travis Konecny goal (18), assisted by Tippett.'},{side:'opp',label:'1st Period',text:'Panarin goal (22).'}]},
       lastResult:null,nextGame:null,nextGameIsPlayoff:false,nextGameToday:false,featuredDateMs:now-1800000,nextGameDateMs:0,
       streak:'W3',form:['W','W','L','W','W'],standing:'2nd in Metro',offseasonNote:null,isPreseason:false},
     sixers:{featuredStatus:'upcoming',completedDateMs:0,teamRecord:'41-31',
@@ -347,9 +353,13 @@ window.addEventListener('load',()=>{
     eagles:{featuredStatus:'offseason',completedDateMs:0,teamRecord:null,featured:null,lastResult:{opp:'DAL',home:true,phiScore:24,oppScore:20,date:'Jan 5',dateMs:now-9000000000},
       nextGame:null,nextGameIsPlayoff:false,nextGameToday:false,featuredDateMs:0,nextGameDateMs:now+150*24*3600000,
       streak:null,form:null,standing:null,offseasonNote:'Season opens September 10, 2026',isPreseason:false},
-    phillies:{featuredStatus:'offseason',completedDateMs:0,teamRecord:null,featured:null,lastResult:{opp:'ATL',home:false,phiScore:5,oppScore:3,date:'Oct 2',dateMs:now-15000000000},
-      nextGame:null,nextGameIsPlayoff:false,nextGameToday:false,featuredDateMs:0,nextGameDateMs:now+170*24*3600000,
-      streak:null,form:null,standing:null,offseasonNote:'Season opens March 26, 2027',isPreseason:false},
+    phillies:{featuredStatus:'live',completedDateMs:0,teamRecord:'84-57',
+      featured:{isHome:true,oppAbbr:'ATL',oppId:'15',oppLogo:'https://a.espncdn.com/i/teamlogos/mlb/500/atl.png',
+        phiScore:2,oppScore:0,note:'Bot 1st',venue:'Citizens Bank Park, Philadelphia',gameNote:null,isPlayoff:false,
+        seriesSummary:null,broadcast:'NBCSP, MLB.TV',situation:null,possession:null,phiRecord:'84-57',oppRecord:'79-62',
+        scoringPlays:[{side:'us',label:'Bot 1st',text:'Bryce Harper homers (24) on a 1-1 count.'},{side:'us',label:'Bot 1st',text:'Trea Turner scores on a Kyle Schwarber single.'}]},
+      lastResult:null,nextGame:null,nextGameIsPlayoff:false,nextGameToday:false,featuredDateMs:now-600000,nextGameDateMs:0,
+      streak:'W2',form:['W','W','W','L','W'],standing:'1st in NL East',offseasonNote:null,isPreseason:false},
     union:{featuredStatus:'offseason',completedDateMs:0,teamRecord:null,featured:null,lastResult:{opp:'NYC',home:true,phiScore:1,oppScore:1,date:'Oct 20',dateMs:now-13000000000},
       nextGame:null,nextGameIsPlayoff:false,nextGameToday:false,featuredDateMs:0,nextGameDateMs:now+110*24*3600000,
       streak:null,form:null,standing:null,offseasonNote:'Season opens February 22, 2027',isPreseason:false},
@@ -361,5 +371,29 @@ window.addEventListener('load',()=>{
   renderAll(sorted,[]);
 });
 </script>
+</body>
+</html>
+
+</body>
+</html>
+
+</body>
+</html>
+
+</body>
+</html>
+
+</body>
+</html>
+
+</body>
+</html>
+
+</body>
+</html>
+
+</body>
+</html>
+
 </body>
 </html>

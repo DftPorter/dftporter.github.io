@@ -93,7 +93,7 @@ function parseEvent(ev, teamId){
     featuredStatus==='starting' ? 'Starting now…' :
     state==='pre'               ? fmtFull(dateMs) :
                                   detail||'Final';
-  return { featuredStatus, isHome, oppAbbr, oppId, phiScore, oppScore, phiRecord, oppRecord, venue, dateMs, note, completed, gameNote, isPlayoff, seriesSummary, broadcast, situation, possession };
+  return { featuredStatus, isHome, oppAbbr, oppId, phiScore, oppScore, phiRecord, oppRecord, venue, dateMs, note, completed, gameNote, isPlayoff, seriesSummary, broadcast, situation, possession, eventId:ev.id||null };
 }
 
 function nextSeasonNote(path){
@@ -204,6 +204,43 @@ async function fetchMlsRecords(){
   } catch(err){ console.warn('MLS standings fetch failed',err); }
 }
 fetchMlsRecords();
+
+async function fetchScoringPlays(path,eventId,teamId){
+  const d=await espnFetch('https://site.api.espn.com/apis/site/v2/sports/'+path+'/summary?event='+eventId);
+  const ord=n=>n===1?'1st':n===2?'2nd':n===3?'3rd':n+'th';
+  const competitors=d?.header?.competitions?.[0]?.competitors||[];
+  const homeAwayOf=id=>competitors.find(c=>String(c.team?.id)===String(id))?.homeAway;
+
+  if(path.startsWith('soccer')){
+    const raw=(d?.keyEvents||[]).filter(e=>/goal/i.test(e.type?.text||e.shortText||''));
+    return raw.map(p=>{
+      const tid=p.team?.id;
+      const min=p.clock?.displayValue?p.clock.displayValue.replace(/^0/,''):'';
+      return { side:String(tid)===String(teamId)?'us':'opp', label:min?min+"'":'Goal', text:(p.text||p.shortText||'').trim() };
+    }).filter(p=>p.text);
+  }
+
+  const raw=d?.scoringPlays||[];
+  return raw.map(p=>{
+    const tid=p.team?.id;
+    const isUs=String(tid)===String(teamId);
+    let label;
+    if(path.startsWith('baseball')){
+      const half=homeAwayOf(tid)==='home'?'Bot':'Top';
+      label=half+' '+ord(p.period?.number||1);
+    } else if(path.startsWith('hockey')){
+      const per=p.period?.number||1;
+      label=per<=3?ord(per)+' Period':(per===4?'OT':'SO');
+    } else if(path.startsWith('football')){
+      const per=p.period?.number||1;
+      label=per<=4?ord(per)+' Qtr':'OT';
+    } else {
+      label=ord(p.period?.number||1);
+    }
+    const truncate=s=>s.length>44?s.slice(0,43).trimEnd()+'…':s;
+    return { side:isUs?'us':'opp', label, text:truncate((p.text||'').split(/(?<=[.!])\s/)[0]||p.text||'') };
+  }).filter(p=>p.text);
+}
 
 async function fetchTeamData(key){
   const {path,teamId}=TEAMS[key];
@@ -337,6 +374,12 @@ async function fetchTeamData(key){
     form=outcomes.slice(0,5).reverse();   // oldest → most recent
   }
 
+  let scoringPlays=null;
+  const trackedPlaySports=['baseball/mlb','hockey/nhl','football/nfl','soccer/usa.1'];
+  if(trackedPlaySports.includes(path)&&featured?.eventId&&(fs==='live'||fs==='starting'||(featured.completed&&(now-featured.dateMs)<4*60*60*1000))){
+    scoringPlays=await fetchScoringPlays(path,featured.eventId,teamId).catch(()=>null);
+  }
+
   const completedDateMs=lastCompleted?.dateMs||0;
   const lastResult=lastCompleted?{
     opp:lastCompleted.oppAbbr, home:lastCompleted.isHome,
@@ -365,6 +408,7 @@ async function fetchTeamData(key){
       possession: featured.possession||null,
       phiRecord: showRecords?(soccerPhiRecord||featured.phiRecord||phiRecordFallback||null):null,
       oppRecord: showRecords?(soccerOppRecord||featured.oppRecord||oppRecordFallback||null):null,
+      scoringPlays,
     }:null,
     lastResult,
     nextGame:nextGame&&fs!=='starting'&&fs!=='live'
@@ -472,6 +516,9 @@ function renderHero(key,data){
   const phiS=f.phiScore??0, oppS=f.oppScore??0;
   const phiLeads=phiS>oppS, oppLeads=oppS>phiS;
   const lift=cls=>t.liftLogo?cls+' lift':cls;
+  const plays=f.scoringPlays||[];
+  const usPlays=plays.filter(p=>p.side==='us').slice(-1);
+  const oppPlays=plays.filter(p=>p.side==='opp').slice(-1);
   const phiSide='<div class="hero-side">'
     +'<div class="'+lift('hero-wm')+'" style="background-image:url('+t.logo+')"></div>'
     +'<div class="hero-abbr">PHI</div>'
@@ -491,6 +538,11 @@ function renderHero(key,data){
     +(f.isPlayoff?' · '+fmtPlayoffNote(f.gameNote):'');
   const broadcast=[f.broadcast,f.venue].filter(Boolean).join(' · ');
   const situationText=[f.situation,f.possession].filter(Boolean).join(' · ');
+  const tickerItems=[
+    ...usPlays.map(p=>'<b>PHI</b> '+escHtml(p.label)+' — '+escHtml(p.text)),
+    ...oppPlays.map(p=>'<b>'+escHtml(f.oppAbbr)+'</b> '+escHtml(p.label)+' — '+escHtml(p.text)),
+  ];
+  const scoringTicker=tickerItems.length?'<div class="hero-ticker">'+tickerItems.join('<span class="hero-ticker-sep">·</span>')+'</div>':'';
   return '<section class="hero" id="hero-'+key+'" style="--team-color:'+t.color+'">'
     +'<div class="hero-top">'
       +'<div class="hero-kicker"><span class="dot" aria-hidden="true"></span><span>'+escHtml(kickerText)+'</span></div>'
@@ -501,6 +553,7 @@ function renderHero(key,data){
       +'<div class="hero-clock">'+escHtml(f.note||'')+'</div>'
       +(situationText?'<div class="sep"></div><div class="hero-situation">'+escHtml(situationText)+'</div>':'')
     +'</div>'
+    +scoringTicker
   +'</section>';
 }
 
