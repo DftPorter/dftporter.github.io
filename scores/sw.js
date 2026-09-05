@@ -1,5 +1,5 @@
-const VERSION = 'the-score-v3';
-const SHELL = ['./', './index.html', './scores.js', './light.css', './manifest.json', './icon.png', './icon-192.png', './icon-512.png'];
+const VERSION = 'the-score-v4';
+const SHELL = ['./', './index.html', './scores.js', './base.css', './light.css', './manifest.json', './icon.png', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

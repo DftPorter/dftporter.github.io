@@ -21,7 +21,8 @@ Then open http://localhost:8000. Opening `index.html` via `file://` will fail be
 
 | File | Purpose |
 | --- | --- |
-| `index.html` | Markup and all styles (dark by default) |
+| `index.html` | Markup (dark by default) |
+| `base.css` | Shared styles, linked by both `index.html` and `light-preview.html` |
 | `light.css` | Light-mode overrides, applied only via `prefers-color-scheme` |
 | `scores.js` | Fetching, parsing, rendering, refresh loop |
 | `manifest.json` | PWA manifest (installable, standalone, dark) |
@@ -32,7 +33,7 @@ Then open http://localhost:8000. Opening `index.html` via `file://` will fail be
 
 Any static host works; GitHub Pages is fine (the service worker needs HTTPS, which Pages provides). Paths are relative, so a project subpath like `user.github.io/the-score/` works without changes.
 
-`light-preview.html` is a development-only copy that forces light mode on regardless of OS setting — safe to delete before deploying.
+`light-preview.html` is a development-only copy that forces light mode on regardless of OS setting — safe to delete before deploying. `preview-multi-hero.html` and `preview-multi-hero-dark.html` are also development-only: they stub out the network and render fixed mock data (two live games, one countdown, off-season cards) so hero states can be checked without waiting for real games. All three are regenerated from `index.html` / `light-preview.html`, so edit those, not the previews.
 
 When you push updated files, bump `VERSION` at the top of `sw.js` — otherwise installed clients keep serving the previously cached shell.
 
