@@ -80,6 +80,7 @@
     color:rgba(255,255,255,.85);text-align:center;}
   .hero-ticker b{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;color:#fff;font-weight:600;}
   .hero-ticker-sep{margin:0 12px;color:rgba(255,255,255,.4);}
+  .hero-ticker-item{display:inline;}
   .hero-abbr{position:relative;font-family:'Bebas Neue',sans-serif;font-size:clamp(30px,4.4vw,58px);
     line-height:1;letter-spacing:.07em;color:rgba(255,255,255,.82);}
   .hero-score{position:relative;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:clamp(88px,15vw,200px);
@@ -257,7 +258,8 @@
 
   /* ── Phone ── */
   @media(max-width:560px){
-    .hero-ticker{font-size:10px;padding:0 16px 12px;}
+    .hero-ticker{font-size:13px;padding:0 16px 12px;display:flex;flex-direction:column;gap:2px;}
+    .hero-ticker-sep{display:none;}
     header{flex-direction:column;align-items:flex-start;gap:12px;padding:16px 16px 13px;}
     .wordmark h1{font-size:34px;}
     .wordmark img{height:30px;}
