@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Score</title>
-<link rel="manifest" href="manifest.json">
+<title>The Score — light preview</title>
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -117,23 +116,15 @@
   /* In season but idle: same footprint, keeps color, just dimmer. */
   .card.idle{background:linear-gradient(160deg,color-mix(in srgb,var(--team-color) calc(var(--tint,12%) * .55),transparent),#0d1017 62%);border-color:rgba(255,255,255,.06);}
   .card.idle .card-spine,.card.off .card-spine{width:2px;opacity:.55;}
-  .card.idle .card-wm,.card.off .card-wm{opacity:calc(.05 * var(--wm,1));}
-  .card.idle .card-wm.lift,.card.off .card-wm.lift{opacity:calc(.09 * var(--wm,1));}
+  .card.idle .card-wm,.card.off .card-wm{opacity:.05;}
+  .card.idle .card-wm.lift,.card.off .card-wm.lift{opacity:.09;}
   .card.idle .card-name,.card.off .card-name{color:#c9cdd7;}
   .card.flash{animation:tsFlash 1.2s ease-out;}
   main.no-hero .card{padding:19px 20px 17px;}
-  /* Per-logo weight: ESPN's marks differ wildly in ink coverage and contrast,
-     so a single opacity reads unevenly. --wm calibrates each to the same
-     apparent strength. */
-  .card-wm{position:absolute;right:-26px;bottom:-30px;width:150px;height:150px;opacity:calc(.1 * var(--wm,1));
+  .card-wm{position:absolute;right:-26px;bottom:-30px;width:150px;height:150px;opacity:.1;
     filter:grayscale(1) contrast(1.4);pointer-events:none;
     background-size:contain;background-repeat:no-repeat;background-position:center;}
-  .card-wm.lift{opacity:calc(.2 * var(--wm,1));filter:grayscale(1) contrast(1.4) brightness(2.6);}
-  [data-team=eagles]{--wm:1.7;}
-  [data-team=flyers]{--wm:1.6;}
-  [data-team=union]{--wm:1.4;}
-  [data-team=sixers]{--wm:.85;}
-  [data-team=phillies]{--wm:.65;}
+  .card-wm.lift{opacity:.2;filter:grayscale(1) contrast(1.4) brightness(2.6);}
   .card-spine{position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--team-color);}
   .card-head{position:relative;display:flex;align-items:baseline;justify-content:space-between;gap:8px;min-height:27px;}
   .card-name{font-family:'Bebas Neue',sans-serif;font-size:27px;line-height:1;letter-spacing:.04em;color:#fff;}
@@ -289,7 +280,7 @@
     footer{padding:14px 16px 24px;}
   }
 </style>
-<link rel="stylesheet" href="light.css" media="(prefers-color-scheme: light)">
+<link rel="stylesheet" href="light.css">
 </head>
 <body>
 <header>
@@ -335,6 +326,40 @@
   <a href="https://linktr.ee/daftporter" target="_blank" rel="noopener" aria-label="daftporter on Linktree (opens in new tab)">linktr.ee/daftporter</a>
 </footer>
 
+<script>window.fetch=()=>Promise.reject(new Error('offline-preview'));</script>
 <script src="scores.js"></script>
+<script>
+window.addEventListener('load',()=>{
+  const now=Date.now();
+  const mock={
+    flyers:{featuredStatus:'live',completedDateMs:0,teamRecord:'32-18-4',
+      featured:{isHome:true,oppAbbr:'NYR',oppId:'3',oppLogo:'https://a.espncdn.com/i/teamlogos/nhl/500/nyr.png',
+        phiScore:2,oppScore:1,note:'2nd Period · 8:14',venue:'Wells Fargo Center, Philadelphia',gameNote:null,isPlayoff:false,
+        seriesSummary:null,broadcast:'NBCSP',situation:null,possession:null,phiRecord:'32-18-4',oppRecord:'30-20-5'},
+      lastResult:null,nextGame:null,nextGameIsPlayoff:false,nextGameToday:false,featuredDateMs:now-1800000,nextGameDateMs:0,
+      streak:'W3',form:['W','W','L','W','W'],standing:'2nd in Metro',offseasonNote:null,isPreseason:false},
+    sixers:{featuredStatus:'upcoming',completedDateMs:0,teamRecord:'41-31',
+      featured:{isHome:false,oppAbbr:'BOS',oppId:'2',oppLogo:'https://a.espncdn.com/i/teamlogos/nba/500/bos.png',
+        phiScore:null,oppScore:null,note:'Tonight, 7:30 PM',venue:'TD Garden, Boston',gameNote:null,isPlayoff:false,
+        seriesSummary:null,broadcast:'TNT',situation:null,possession:null,phiRecord:'41-31',oppRecord:'52-20'},
+      lastResult:null,nextGame:null,nextGameIsPlayoff:false,nextGameToday:true,featuredDateMs:now+22*60000,nextGameDateMs:now+22*60000,
+      streak:'L1',form:['W','L','W','L','L'],standing:'6th in East',offseasonNote:null,isPreseason:false},
+    eagles:{featuredStatus:'offseason',completedDateMs:0,teamRecord:null,featured:null,lastResult:{opp:'DAL',home:true,phiScore:24,oppScore:20,date:'Jan 5',dateMs:now-9000000000},
+      nextGame:null,nextGameIsPlayoff:false,nextGameToday:false,featuredDateMs:0,nextGameDateMs:now+150*24*3600000,
+      streak:null,form:null,standing:null,offseasonNote:'Season opens September 10, 2026',isPreseason:false},
+    phillies:{featuredStatus:'offseason',completedDateMs:0,teamRecord:null,featured:null,lastResult:{opp:'ATL',home:false,phiScore:5,oppScore:3,date:'Oct 2',dateMs:now-15000000000},
+      nextGame:null,nextGameIsPlayoff:false,nextGameToday:false,featuredDateMs:0,nextGameDateMs:now+170*24*3600000,
+      streak:null,form:null,standing:null,offseasonNote:'Season opens March 26, 2027',isPreseason:false},
+    union:{featuredStatus:'offseason',completedDateMs:0,teamRecord:null,featured:null,lastResult:{opp:'NYC',home:true,phiScore:1,oppScore:1,date:'Oct 20',dateMs:now-13000000000},
+      nextGame:null,nextGameIsPlayoff:false,nextGameToday:false,featuredDateMs:0,nextGameDateMs:now+110*24*3600000,
+      streak:null,form:null,standing:null,offseasonNote:'Season opens February 22, 2027',isPreseason:false},
+  };
+  const sorted=TEAM_ORDER.map(k=>({key:k,data:mock[k]}));
+  window.fetchScores=async()=>{};
+  clearTimeout(refreshTimeout); clearInterval(countdownInterval); clearTimeout(startupRetryTimer);
+  document.getElementById('update-time').textContent='PREVIEW · MOCK DATA';
+  renderAll(sorted,[]);
+});
+</script>
 </body>
 </html>

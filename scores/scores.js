@@ -468,27 +468,30 @@ function daysUntil(ms){
 
 function renderHero(key,data){
   const t=TEAMS[key], f=data.featured;
+  const isCountdown=data.featuredStatus==='upcoming';
   const phiS=f.phiScore??0, oppS=f.oppScore??0;
   const phiLeads=phiS>oppS, oppLeads=oppS>phiS;
   const lift=cls=>t.liftLogo?cls+' lift':cls;
   const phiSide='<div class="hero-side">'
     +'<div class="'+lift('hero-wm')+'" style="background-image:url('+t.logo+')"></div>'
     +'<div class="hero-abbr">PHI</div>'
-    +'<div class="hero-score'+(phiLeads?' leading':'')+'" id="hero-phi-score">'+phiS+'</div>'
+    +(isCountdown?'':'<div class="hero-score'+(phiLeads?' leading':'')+'" id="hero-phi-score-'+key+'">'+phiS+'</div>')
     +(f.phiRecord?'<div class="hero-record">'+escHtml(f.phiRecord)+'</div>':'')
     +'</div>';
   const oppSide='<div class="hero-side">'
     +(f.oppLogo?'<div class="hero-wm" style="background-image:url('+f.oppLogo+')"></div>':'')
     +'<div class="hero-abbr">'+escHtml(f.oppAbbr)+'</div>'
-    +'<div class="hero-score'+(oppLeads?' leading':'')+'">'+oppS+'</div>'
+    +(isCountdown?'':'<div class="hero-score'+(oppLeads?' leading':'')+'">'+oppS+'</div>')
     +(f.oppRecord?'<div class="hero-record">'+escHtml(f.oppRecord)+'</div>':'')
     +'</div>';
-  const vs='<div class="hero-vs"><div class="hero-rule"></div><span>AT</span><div class="hero-rule"></div></div>';
-  const kickerText=t.sport+' · '+t.name+(data.featuredStatus==='starting'?' starting':' live')
+  const vs=isCountdown
+    ?'<div class="hero-vs hero-vs-countdown"><div class="hero-countdown" id="hero-countdown-'+key+'">--:--</div><span>Starts in</span></div>'
+    :'<div class="hero-vs"><div class="hero-rule"></div><span>AT</span><div class="hero-rule"></div></div>';
+  const kickerText=t.sport+' · '+t.name+(isCountdown?' starting soon':data.featuredStatus==='starting'?' starting':' live')
     +(f.isPlayoff?' · '+fmtPlayoffNote(f.gameNote):'');
   const broadcast=[f.broadcast,f.venue].filter(Boolean).join(' · ');
   const situationText=[f.situation,f.possession].filter(Boolean).join(' · ');
-  return '<section class="hero" id="hero" style="--team-color:'+t.color+'">'
+  return '<section class="hero" id="hero-'+key+'" style="--team-color:'+t.color+'">'
     +'<div class="hero-top">'
       +'<div class="hero-kicker"><span class="dot" aria-hidden="true"></span><span>'+escHtml(kickerText)+'</span></div>'
       +(broadcast?'<div class="hero-broadcast">'+escHtml(broadcast)+'</div>':'')
@@ -678,19 +681,27 @@ function renderWire(items){
 
 function renderAll(sorted,newsItems){
   sorted.forEach(({key,data})=>{ _cardData[key]=data; });
-  const heroEntry=sorted.find(e=>e.data.featuredStatus==='live'||e.data.featuredStatus==='starting');
-  const offEntries=sorted.filter(e=>e.data.featuredStatus==='offseason'&&e!==heroEntry)
+  const heroEntries=sorted.filter(e=>e.data.featuredStatus==='live'||e.data.featuredStatus==='starting'
+    ||(e.data.featuredStatus==='upcoming'&&e.data.featured&&(e.data.featuredDateMs-Date.now())<=60*60*1000))
+    .sort((a,b)=>{
+      const rank=s=>s.featuredStatus==='live'||s.featuredStatus==='starting'?0:1;
+      return rank(a.data)-rank(b.data);
+    });
+  const heroKeys=new Set(heroEntries.map(e=>e.key));
+  const offEntries=sorted.filter(e=>e.data.featuredStatus==='offseason'&&!heroKeys.has(e.key))
     .sort((a,b)=>(daysUntil(a.data.nextGameDateMs)||9999)-(daysUntil(b.data.nextGameDateMs)||9999));
   // Three or more teams between seasons collapse into one strip so the teams
   // actually playing keep the cards to themselves.
   const collapse=offEntries.length>=3;
-  const nonOffEntries=sorted.filter(e=>e!==heroEntry&&e.data.featuredStatus!=='offseason');
+  const nonOffEntries=sorted.filter(e=>!heroKeys.has(e.key)&&e.data.featuredStatus!=='offseason');
   const cardEntries=collapse?nonOffEntries:nonOffEntries.concat(offEntries);
 
-  document.getElementById('hero-slot').innerHTML=heroEntry?renderHero(heroEntry.key,heroEntry.data):'';
+  document.getElementById('hero-slot').innerHTML=heroEntries.map(e=>renderHero(e.key,e.data)).join('');
   fitHeroWatermark();
+  Object.keys(heroCountdownIntervals).forEach(k=>{ if(!heroKeys.has(k)){ clearInterval(heroCountdownIntervals[k]); delete heroCountdownIntervals[k]; } });
+  heroEntries.forEach(e=>{ if(e.data.featuredStatus==='upcoming') startHeroCountdown(e.key,e.data.featuredDateMs); });
   const main=document.getElementById('cards-container');
-  main.className=heroEntry?'':'no-hero';
+  main.className=heroEntries.length?'':'no-hero';
   main.innerHTML=cardEntries.map(({key,data})=>renderCard(key,data)).join('');
   balanceCards();
   document.getElementById('collapse-slot').innerHTML=collapse?renderCollapse(offEntries):'';
@@ -718,12 +729,16 @@ window.addEventListener('resize',fitHeroWatermark);
 // growing share of short windows, so vh alone overshoots and the mark
 // touches the top edge.
 function fitHeroWatermark(){
-  const grid=document.querySelector('.hero-grid');
-  if(!grid) return;
-  const cs=getComputedStyle(grid);
-  const avail=grid.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
-  if(avail<=0) return;
-  const size=Math.max(60,Math.min(340,avail*0.94));
+  const grids=document.querySelectorAll('.hero-grid');
+  if(!grids.length) return;
+  let minAvail=Infinity;
+  grids.forEach(grid=>{
+    const cs=getComputedStyle(grid);
+    const avail=grid.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
+    if(avail>0) minAvail=Math.min(minAvail,avail);
+  });
+  if(!isFinite(minAvail)) return;
+  const size=Math.max(60,Math.min(340,minAvail*0.94));
   document.documentElement.style.setProperty('--wm-size',size+'px');
 }
 
@@ -749,6 +764,20 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 let countdownSeconds=300, countdownInterval=null, refreshTimeout=null, prevScores={};
+let heroCountdownIntervals={};
+function startHeroCountdown(key,targetMs){
+  clearInterval(heroCountdownIntervals[key]);
+  const el=document.getElementById('hero-countdown-'+key);
+  if(!el) return;
+  const tick=()=>{
+    const diff=Math.max(0,targetMs-Date.now());
+    const m=Math.floor(diff/60000), s=Math.floor((diff%60000)/1000);
+    el.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    if(diff<=0) clearInterval(heroCountdownIntervals[key]);
+  };
+  tick();
+  heroCountdownIntervals[key]=setInterval(tick,1000);
+}
 
 function getRefreshInterval(scores){
   const vals=Object.values(scores);
@@ -851,7 +880,7 @@ async function fetchScores(silent=false){
     TEAM_ORDER.forEach(k=>{
       const curr=scores[k]?.featured, prev=prevScores[k]?.featured;
       if(curr&&prev&&(curr.phiScore!==prev.phiScore||curr.oppScore!==prev.oppScore)){
-        const el=document.querySelector('#hero[style*="'+TEAMS[k].color+'"]')
+        const el=document.getElementById('hero-'+k)
           ||document.querySelector('.card[data-team="'+k+'"]');
         if(el){ el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
       }

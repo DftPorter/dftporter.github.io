@@ -56,6 +56,7 @@
   .refresh-btn.spinning .spin{display:inline-block;animation:tsSpin 1s linear infinite;}
 
   /* ── Hero (live game) ── */
+  #hero-slot{display:flex;flex-direction:column;}
   .hero{position:relative;overflow:hidden;border-bottom:1px solid rgba(255,255,255,.12);
     background:linear-gradient(150deg,var(--team-color) 0%,color-mix(in srgb,var(--team-color) 42%,#08131a) 58%,#08131a 100%);}
   .hero::before{content:'';position:absolute;inset:0;pointer-events:none;
@@ -82,7 +83,9 @@
   .hero-record{position:relative;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.14em;color:rgba(255,255,255,.68);}
   .hero-vs{display:flex;flex-direction:column;align-items:center;gap:9px;}
   .hero-rule{width:1px;height:clamp(40px,9vh,110px);background:rgba(255,255,255,.22);}
-  .hero-vs span{font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.18em;color:rgba(255,255,255,.65);}
+  .hero-vs span{font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.18em;color:rgba(255,255,255,.65);text-transform:uppercase;}
+  .hero-countdown{font-family:'Bebas Neue',sans-serif;font-size:clamp(64px,10vw,140px);line-height:.9;
+    letter-spacing:.03em;color:#fff;font-variant-numeric:tabular-nums;text-shadow:0 6px 40px rgba(0,0,0,.45);}
   .hero-foot{position:relative;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;padding:0 32px 20px;}
   .hero-clock{font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,2.6vw,34px);letter-spacing:.08em;color:#fff;}
   .hero-foot .sep{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.35);flex-shrink:0;}
@@ -251,6 +254,7 @@
     .hero-wm{display:none;}
     .hero-abbr{font-size:30px;}
     .hero-score{font-size:clamp(74px,26vw,108px);}
+    .hero-countdown{font-size:clamp(56px,22vw,84px);}
     .hero-rule{height:34px;}
     .hero-foot{gap:10px;padding:0 16px 16px;}
     .hero-clock{font-size:24px;}
