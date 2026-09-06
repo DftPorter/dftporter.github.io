@@ -42,27 +42,62 @@
 
   /* ── Hero (live game) ── */
   #hero-slot{display:flex;flex-direction:column;}
+  /* Each hero is split diagonally: one team's color per half, each running its own
+     light-to-dark ramp (tinted highlight top-left, true color at a third, colored
+     shadow bottom-right). A hard edge rather than a blended seam — two saturated
+     colors always muddy where they meet. The base layer carries one side, a masked
+     ::after carries the other, and the grid lists the away team first, so home
+     games swap which layer holds which color. The opponent's color is dimmed:
+     navy and black read far heavier than ours at equal saturation. */
   .hero{position:relative;overflow:hidden;border-bottom:1px solid rgba(255,255,255,.12);
-    background:linear-gradient(150deg,var(--team-color) 0%,color-mix(in srgb,var(--team-color) 42%,#08131a) 58%,#08131a 100%);}
+    --opp-ink:color-mix(in srgb,var(--opp-color,var(--team-color)) 68%,#0d1720);
+    --team-ink:color-mix(in srgb,var(--team-color) 74%,#0d1720);
+    background:linear-gradient(150deg,color-mix(in srgb,var(--team-ink) 92%,#fff) 0%,var(--team-ink) 32%,
+      color-mix(in srgb,var(--team-ink) 55%,#08131a) 72%,color-mix(in srgb,var(--team-ink) 18%,#08131a) 100%);}
+  .hero[style*="--opp-color"]{background:linear-gradient(150deg,color-mix(in srgb,var(--team-ink) 92%,#fff) 0%,var(--team-ink) 32%,
+      color-mix(in srgb,var(--team-ink) 55%,#08131a) 72%,color-mix(in srgb,var(--team-ink) 18%,#08131a) 100%);}
+  .hero[style*="--opp-color"]::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(rgba(0,0,0,.28) 1.4px,transparent 1.4px) 0 0/6px 6px,
+      linear-gradient(150deg,color-mix(in srgb,var(--opp-ink) 92%,#fff) 0%,var(--opp-ink) 32%,
+      color-mix(in srgb,var(--opp-ink) 55%,#08131a) 72%,color-mix(in srgb,var(--opp-ink) 18%,#08131a) 100%);
+    -webkit-mask-image:linear-gradient(99deg,transparent 0 var(--split,50%),#000 var(--split,50%) 100%);
+    mask-image:linear-gradient(99deg,transparent 0 var(--split,50%),#000 var(--split,50%) 100%);}
+  .hero.home[style*="--opp-color"]{background:linear-gradient(150deg,color-mix(in srgb,var(--opp-ink) 92%,#fff) 0%,var(--opp-ink) 32%,
+      color-mix(in srgb,var(--opp-ink) 55%,#08131a) 72%,color-mix(in srgb,var(--opp-ink) 18%,#08131a) 100%);}
+  .hero.home[style*="--opp-color"]::after{background:radial-gradient(rgba(0,0,0,.28) 1.4px,transparent 1.4px) 0 0/6px 6px,
+      linear-gradient(150deg,color-mix(in srgb,var(--team-ink) 92%,#fff) 0%,var(--team-ink) 32%,
+      color-mix(in srgb,var(--team-ink) 55%,#08131a) 72%,color-mix(in srgb,var(--team-ink) 18%,#08131a) 100%);}
+  /* The masked ::after would otherwise paint over the positioned hero content. */
+  .hero-top,.hero-grid,.hero-foot,.hero-ticker{z-index:1;}
   .hero::before{content:'';position:absolute;inset:0;pointer-events:none;
     background-image:radial-gradient(rgba(0,0,0,.28) 1.4px,transparent 1.4px);background-size:6px 6px;}
   .hero.flash{animation:tsFlash 1.2s ease-out;}
   .hero-top{position:relative;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:14px 32px 0;}
   .hero-kicker{display:flex;align-items:center;gap:11px;font-family:'DM Mono',monospace;font-size:10.5px;
-    letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.72);}
+    letter-spacing:.2em;text-transform:uppercase;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.5);}
   .hero-kicker .dot{background:#fff;width:9px;height:9px;animation:tsPulse 1.8s ease-in-out infinite;}
   .hero-broadcast{font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
-    color:rgba(255,255,255,.72);text-align:right;}
+    color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.5);text-align:right;}
   .hero-grid{position:relative;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
-    gap:clamp(12px,3vw,56px);padding:clamp(8px,2vh,26px) 32px clamp(2px,.6vh,8px);}
+    gap:clamp(12px,3vw,56px);padding:clamp(20px,3vh,36px) 32px clamp(2px,.6vh,8px);}
   .hero-side{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;}
+  /* One treatment for every hero mark, ours and the opponent's: darken the field,
+     which keeps outlines and interior detail. The card `lift` trick (screen blend,
+     brightness) stays on the cards, where the ground is near-black. */
   .hero-wm{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:var(--wm-size,min(52vh,460px));height:var(--wm-size,min(52vh,460px));
     opacity:.13;filter:grayscale(1) contrast(1.4);pointer-events:none;
     background-size:contain;background-repeat:no-repeat;background-position:center;}
-  .hero-wm.lift{opacity:.3;mix-blend-mode:screen;filter:grayscale(1) contrast(1.4) brightness(2.6);}
+  /* Exceptions: these two marks are close enough in value to their own team color
+     that darkening makes them vanish, and neither relies on interior detail — so
+     they render as white silhouettes instead. Our side only; opponent marks keep
+     the default. */
+  .hero[data-team="phillies"] .hero-wm:not(.opp),
+  .hero[data-team="sixers"] .hero-wm:not(.opp){opacity:.16;filter:brightness(0) invert(1);}
+  /* `lift` is a card-only treatment; on heroes the base rule already applies. */
   .hero-ticker{position:relative;padding:0 32px 16px;font-family:'Barlow Condensed',sans-serif;font-weight:500;
     font-size:14px;line-height:1.35;color:rgba(255,255,255,.8);text-align:center;}
   .hero-ticker b{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;color:#fff;font-weight:600;}
+  .hero-ticker b.hero-ticker-us{color:color-mix(in srgb,var(--team-color) 25%,#fff 75%);}
   .hero-ticker-sep{margin:0 12px;color:rgba(255,255,255,.4);}
   .hero-ticker-item{display:inline;}
   .hero-abbr{position:relative;font-family:'Bebas Neue',sans-serif;font-size:clamp(30px,4.4vw,58px);
@@ -70,7 +105,10 @@
   .hero-score{position:relative;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:clamp(96px,16.5vw,220px);
     line-height:.86;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.72);text-shadow:0 6px 40px rgba(0,0,0,.45);}
   .hero-score.leading{color:#fff;}
-  .hero-record{position:relative;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.14em;color:rgba(255,255,255,.68);}
+  /* De-emphasised by size and tracking, not opacity — the split gradient puts
+     saturated team color directly behind the records at both outer edges. */
+  .hero-record{position:relative;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.18em;
+    color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.6);}
   .hero-vs{display:flex;flex-direction:column;align-items:center;gap:9px;}
   .hero-rule{width:1px;height:clamp(40px,9vh,110px);background:rgba(255,255,255,.22);}
   .hero-vs span{font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.18em;color:rgba(255,255,255,.65);text-transform:uppercase;}
@@ -81,8 +119,8 @@
   .hero:not(:has(.hero-ticker)) .hero-foot{padding-bottom:20px;}
   .hero-clock{font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,2.6vw,34px);letter-spacing:.08em;color:#fff;}
   .hero-foot .sep{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.35);flex-shrink:0;}
-  .hero-situation{font-family:'DM Mono',monospace;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
-    color:rgba(255,255,255,.7);text-align:center;}
+  .hero-situation{font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;
+    color:rgba(255,255,255,.78);text-shadow:0 1px 6px rgba(0,0,0,.5);text-align:center;}
 
   /* ── Cards ── */
   main{padding:24px 32px 8px;display:flex;flex-wrap:wrap;justify-content:center;column-gap:14px;row-gap:13px;align-items:stretch;}

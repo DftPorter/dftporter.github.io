@@ -28,6 +28,24 @@ function fmtTime(ms){
 }
 // Compact next-game line: "9:40p @ ARI" today, "Sun 1p vs WSH" this week,
 // "Sep 7 1p vs DAL" beyond, "Oct 22 vs MIL" when the opener is months out.
+// ESPN gives team colors as bare hex. Some are near-black or near-white, which
+// reads as "no color" against the hero's dark ground — fall back to the alternate
+// mark color, then to nothing (hero stays single-color).
+function pickTeamColor(team,useAlt){
+  const lum=hex=>{
+    const n=parseInt(hex,16);
+    return (0.2126*((n>>16)&255)+0.7152*((n>>8)&255)+0.0722*(n&255))/255;
+  };
+  const ok=c=>{
+    if(!c) return null;
+    const h=String(c).replace('#','').trim();
+    if(!/^[0-9a-f]{6}$/i.test(h)) return null;
+    const l=lum(h);
+    return (l>0.06&&l<0.9) ? '#'+h : null;
+  };
+  return useAlt ? ok(team?.alternateColor) : (ok(team?.color)||ok(team?.alternateColor)||null);
+}
+
 function fmtNextShort(ms,isHome,oppAbbr){
   const d=new Date(ms), now=new Date();
   const opp=(isHome?'vs ':'@ ')+oppAbbr;
@@ -69,6 +87,8 @@ function parseEvent(ev, teamId){
   const isHome    = us.homeAway==='home';
   const oppAbbr   = (them.team?.abbreviation||'OPP').toUpperCase();
   const oppId     = String(them.team?.id||'');
+  const oppColor  = pickTeamColor(them.team);
+  const oppColorAlt = pickTeamColor(them.team,true);
   const phiScore  = (completed||state==='in') ? parseScore(us.score)   : null;
   const oppScore  = (completed||state==='in') ? parseScore(them.score) : null;
   const getRecord = c=>{ if(!c?.record) return null; if(typeof c.record==='string') return c.record||null; return (c.record.find(r=>r.type==='total')||c.record.find(r=>r.type==='ytd')||c.record[0])?.displayValue||null; };
@@ -93,7 +113,7 @@ function parseEvent(ev, teamId){
     featuredStatus==='starting' ? 'Starting now…' :
     state==='pre'               ? fmtFull(dateMs) :
                                   detail||'Final';
-  return { featuredStatus, isHome, oppAbbr, oppId, phiScore, oppScore, phiRecord, oppRecord, venue, dateMs, note, completed, gameNote, isPlayoff, seriesSummary, broadcast, situation, possession, eventId:ev.id||null };
+  return { featuredStatus, isHome, oppAbbr, oppId, oppColor, oppColorAlt, phiScore, oppScore, phiRecord, oppRecord, venue, dateMs, note, completed, gameNote, isPlayoff, seriesSummary, broadcast, situation, possession, eventId:ev.id||null };
 }
 
 function nextSeasonNote(path){
@@ -267,11 +287,16 @@ async function fetchTeamData(key){
         espnFetch(base+'/scoreboard?dates='+(new Date().getFullYear())+'0101-'+(new Date().getFullYear())+'1231&limit=300').catch(()=>null),
         espnFetch(base+'/teams/'+teamId+'/schedule').catch(()=>null),
       ]);
-      if(sbBoard?.events){
+      // Prefer the team-scoped schedule's own events — it isn't subject to the
+      // league-wide scoreboard's limit=300 cap, which by late season can cut off
+      // before Union's most recent games once every team's fixtures are counted.
+      const teamEvents = teamInfo?.events||teamInfo?.team?.events;
+      if(teamEvents?.length || sbBoard?.events){
         schRes = {
-          season: teamInfo?.season||sbBoard.leagues?.[0]?.season||{type:2},
+          season: teamInfo?.season||sbBoard?.leagues?.[0]?.season||{type:2},
           team:   teamInfo?.team||{id:teamId},
-          events: sbBoard.events.filter(e=>e.competitions?.[0]?.competitors?.some(c=>String(c.team?.id)===String(teamId))),
+          events: teamEvents?.length ? teamEvents
+            : sbBoard.events.filter(e=>e.competitions?.[0]?.competitors?.some(c=>String(c.team?.id)===String(teamId))),
         };
       }
     } else {
@@ -408,6 +433,8 @@ async function fetchTeamData(key){
       isHome:    featured.isHome||false,
       oppAbbr:   featured.oppAbbr||'OPP',
       oppId:     featured.oppId||null,
+      oppColor:  featured.oppColor||null,
+      oppColorAlt: featured.oppColorAlt||null,
       oppLogo:   oppLogoUrl(path, featured.oppId||null, featured.oppAbbr||null),
       phiScore:  featured.phiScore,
       oppScore:  featured.oppScore,
@@ -544,7 +571,7 @@ function renderHero(key,data){
     +(f.phiRecord?'<div class="hero-record">'+escHtml(f.phiRecord)+'</div>':'')
     +'</div>';
   const oppSide='<div class="hero-side">'
-    +(f.oppLogo?'<div class="hero-wm" style="background-image:url('+f.oppLogo+')"></div>':'')
+    +(f.oppLogo?'<div class="hero-wm opp" style="background-image:url('+f.oppLogo+')"></div>':'')
     +'<div class="hero-abbr">'+escHtml(f.oppAbbr)+'</div>'
     +(isCountdown?'':'<div class="hero-score'+(oppLeads?' leading':'')+'">'+oppS+'</div>')
     +(f.oppRecord?'<div class="hero-record">'+escHtml(f.oppRecord)+'</div>':'')
@@ -557,11 +584,24 @@ function renderHero(key,data){
   const broadcast=[f.broadcast,f.venue].filter(Boolean).join(' · ');
   const situationText=[f.situation,f.possession].filter(Boolean).join(' · ');
   const tickerItems=[
-    ...usPlays.map(p=>'<span class="hero-ticker-item"><b>PHI</b> '+escHtml(p.label)+' — '+escHtml(p.text)+'</span>'),
+    ...usPlays.map(p=>'<span class="hero-ticker-item"><b class="hero-ticker-us">PHI</b> '+escHtml(p.label)+' — '+escHtml(p.text)+'</span>'),
     ...oppPlays.map(p=>'<span class="hero-ticker-item"><b>'+escHtml(f.oppAbbr)+'</b> '+escHtml(p.label)+' — '+escHtml(p.text)+'</span>'),
   ];
   const scoringTicker=tickerItems.length?'<div class="hero-ticker">'+tickerItems.join('<span class="hero-ticker-sep">·</span>')+'</div>':'';
-  return '<section class="hero" id="hero-'+key+'" style="--team-color:'+t.color+'">'
+  const heroOppColor = f ? (f.oppColor||f.oppColorAlt||null) : null;
+  // The diagonal split doubles as a lead indicator: each team's share of the hero
+  // tracks its share of the score. Smoothed (+1 each) so 1–0 isn't a shutout of
+  // the frame, and clamped to 34–66% so the seam can never cross either score
+  // column — a trailing team's own digits must never sit on the winner's color.
+  // No score yet, or a tie, sits at 50/50.
+  let splitPct = 50;
+  if(f && typeof f.phiScore==='number' && typeof f.oppScore==='number' && (f.phiScore||f.oppScore)){
+    const leftScore  = f.isHome ? f.oppScore : f.phiScore;
+    const rightScore = f.isHome ? f.phiScore : f.oppScore;
+    const share=(leftScore+1)/(leftScore+rightScore+2);
+    splitPct=Math.round(Math.max(.34,Math.min(.66,share))*100);
+  }
+  return '<section class="hero'+(f&&f.isHome?' home':'')+'" id="hero-'+key+'" data-team="'+key+'" style="--team-color:'+t.color+(heroOppColor?';--opp-color:'+heroOppColor+';--split:'+splitPct+'%':'')+'">'
     +'<div class="hero-top">'
       +'<div class="hero-kicker"><span class="dot" aria-hidden="true"></span><span>'+escHtml(kickerText)+'</span></div>'
       +(broadcast?'<div class="hero-broadcast">'+escHtml(broadcast)+'</div>':'')
