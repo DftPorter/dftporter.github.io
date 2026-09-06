@@ -279,6 +279,10 @@
   footer{padding:16px 32px 26px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.16em;
     text-transform:uppercase;color:var(--muted);}
   footer a{color:inherit;text-decoration:underline;text-underline-offset:3px;}
+  /* Populated from the active service worker's cache name, so it can't drift
+     from the version that's actually running. */
+  #app-version:not(:empty){color:var(--muted-dim);}
+  #app-version:not(:empty)::before{content:'\00a0\00a0·\00a0\00a0';color:var(--muted);}
 
   /* ── Phone ── */
   @media(max-width:560px){

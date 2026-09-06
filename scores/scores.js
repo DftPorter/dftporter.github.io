@@ -337,7 +337,13 @@ async function fetchTeamData(key){
       }
     }
   }
-  if(!lastCompleted && !isOffseason){
+  // Walk dated scoreboards backwards when the schedule endpoint has nothing, and
+  // ALSO when what it has is stale. A team schedule can keep returning results
+  // that stop well short of the present (MLS in particular), in which case
+  // lastCompleted is set but wrong — without this we'd show a weeks-old score and
+  // never notice, since the live scoreboard only ever covers today.
+  const staleBy = lastCompleted ? now-lastCompleted.dateMs : Infinity;
+  if(!isOffseason && staleBy > 36*60*60*1000){
     const backGames=[];
     for(let daysBack=1; daysBack<=7; daysBack++){
       const dt=new Date(now-daysBack*24*60*60*1000);
@@ -346,14 +352,20 @@ async function fetchTeamData(key){
       if(!sb?.events) continue;
       for(const ev of sb.events){
         const p=parseEvent(ev,teamId);
-        if(p&&p.completed) backGames.push(p);
+        if(p&&p.completed&&(!lastCompleted||p.dateMs>lastCompleted.dateMs)) backGames.push(p);
       }
-      if(backGames.length>=4) break;
+      // Scanning newest-first, so anything found on this pass already beats the
+      // schedule's idea of the last game — no need to keep paying for fetches.
+      if(backGames.length) break;
     }
     if(backGames.length){
       backGames.sort((a,b)=>a.dateMs-b.dateMs);
-      recentGames.push(...backGames);
+      for(const g of backGames){
+        if(!recentGames.some(r=>r.dateMs===g.dateMs)) recentGames.push(g);
+      }
+      recentGames.sort((a,b)=>a.dateMs-b.dateMs);
       lastCompleted=backGames[backGames.length-1];
+      try{ sessionStorage.removeItem('sched:'+key); }catch(e){}
     }
   }
   if(sbRes?.events){
@@ -639,8 +651,12 @@ function tickSoonBadges(){
 function renderCard(key,data){
   const t=TEAMS[key];
   const off=data.featuredStatus==='offseason';
-  const days=off?daysUntil(data.nextGameDateMs):null;
-  const soon=off&&days!=null&&days<=30;
+  // In season but yet to play: the next game IS the season opener, so it gets the
+  // same days-out countdown the between-seasons cards use rather than a flat
+  // "no games played" line.
+  const opener=!off&&!data.lastResult&&!!data.nextGameDateMs;
+  const days=(off||opener)?daysUntil(data.nextGameDateMs):null;
+  const soon=(off||opener)&&days!=null&&days<=30;
 
   const meta=off
     ? '<span class="card-offlabel">Off-season</span>'
@@ -668,11 +684,13 @@ function renderCard(key,data){
         +'<div class="card-result '+r.c+'">'+r.l+'</div></div>'
         +'<div class="card-last">Last · '+(g.home?'vs ':'@ ')+escHtml(g.opp)+' · '+escHtml(g.date)+' · '+g.phiScore+'–'+g.oppScore+'</div>';
     } else {
-      body='<div class="card-count"><span style="padding-bottom:0">No games played yet</span></div>';
+      body=days
+        ? '<div class="card-count"><b>'+days+'</b><span>days out</span></div>'
+        : '<div class="card-count"><span style="padding-bottom:0">No games played yet</span></div>';
     }
   }
 
-  const footLabel=off?'Opens':'Next';
+  const footLabel=(off||opener)?'Opens':'Next';
   const cadenceMs=(t.cadenceDays||1.5)*24*60*60*1000;
   const bye=!off&&!!data.lastResult&&!!data.nextGameDateMs
     &&(data.nextGameDateMs-(data.lastResult.dateMs||0))>cadenceMs*1.6;
@@ -1029,6 +1047,29 @@ async function fetchScores(silent=false){
 
 if('serviceWorker' in navigator && location.protocol!=='file:')
   window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+
+// Ask the active service worker what version it is, rather than keeping a second
+// copy of the constant here or guessing from cache names (old caches linger
+// during activation, so the list is not a reliable answer). Stays blank when no
+// worker controls the page — file://, the previews, or a first load before
+// install — which the CSS treats as "show nothing".
+(function showVersion(){
+  const el=document.getElementById('app-version');
+  if(!el||!('serviceWorker' in navigator)) return;
+  const ask=()=>{
+    const sw=navigator.serviceWorker.controller;
+    if(!sw) return;
+    const ch=new MessageChannel();
+    ch.port1.onmessage=ev=>{
+      const v=ev.data?.version;
+      if(v) el.textContent=v.replace('the-score-','');
+    };
+    sw.postMessage('version',[ch.port2]);
+  };
+  ask();
+  // First visit installs the worker after this runs; it also changes on update.
+  navigator.serviceWorker.addEventListener('controllerchange',ask);
+})();
 
 if(!paintSnapshot()) showSkeletons();
 fetchScores();
