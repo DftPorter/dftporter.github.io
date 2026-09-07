@@ -1,4 +1,4 @@
-const VERSION = 'the-score-v8';
+const VERSION = 'the-score-v9';
 const SHELL = ['./', './index.html', './scores.js', './base.css', './light.css', './manifest.json', './icon.png', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

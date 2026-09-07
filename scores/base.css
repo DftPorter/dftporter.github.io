@@ -54,8 +54,6 @@
     --team-ink:color-mix(in srgb,var(--team-color) 74%,#0d1720);
     background:linear-gradient(150deg,color-mix(in srgb,var(--team-ink) 92%,#fff) 0%,var(--team-ink) 32%,
       color-mix(in srgb,var(--team-ink) 55%,#08131a) 72%,color-mix(in srgb,var(--team-ink) 18%,#08131a) 100%);}
-  .hero[style*="--opp-color"]{background:linear-gradient(150deg,color-mix(in srgb,var(--team-ink) 92%,#fff) 0%,var(--team-ink) 32%,
-      color-mix(in srgb,var(--team-ink) 55%,#08131a) 72%,color-mix(in srgb,var(--team-ink) 18%,#08131a) 100%);}
   .hero[style*="--opp-color"]::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
     background:radial-gradient(rgba(0,0,0,.28) 1.4px,transparent 1.4px) 0 0/6px 6px,
       linear-gradient(150deg,color-mix(in srgb,var(--opp-ink) 92%,#fff) 0%,var(--opp-ink) 32%,

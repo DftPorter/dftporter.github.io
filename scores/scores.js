@@ -57,6 +57,7 @@ function fmtNextShort(ms,isHome,oppAbbr){
     : d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
   return when+' '+fmtTime(ms)+' '+opp;
 }
+function getRecord(c){ if(!c?.record) return null; if(typeof c.record==='string') return c.record||null; return (c.record.find(r=>r.type==='total')||c.record.find(r=>r.type==='ytd')||c.record[0])?.displayValue||null; }
 function parseScore(s){
   if(s==null) return 0;
   if(typeof s==='object') return s.value??(parseInt(s.displayValue)||0);
@@ -91,7 +92,6 @@ function parseEvent(ev, teamId){
   const oppColorAlt = pickTeamColor(them.team,true);
   const phiScore  = (completed||state==='in') ? parseScore(us.score)   : null;
   const oppScore  = (completed||state==='in') ? parseScore(them.score) : null;
-  const getRecord = c=>{ if(!c?.record) return null; if(typeof c.record==='string') return c.record||null; return (c.record.find(r=>r.type==='total')||c.record.find(r=>r.type==='ytd')||c.record[0])?.displayValue||null; };
   const phiRecord = getRecord(us);
   const oppRecord = getRecord(them);
   const venue     = comp.venue ? comp.venue.fullName+', '+comp.venue.address?.city : null;
@@ -201,7 +201,6 @@ async function fetchOppRecord(path, oppId){
     const last=[...events].reverse().find(e=>e.competitions?.[0]?.status?.type?.completed);
     const comp=last?.competitions?.[0];
     const them=comp?.competitors?.find(c=>String(c.team?.id)===String(oppId));
-    const getRecord=c=>{ if(!c?.record) return null; if(typeof c.record==='string') return c.record||null; return (c.record.find(r=>r.type==='total')||c.record.find(r=>r.type==='ytd')||c.record[0])?.displayValue||null; };
     oppRecordCache[cacheKey]=getRecord(them);
   } catch(e){ oppRecordCache[cacheKey]=null; }
   return oppRecordCache[cacheKey]||null;
@@ -817,12 +816,13 @@ function renderAll(sorted,newsItems){
       return rank(a.data)-rank(b.data);
     });
   const heroKeys=new Set(heroEntries.map(e=>e.key));
-  const offEntries=sorted.filter(e=>e.data.featuredStatus==='offseason'&&!heroKeys.has(e.key))
+  const isOpenerCountdown=e=>e.data.featuredStatus==='upcoming'&&!e.data.lastResult;
+  const offEntries=sorted.filter(e=>!heroKeys.has(e.key)&&(e.data.featuredStatus==='offseason'||isOpenerCountdown(e)))
     .sort((a,b)=>(daysUntil(a.data.nextGameDateMs)||9999)-(daysUntil(b.data.nextGameDateMs)||9999));
   // Three or more teams between seasons collapse into one strip so the teams
   // actually playing keep the cards to themselves.
   const collapse=offEntries.length>=3;
-  const nonOffEntries=sorted.filter(e=>!heroKeys.has(e.key)&&e.data.featuredStatus!=='offseason');
+  const nonOffEntries=sorted.filter(e=>!heroKeys.has(e.key)&&e.data.featuredStatus!=='offseason'&&!isOpenerCountdown(e));
   const cardEntries=collapse?nonOffEntries:nonOffEntries.concat(offEntries);
 
   document.getElementById('hero-slot').innerHTML=heroEntries.map(e=>renderHero(e.key,e.data)).join('');
@@ -1006,10 +1006,18 @@ async function fetchScores(silent=false){
       scheduleStartupRetry();
       return;
     }
-    const rank=s=>({live:0,starting:0,upcoming:1,final:2,offseason:3}[s]??3);
+    // 'upcoming' covers two different things: a near-term countdown to the next
+    // game for a team that's already played this season (ranks with live/starting,
+    // it's about to become a hero), and a season-opener countdown for a team with
+    // no completed game yet (ranks with offseason, ordered by days-out below).
+    const rank=s=>
+      s.featuredStatus==='live'||s.featuredStatus==='starting' ? 0 :
+      s.featuredStatus==='upcoming'                             ? (s.lastResult?1:3) :
+      s.featuredStatus==='final'                                ? 2 : 3;
     const sorted=TEAM_ORDER.map(k=>({key:k,data:scores[k]})).sort((a,b)=>{
-      const rd=rank(a.data.featuredStatus)-rank(b.data.featuredStatus);
-      if(rd!==0) return rd;
+      const ra=rank(a.data), rb=rank(b.data);
+      if(ra!==rb) return ra-rb;
+      if(ra===3) return (daysUntil(a.data.nextGameDateMs)??9999)-(daysUntil(b.data.nextGameDateMs)??9999);
       return (b.data.completedDateMs||0)-(a.data.completedDateMs||0);
     });
     renderAll(sorted,newsItems);
