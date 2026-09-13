@@ -102,6 +102,14 @@ function parseEvent(ev, teamId){
   const broadcast=(geoBcasts.length?geoBcasts.map(b=>b.media?.shortName).filter(Boolean):comp.broadcasts?.flatMap(b=>b.names||[]).filter(Boolean)||[]).slice(0,3).join(', ')||null;
   const situation = state==='in' ? (comp.situation?.shortDownDistanceText||null) : null;
   const possession = state==='in' ? (comp.situation?.possessionText||null) : null;
+  // possessionText is a field-position marker (e.g. "PHI 25"), not who has the
+  // ball — that's comp.situation.possession, a team id we match against ours/theirs.
+  const possTeamId = state==='in' && comp.situation?.possession!=null ? String(comp.situation.possession) : null;
+  const phiHasBall = possTeamId ? possTeamId===String(teamId) : false;
+  const oppHasBall = possTeamId ? possTeamId===oppId : false;
+  const isRedZone = state==='in' ? !!comp.situation?.isRedZone : false;
+  const phiTimeouts = state==='in' ? (isHome ? comp.situation?.homeTimeouts : comp.situation?.awayTimeouts) ?? null : null;
+  const oppTimeouts = state==='in' ? (isHome ? comp.situation?.awayTimeouts : comp.situation?.homeTimeouts) ?? null : null;
   const featuredStatus =
     state==='in'                              ? 'live'     :
     completed                                 ? 'final'    :
@@ -113,7 +121,7 @@ function parseEvent(ev, teamId){
     featuredStatus==='starting' ? 'Starting now…' :
     state==='pre'               ? fmtFull(dateMs) :
                                   detail||'Final';
-  return { featuredStatus, isHome, oppAbbr, oppId, oppColor, oppColorAlt, phiScore, oppScore, phiRecord, oppRecord, venue, dateMs, note, completed, gameNote, isPlayoff, seriesSummary, broadcast, situation, possession, eventId:ev.id||null };
+  return { featuredStatus, isHome, oppAbbr, oppId, oppColor, oppColorAlt, phiScore, oppScore, phiRecord, oppRecord, venue, dateMs, note, completed, gameNote, isPlayoff, seriesSummary, broadcast, situation, possession, phiHasBall, oppHasBall, isRedZone, phiTimeouts, oppTimeouts, eventId:ev.id||null };
 }
 
 function nextSeasonNote(path){
@@ -457,6 +465,11 @@ async function fetchTeamData(key){
       broadcast: featured.broadcast||null,
       situation: featured.situation||null,
       possession: featured.possession||null,
+      phiHasBall: featured.phiHasBall||false,
+      oppHasBall: featured.oppHasBall||false,
+      isRedZone: featured.isRedZone||false,
+      phiTimeouts: featured.phiTimeouts??null,
+      oppTimeouts: featured.oppTimeouts??null,
       phiRecord: showRecords?(soccerPhiRecord||featured.phiRecord||phiRecordFallback||null):null,
       oppRecord: showRecords?(soccerOppRecord||featured.oppRecord||oppRecordFallback||null):null,
       scoringPlays,
@@ -575,17 +588,20 @@ function renderHero(key,data){
   const plays=f.scoringPlays||[];
   const usPlays=plays.filter(p=>p.side==='us').slice(-1);
   const oppPlays=plays.filter(p=>p.side==='opp').slice(-1);
+  const timeoutDots=n=>'<div class="hero-timeouts">'+[0,1,2].map(i=>'<span class="hero-timeout-dot'+(i<n?' on':'')+'"></span>').join('')+'</div>';
   const phiSide='<div class="hero-side">'
     +'<div class="'+lift('hero-wm')+'" style="background-image:url('+t.logo+')"></div>'
-    +'<div class="hero-abbr">PHI</div>'
+    +'<div class="hero-abbr">PHI'+(f.phiHasBall?'<span class="hero-ball" title="Philadelphia has the ball"></span>':'')+'</div>'
     +(isCountdown?'':'<div class="hero-score'+(phiLeads?' leading':'')+'" id="hero-phi-score-'+key+'">'+phiS+'</div>')
     +(f.phiRecord?'<div class="hero-record">'+escHtml(f.phiRecord)+'</div>':'')
+    +(f.phiTimeouts!=null?timeoutDots(f.phiTimeouts):'')
     +'</div>';
   const oppSide='<div class="hero-side">'
     +(f.oppLogo?'<div class="hero-wm opp" style="background-image:url('+f.oppLogo+')"></div>':'')
-    +'<div class="hero-abbr">'+escHtml(f.oppAbbr)+'</div>'
+    +'<div class="hero-abbr">'+escHtml(f.oppAbbr)+(f.oppHasBall?'<span class="hero-ball" title="'+escHtml(f.oppAbbr)+' has the ball"></span>':'')+'</div>'
     +(isCountdown?'':'<div class="hero-score'+(oppLeads?' leading':'')+'">'+oppS+'</div>')
     +(f.oppRecord?'<div class="hero-record">'+escHtml(f.oppRecord)+'</div>':'')
+    +(f.oppTimeouts!=null?timeoutDots(f.oppTimeouts):'')
     +'</div>';
   const vs=isCountdown
     ?'<div class="hero-vs hero-vs-countdown"><div class="hero-countdown" id="hero-countdown-'+key+'">--:--</div><span>Starts in</span></div>'
@@ -594,6 +610,7 @@ function renderHero(key,data){
     +(f.isPlayoff?' · '+fmtPlayoffNote(f.gameNote):'');
   const broadcast=[f.broadcast,f.venue].filter(Boolean).join(' · ');
   const situationText=[f.situation,f.possession].filter(Boolean).join(' · ');
+  const redZoneBadge=f.isRedZone?'<div class="hero-redzone">Red Zone</div>':'';
   const tickerItems=[
     ...usPlays.map(p=>'<span class="hero-ticker-item"><b class="hero-ticker-us">PHI</b> '+escHtml(p.label)+' — '+escHtml(p.text)+'</span>'),
     ...oppPlays.map(p=>'<span class="hero-ticker-item"><b>'+escHtml(f.oppAbbr)+'</b> '+escHtml(p.label)+' — '+escHtml(p.text)+'</span>'),
@@ -621,6 +638,7 @@ function renderHero(key,data){
     +'<div class="hero-foot">'
       +'<div class="hero-clock">'+escHtml(f.note||'')+'</div>'
       +(situationText?'<div class="sep"></div><div class="hero-situation">'+escHtml(situationText)+'</div>':'')
+      +(redZoneBadge?'<div class="sep"></div>'+redZoneBadge:'')
     +'</div>'
     +scoringTicker
   +'</section>';
