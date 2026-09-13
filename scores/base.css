@@ -14,6 +14,7 @@
   }
 
   @keyframes tsPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(1.25)}}
+  @keyframes tsSpineGlow{0%,100%{box-shadow:0 0 4px 1px var(--team-color);}50%{box-shadow:0 0 14px 3px var(--team-color);}}
   @keyframes tsFlash{0%{box-shadow:inset 0 0 0 0 rgba(255,255,255,0)}25%{box-shadow:inset 0 0 60px 0 rgba(255,255,255,.35)}100%{box-shadow:inset 0 0 0 0 rgba(255,255,255,0)}}
   @keyframes tsRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
   @keyframes tsShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
@@ -122,9 +123,9 @@
   .hero-vs.countdown-done span{display:none;}
   .hero-countdown{font-family:'Bebas Neue',sans-serif;font-size:clamp(64px,10vw,140px);line-height:.9;
     letter-spacing:.03em;color:#fff;font-variant-numeric:tabular-nums;text-shadow:0 6px 40px rgba(0,0,0,.45);}
-  .hero-foot{position:relative;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;padding:0 32px 6px;}
+  .hero-foot{position:relative;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;padding:0 32px 6px;row-gap:6px;}
   .hero:not(:has(.hero-ticker)) .hero-foot{padding-bottom:20px;}
-  .hero-clock{font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,2.6vw,34px);letter-spacing:.08em;color:#fff;}
+  .hero-clock{font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,2.6vw,34px);letter-spacing:.08em;color:#fff;white-space:nowrap;}
   .hero-foot .sep{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.35);flex-shrink:0;}
   .hero-situation{font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;
     color:rgba(255,255,255,.78);text-shadow:0 1px 6px rgba(0,0,0,.5);text-align:center;}
@@ -156,6 +157,7 @@
   .card.idle .card-wm,.card.off .card-wm{opacity:calc(.05 * var(--wm,1));}
   .card.idle .card-wm.lift,.card.off .card-wm.lift{opacity:calc(.09 * var(--wm,1));}
   .card.idle .card-name,.card.off .card-name{color:#c9cdd7;}
+  .card.fresh .card-spine{width:5px;animation:tsSpineGlow 1.8s ease-in-out infinite;}
   .card.flash{animation:tsFlash 1.2s ease-out;}
   main.no-hero .card{padding:19px 20px 17px;}
   /* Per-logo weight: ESPN's marks differ wildly in ink coverage and contrast,

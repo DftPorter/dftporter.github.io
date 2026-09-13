@@ -687,6 +687,8 @@ function renderCard(key,data){
         +'</span>'
       :'');
 
+  const g0=data.lastResult;
+  const fresh=!off&&!!g0&&(Date.now()-(g0.dateMs||0))<=2*60*60*1000;
   let body;
   if(off){
     body=days
@@ -723,7 +725,7 @@ function renderCard(key,data){
     && !!data.lastResult && (Date.now()-(data.lastResult.dateMs||0))>cadenceMs*1.4
     && !(nextMs && nextMs-Date.now()<=60*60*1000);
 
-  return '<article class="card'+(off?' off':'')+(soon?' soon':'')+(idle?' idle':'')+'" data-team="'+key+'" style="--team-color:'+t.color+'">'
+  return '<article class="card'+(off?' off':'')+(soon?' soon':'')+(idle?' idle':'')+(fresh?' fresh':'')+'" data-team="'+key+'" style="--team-color:'+t.color+'">'
     +'<div class="card-wm'+(t.liftLogo?' lift':'')+'" style="background-image:url('+t.logo+')"></div>'
     +'<div class="card-spine"></div>'
     +'<div class="card-head"><div class="card-name">'+escHtml(t.name)+'</div><div class="card-sport">'+t.sport+'</div></div>'
@@ -1030,8 +1032,10 @@ async function fetchScores(silent=false){
     // no completed game yet (ranks with offseason, ordered by days-out below).
     const rank=s=>
       s.featuredStatus==='live'||s.featuredStatus==='starting' ? 0 :
-      s.featuredStatus==='upcoming'                             ? (s.lastResult?1:3) :
+      s.featuredStatus==='upcoming'                             ? (s.lastResult&&(s.featuredDateMs-Date.now())<=60*60*1000?1:2) :
       s.featuredStatus==='final'                                ? 2 : 3;
+    // 'upcoming' teams beyond the 60-min hero window fall back to rank 2, tied
+    // with finals — sorted below by completedDateMs/nextGameDateMs together.
     const sorted=TEAM_ORDER.map(k=>({key:k,data:scores[k]})).sort((a,b)=>{
       const ra=rank(a.data), rb=rank(b.data);
       if(ra!==rb) return ra-rb;
