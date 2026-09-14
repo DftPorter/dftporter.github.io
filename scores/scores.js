@@ -333,7 +333,10 @@ async function fetchTeamData(key){
     // though it's only days away — pull a dated range directly as a backstop.
     const spanDays = isOffseason ? 35 : 21;
     const endDt = new Date(now + spanDays*24*60*60*1000);
-    const startStr = new Date(now).toISOString().slice(0,10).replace(/-/g,'');
+    // Building the range from UTC "now" can already read as tomorrow's date
+    // once it's past 8pm ET (UTC has rolled over) — start a day early so a game
+    // ESPN still buckets under today's (US) date isn't skipped.
+    const startStr = new Date(now-24*60*60*1000).toISOString().slice(0,10).replace(/-/g,'');
     const endStr = endDt.toISOString().slice(0,10).replace(/-/g,'');
     const sb = await espnFetch(base+'/scoreboard?dates='+startStr+'-'+endStr+'&limit=300').catch(()=>null);
     if(sb?.events){
@@ -409,7 +412,10 @@ async function fetchTeamData(key){
   const fs=effectiveOffseason?'offseason':
     !featured?'offseason':
     activeLive?'live':
-    nextIsClose&&nextGame?'upcoming':
+    // parseEvent flags a pre-state game whose start time has passed as 'starting';
+    // keep that rather than flattening it to 'upcoming', so the window between
+    // scheduled kickoff and ESPN reporting the game live still shows a hero.
+    nextIsClose&&nextGame?(nextGame.featuredStatus==='starting'?'starting':'upcoming'):
     lastCompleted?featured.featuredStatus:
     nextIsNear?'upcoming':
     'offseason';
@@ -547,6 +553,16 @@ function paintSnapshot(){
   try{
     const s=JSON.parse(localStorage.getItem('snapshot')||'null');
     if(!s||Date.now()-s.ts>SNAPSHOT_TTL||!s.sorted?.length) return false;
+    // A cached snapshot can hold an 'upcoming' countdown hero whose game time has
+    // since passed (by the time this repaints) — drop it back to a plain card so
+    // we don't flash a stale hero right before the live fetch corrects it.
+    const now=Date.now();
+    s.sorted=s.sorted.map(e=>{
+      if(e.data.featuredStatus==='upcoming'&&e.data.featuredDateMs&&e.data.featuredDateMs<now-30*60*1000){
+        return {...e,data:{...e.data,featuredStatus:'final',featured:null}};
+      }
+      return e;
+    });
     renderAll(s.sorted,s.newsItems||[]);
     hasPaint=true;
     setStatus('loading','Updated '+s.time);
@@ -655,14 +671,14 @@ function soonText(ms){
 }
 function nextBadge(data){
   const ms=data.nextGameDateMs, left=ms-Date.now();
-  if(ms&&left>-60000&&left<=60*60*1000)
+  if(ms&&left>-30*60*1000&&left<=60*60*1000)
     return '<span class="soon-badge" data-start="'+ms+'">'+soonText(ms)+'</span>';
   return data.nextGameToday?'<span class="today-badge">Today</span>':'';
 }
 function tickSoonBadges(){
   document.querySelectorAll('.soon-badge').forEach(el=>{
     const ms=+el.dataset.start;
-    if(ms-Date.now()>60*60*1000||ms-Date.now()<-60000){ el.remove(); return; }
+    if(ms-Date.now()>60*60*1000||ms-Date.now()<-30*60*1000){ el.remove(); return; }
     const txt=soonText(ms);
     if(el.textContent!==txt) el.textContent=txt;
   });
@@ -702,7 +718,7 @@ function renderCard(key,data){
     const g=data.lastResult;
     if(g){
       const r=g.phiScore>g.oppScore?{c:'w',l:'W'}:g.phiScore<g.oppScore?{c:'l',l:'L'}:{c:'d',l:'D'};
-      const aged=(Date.now()-g.dateMs)>24*60*60*1000?' aged':'';body='<div class="card-scoreline'+aged+'"><div class="card-score">'+g.phiScore+'–'+g.oppScore+'</div>'
+      body='<div class="card-scoreline'+(aged?' aged':'')+'"><div class="card-score">'+g.phiScore+'–'+g.oppScore+'</div>'
         +'<div class="card-result '+r.c+'">'+r.l+'</div></div>'
         +'<div class="card-last">Last · '+(g.home?'vs ':'@ ')+escHtml(g.opp)+' · '+escHtml(g.date)+'</div>';
     } else {
@@ -833,7 +849,7 @@ function renderWire(items){
 function renderAll(sorted,newsItems){
   sorted.forEach(({key,data})=>{ _cardData[key]=data; });
   const heroEntries=sorted.filter(e=>e.data.featuredStatus==='live'||e.data.featuredStatus==='starting'
-    ||(e.data.featuredStatus==='upcoming'&&e.data.featured&&(e.data.featuredDateMs-Date.now())<=60*60*1000))
+    ||(e.data.featuredStatus==='upcoming'&&e.data.featured&&(e.data.featuredDateMs-Date.now())<=60*60*1000&&(e.data.featuredDateMs-Date.now())>-30*60*1000))
     .sort((a,b)=>{
       const rank=s=>s.featuredStatus==='live'||s.featuredStatus==='starting'?0:1;
       return rank(a.data)-rank(b.data);
@@ -1035,7 +1051,7 @@ async function fetchScores(silent=false){
     // no completed game yet (ranks with offseason, ordered by days-out below).
     const rank=s=>
       s.featuredStatus==='live'||s.featuredStatus==='starting' ? 0 :
-      s.featuredStatus==='upcoming'                             ? (s.lastResult&&(s.featuredDateMs-Date.now())<=60*60*1000?1:2) :
+      s.featuredStatus==='upcoming'                             ? (s.lastResult&&(s.featuredDateMs-Date.now())<=60*60*1000&&(s.featuredDateMs-Date.now())>-30*60*1000?1:2) :
       s.featuredStatus==='final'                                ? 2 : 3;
     // 'upcoming' teams beyond the 60-min hero window fall back to rank 2, tied
     // with finals — sorted below by completedDateMs/nextGameDateMs together.
