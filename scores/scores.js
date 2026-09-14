@@ -636,9 +636,12 @@ function renderHero(key,data){
     +'</div>'
     +'<div class="hero-grid">'+(f.isHome?oppSide+vs+phiSide:phiSide+vs+oppSide)+'</div>'
     +'<div class="hero-foot">'
-      +'<div class="hero-clock">'+escHtml(f.note||'')+'</div>'
-      +(situationText?'<div class="sep"></div><div class="hero-situation">'+escHtml(situationText)+'</div>':'')
-      +(redZoneBadge?'<div class="sep"></div>'+redZoneBadge:'')
+      +'<div class="hero-foot-row"><div class="hero-clock">'+escHtml(f.note||'')+'</div></div>'
+      +((situationText||redZoneBadge)?'<div class="hero-foot-row">'
+        +(situationText?'<div class="hero-situation">'+escHtml(situationText)+'</div>':'')
+        +(situationText&&redZoneBadge?'<div class="sep"></div>':'')
+        +redZoneBadge
+      +'</div>':'')
     +'</div>'
     +scoringTicker
   +'</section>';
@@ -689,6 +692,7 @@ function renderCard(key,data){
 
   const g0=data.lastResult;
   const fresh=!off&&!!g0&&(Date.now()-(g0.dateMs||0))<=2*60*60*1000;
+  const aged=!off&&!!g0&&(Date.now()-(g0.dateMs||0))>24*60*60*1000;
   let body;
   if(off){
     body=days
@@ -698,10 +702,9 @@ function renderCard(key,data){
     const g=data.lastResult;
     if(g){
       const r=g.phiScore>g.oppScore?{c:'w',l:'W'}:g.phiScore<g.oppScore?{c:'l',l:'L'}:{c:'d',l:'D'};
-      const aged=(Date.now()-g.dateMs)>24*60*60*1000?' aged':'';
-      body='<div class="card-scoreline'+aged+'"><div class="card-score">'+g.phiScore+'–'+g.oppScore+'</div>'
+      const aged=(Date.now()-g.dateMs)>24*60*60*1000?' aged':'';body='<div class="card-scoreline'+aged+'"><div class="card-score">'+g.phiScore+'–'+g.oppScore+'</div>'
         +'<div class="card-result '+r.c+'">'+r.l+'</div></div>'
-        +'<div class="card-last">Last · '+(g.home?'vs ':'@ ')+escHtml(g.opp)+' · '+escHtml(g.date)+' · '+g.phiScore+'–'+g.oppScore+'</div>';
+        +'<div class="card-last">Last · '+(g.home?'vs ':'@ ')+escHtml(g.opp)+' · '+escHtml(g.date)+'</div>';
     } else {
       body=days
         ? '<div class="card-count"><b>'+days+'</b><span>days out</span></div>'
@@ -725,7 +728,7 @@ function renderCard(key,data){
     && !!data.lastResult && (Date.now()-(data.lastResult.dateMs||0))>cadenceMs*1.4
     && !(nextMs && nextMs-Date.now()<=60*60*1000);
 
-  return '<article class="card'+(off?' off':'')+(soon?' soon':'')+(idle?' idle':'')+(fresh?' fresh':'')+'" data-team="'+key+'" style="--team-color:'+t.color+'">'
+  return '<article class="card'+(off?' off':'')+(soon?' soon':'')+(idle?' idle':'')+(fresh?' fresh':'')+(aged?' stale':'')+'" data-team="'+key+'" style="--team-color:'+t.color+'">'
     +'<div class="card-wm'+(t.liftLogo?' lift':'')+'" style="background-image:url('+t.logo+')"></div>'
     +'<div class="card-spine"></div>'
     +'<div class="card-head"><div class="card-name">'+escHtml(t.name)+'</div><div class="card-sport">'+t.sport+'</div></div>'

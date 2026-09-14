@@ -46,6 +46,12 @@ header{background:rgba(245,243,239,.9);border-bottom-color:rgba(0,0,0,.14);}
 [data-team=union]{--tint:32%;}
 .card.idle{background:linear-gradient(160deg,color-mix(in srgb,var(--team-color) calc(var(--tint,14%) * .55),transparent),#fbfaf8 64%);border-color:rgba(0,0,0,.09);}
 .card.idle .card-name,.card.off .card-name{color:#40454f;}
+.card.stale{--tint:6%;}
+.card.stale .card-spine{filter:saturate(.35) brightness(1.15);}
+.card.stale .card-result{filter:saturate(.4) brightness(.85);}
+.card.stale .card-head,.card.stale .card-meta,.card.stale .card-body{opacity:.4;}
+.card.stale .card-wm{opacity:calc(.05 * var(--wm,1));}
+.card.stale .card-wm.lift{opacity:calc(.1 * var(--wm,1));}
 /* Watermarks keep their team color here — grayscale reads as dirt on white,
    and a little hue is the only thing breaking up the paper. The --wm weights
    are re-tuned for light: vivid marks (Phillies red, Flyers orange) carry

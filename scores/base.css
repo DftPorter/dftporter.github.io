@@ -123,7 +123,8 @@
   .hero-vs.countdown-done span{display:none;}
   .hero-countdown{font-family:'Bebas Neue',sans-serif;font-size:clamp(64px,10vw,140px);line-height:.9;
     letter-spacing:.03em;color:#fff;font-variant-numeric:tabular-nums;text-shadow:0 6px 40px rgba(0,0,0,.45);}
-  .hero-foot{position:relative;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;padding:0 32px 6px;row-gap:6px;}
+  .hero-foot{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:0 32px 6px;}
+  .hero-foot-row{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;row-gap:4px;}
   .hero:not(:has(.hero-ticker)) .hero-foot{padding-bottom:20px;}
   .hero-clock{font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,2.6vw,34px);letter-spacing:.08em;color:#fff;white-space:nowrap;}
   .hero-foot .sep{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.35);flex-shrink:0;}
@@ -158,6 +159,12 @@
   .card.idle .card-wm.lift,.card.off .card-wm.lift{opacity:calc(.09 * var(--wm,1));}
   .card.idle .card-name,.card.off .card-name{color:#c9cdd7;}
   .card.fresh .card-spine{width:5px;animation:tsSpineGlow 1.8s ease-in-out infinite;}
+  .card.stale{--tint:6%;}
+  .card.stale .card-spine{filter:saturate(.4) brightness(.85);}
+  .card.stale .card-result{filter:saturate(.45) brightness(.9);}
+  .card.stale .card-head,.card.stale .card-meta,.card.stale .card-body{opacity:.4;}
+  .card.stale .card-wm{opacity:calc(.05 * var(--wm,1));}
+  .card.stale .card-wm.lift{opacity:calc(.1 * var(--wm,1));}
   .card.flash{animation:tsFlash 1.2s ease-out;}
   main.no-hero .card{padding:19px 20px 17px;}
   /* Per-logo weight: ESPN's marks differ wildly in ink coverage and contrast,
@@ -201,7 +208,6 @@
   main.no-hero .card-score{font-size:50px;}
   .card-result{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.06em;padding-bottom:4px;}
   .card-result.w{color:#4ade80;}.card-result.l{color:#f87171;}.card-result.d{color:#fbbf24;}
-  .card-scoreline.aged{opacity:.5;}
   .card-last{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;letter-spacing:.1em;
     text-transform:uppercase;color:var(--muted);margin-top:2px;}
   .card-count{display:flex;align-items:baseline;gap:9px;}
@@ -309,7 +315,8 @@
     .hero-score{font-size:clamp(74px,26vw,108px);}
     .hero-countdown{font-size:clamp(56px,22vw,84px);}
     .hero-rule{height:34px;}
-    .hero-foot{gap:10px;padding:0 16px 8px;}
+    .hero-foot{gap:6px;padding:0 16px 8px;}
+    .hero-foot-row{gap:10px;}
     .hero-clock{font-size:24px;}
     main{padding:16px 16px 4px;flex-direction:column;}
     .card{flex-basis:auto;min-width:0;}
