@@ -708,7 +708,7 @@ function renderCard(key,data){
 
   const g0=data.lastResult;
   const fresh=!off&&!!g0&&(Date.now()-(g0.dateMs||0))<=2*60*60*1000;
-  const aged=!off&&!!g0&&(Date.now()-(g0.dateMs||0))>24*60*60*1000;
+  const aged=!off&&!!g0&&(Date.now()-(g0.dateMs||0))>48*60*60*1000;
   let body;
   if(off){
     body=days
@@ -730,16 +730,18 @@ function renderCard(key,data){
 
   const footLabel=(off||opener)?'Opens':'Next';
   const cadenceMs=(t.cadenceDays||1.5)*24*60*60*1000;
-  const bye=!off&&!!data.lastResult&&!!data.nextGameDateMs
+  // An unusually long gap to the next game (bye, international break, etc.).
+  // Not surfaced as a badge — it only keeps the card from reading as idle.
+  const longGap=!off&&!!data.lastResult&&!!data.nextGameDateMs
     &&(data.nextGameDateMs-(data.lastResult.dateMs||0))>cadenceMs*1.6;
   const footText=off
     ? (data.nextGame||data.offseasonNote||'TBD')
-    : (data.nextGame?(bye?'<span class="bye-badge">Bye</span> ':'')+data.nextGame+nextBadge(data):'Schedule TBD');
+    : (data.nextGame?data.nextGame+nextBadge(data):'Schedule TBD');
 
   // In season but nothing happening: last game is old (relative to how often
-  // this team plays) and nothing is imminent — a bye week still counts as "on".
+  // this team plays) and nothing is imminent — a scheduled gap still counts as "on".
   const nextMs=data.nextGameDateMs||0;
-  const idle=!off && !bye && data.featuredStatus!=='live' && data.featuredStatus!=='starting'
+  const idle=!off && !longGap && data.featuredStatus!=='live' && data.featuredStatus!=='starting'
     && !data.nextGameToday
     && !!data.lastResult && (Date.now()-(data.lastResult.dateMs||0))>cadenceMs*1.4
     && !(nextMs && nextMs-Date.now()<=60*60*1000);

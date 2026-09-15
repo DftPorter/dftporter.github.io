@@ -91,7 +91,6 @@ header{background:rgba(245,243,239,.9);border-bottom-color:rgba(0,0,0,.14);}
 
 .soon-badge{color:#b45309;border-bottom-color:rgba(180,83,9,.7);}
 .today-badge{color:#b45309;border-bottom-color:rgba(180,83,9,.6);}
-.bye-badge{border-bottom-color:rgba(0,0,0,.15);}
 
 /* ── Off-season strip ── */
 .collapse{background:linear-gradient(160deg,rgba(0,0,0,.02),#fbfaf8 70%);border-color:rgba(0,0,0,.1);}

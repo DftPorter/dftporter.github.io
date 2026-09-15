@@ -230,9 +230,6 @@
   .today-badge{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
     color:#f59e0b;padding:0 0 2px 0;border-bottom:2px solid rgba(245,158,11,.7);
     margin-left:8px;white-space:nowrap;flex-shrink:0;}
-  .bye-badge{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
-    color:var(--muted-dim);padding:0 0 2px 0;border-bottom:2px solid rgba(255,255,255,.18);
-    margin-right:7px;white-space:nowrap;}
 
   /* ── Off-season collapse strip ── */
   .collapse{margin:10px 32px 0;padding:15px 18px 4px;border:1px solid rgba(255,255,255,.06);border-radius:3px;
