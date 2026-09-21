@@ -117,3 +117,21 @@ header{background:rgba(245,243,239,.9);border-bottom-color:rgba(0,0,0,.14);}
 @media(max-width:560px){
   .wire-item{border-top-color:rgba(0,0,0,.08);}
 }
+
+/* ── NFL week page ── */
+.wk-header{background:rgba(245,243,239,.9);border-bottom-color:rgba(0,0,0,.14);}
+.wk-title{color:var(--text);}
+.wk-back{color:var(--muted);}
+.wk-back:hover{color:#000;}
+.wk-section-label{border-bottom-color:rgba(0,0,0,.1);}
+.wk-section-label.live{color:#000;}
+.wk-card{background:var(--surface);}
+.wk-plain-abbr{color:#20232b;}
+.wk-plain-score{color:#111;}
+.wk-plain-score.win{color:#15803d;}
+.wk-plain-time{color:#3a3f4a;}
+.wk-plain-status{border-top-color:rgba(0,0,0,.08);}
+.wk-countdown{color:#111;}
+.wk-logo.mono{filter:grayscale(1) contrast(1.1) brightness(.9) opacity(.65);}
+.wk-bye b{color:var(--muted);}
+.wk-bye{color:var(--muted-dim);}

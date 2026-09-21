@@ -73,7 +73,7 @@ async function espnFetch(url){
   } finally{ clearTimeout(t); }
 }
 
-function parseEvent(ev, teamId){
+function parseEvent(ev, teamId, path){
   const comp = ev.competitions?.[0];
   if(!comp) return null;
   const us   = comp.competitors?.find(c=>String(c.team?.id)===String(teamId));
@@ -110,12 +110,16 @@ function parseEvent(ev, teamId){
   const isRedZone = state==='in' ? !!comp.situation?.isRedZone : false;
   const phiTimeouts = state==='in' ? (isHome ? comp.situation?.homeTimeouts : comp.situation?.awayTimeouts) ?? null : null;
   const oppTimeouts = state==='in' ? (isHome ? comp.situation?.awayTimeouts : comp.situation?.homeTimeouts) ?? null : null;
+  // NFL games are once a week, so a 2hr-before window reads as if the countdown
+  // barely exists — widen 'upcoming' to game day from 6am local for football/nfl
+  // so the Eagles get most of the day's countdown instead.
+  const isGameDay = path==='football/nfl' && isGameDayMorning(dateMs);
   const featuredStatus =
-    state==='in'                              ? 'live'     :
-    completed                                 ? 'final'    :
-    state==='pre' && dateMs<=now              ? 'starting' :
-    state==='pre' && dateMs<=now+2*60*60*1000 ? 'upcoming' :
-    state==='pre'                             ? 'final'    : 'offseason';
+    state==='in'                                          ? 'live'     :
+    completed                                             ? 'final'    :
+    state==='pre' && dateMs<=now                          ? 'starting' :
+    state==='pre' && (dateMs<=now+2*60*60*1000||isGameDay) ? 'upcoming' :
+    state==='pre'                                         ? 'final'    : 'offseason';
   const note =
     state==='in'                ? detail :
     featuredStatus==='starting' ? 'Starting now…' :
@@ -321,7 +325,7 @@ async function fetchTeamData(key){
   const recentGames=[];
   let lastCompleted=null, nextGame=null;
   for(const ev of schedEvents){
-    const p=parseEvent(ev,teamId);
+    const p=parseEvent(ev,teamId,path);
     if(!p) continue;
     if(p.completed){ lastCompleted=p; recentGames.push(p); }
     else if(!nextGame&&!p.completed){ if(p.dateMs>now-30*60*1000) nextGame=p; }
@@ -342,7 +346,7 @@ async function fetchTeamData(key){
     if(sb?.events){
       const teamEvents=sb.events.filter(e=>e.competitions?.[0]?.competitors?.some(c=>String(c.team?.id)===String(teamId)));
       for(const ev of teamEvents.sort((a,b)=>new Date(a.date)-new Date(b.date))){
-        const p = parseEvent(ev, teamId);
+        const p = parseEvent(ev, teamId, path);
         if(p && !p.completed && p.dateMs > now - 30*60*1000){ nextGame = p; break; }
       }
     }
@@ -361,7 +365,7 @@ async function fetchTeamData(key){
       const sb=await espnFetch(base+'/scoreboard?dates='+dateStr).catch(()=>null);
       if(!sb?.events) continue;
       for(const ev of sb.events){
-        const p=parseEvent(ev,teamId);
+        const p=parseEvent(ev,teamId,path);
         if(p&&p.completed&&(!lastCompleted||p.dateMs>lastCompleted.dateMs)) backGames.push(p);
       }
       // Scanning newest-first, so anything found on this pass already beats the
@@ -380,7 +384,7 @@ async function fetchTeamData(key){
   }
   if(sbRes?.events){
     for(const ev of sbRes.events){
-      const p=parseEvent(ev,teamId);
+      const p=parseEvent(ev,teamId,path);
       if(p){ liveGame=p; if(p.featuredStatus==='live') break; }
     }
   }
@@ -394,7 +398,8 @@ async function fetchTeamData(key){
   }
 
   const activeLive=liveGame?.featuredStatus==='live'?liveGame:null;
-  const nextIsClose=nextGame&&(nextGame.dateMs-now)<=2*60*60*1000;
+  const nextGameDay=path==='football/nfl'&&nextGame&&isGameDayMorning(nextGame.dateMs);
+  const nextIsClose=nextGame&&((nextGame.dateMs-now)<=2*60*60*1000||nextGameDay);
   const nextIsNear=nextGame&&(nextGame.dateMs-now)<=7*24*60*60*1000;
 
   const seasonTypeNum=typeof seasonType==='object'?seasonType?.type:seasonType;
@@ -428,7 +433,7 @@ async function fetchTeamData(key){
   const soccerOppRecord=isSoccer?(mlsRecords[featured?.oppId||'']||null):null;
 
   let streak=null, form=null;
-  const allParsed=[...schedEvents].reverse().map(ev=>parseEvent(ev,teamId)).filter(p=>p?.completed);
+  const allParsed=[...schedEvents].reverse().map(ev=>parseEvent(ev,teamId,path)).filter(p=>p?.completed);
   if(allParsed.length){
     const outcomes=allParsed.map(p=>p.phiScore>p.oppScore?'W':p.phiScore<p.oppScore?'L':'D');
     let count=1;
@@ -663,6 +668,18 @@ function renderHero(key,data){
   +'</section>';
 }
 
+// Same calendar day as targetMs, local time, and no earlier than 6am.
+function isGameDayMorning(targetMs){
+  const now=new Date();
+  return new Date(targetMs).toDateString()===now.toDateString() && now.getHours()>=6;
+}
+// NFL's weekly cadence means a 60-min pre-kickoff window barely registers as a
+// countdown; football/nfl gets from 6am on kickoff day instead.
+function heroWindowOk(featuredDateMs,path){
+  const diff=featuredDateMs-Date.now();
+  if(diff<=60*60*1000&&diff>-30*60*1000) return true;
+  return path==='football/nfl'&&isGameDayMorning(featuredDateMs);
+}
 function soonText(ms){
   const min=Math.round((ms-Date.now())/60000);
   if(min<=0) return 'Starting now';
@@ -851,7 +868,7 @@ function renderWire(items){
 function renderAll(sorted,newsItems){
   sorted.forEach(({key,data})=>{ _cardData[key]=data; });
   const heroEntries=sorted.filter(e=>e.data.featuredStatus==='live'||e.data.featuredStatus==='starting'
-    ||(e.data.featuredStatus==='upcoming'&&e.data.featured&&(e.data.featuredDateMs-Date.now())<=60*60*1000&&(e.data.featuredDateMs-Date.now())>-30*60*1000))
+    ||(e.data.featuredStatus==='upcoming'&&e.data.featured&&heroWindowOk(e.data.featuredDateMs,TEAMS[e.key].path)))
     .sort((a,b)=>{
       const rank=s=>s.featuredStatus==='live'||s.featuredStatus==='starting'?0:1;
       return rank(a.data)-rank(b.data);
@@ -951,8 +968,15 @@ function startHeroCountdown(key,targetMs){
       el.remove();
       return;
     }
-    const m=Math.floor(diff/60000), s=Math.floor((diff%60000)/1000);
-    el.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    const totalMin=Math.floor(diff/60000), s=Math.floor((diff%60000)/1000);
+    // Game-day countdowns can run for hours (football's full-day window) —
+    // switch to H:MM:SS rather than an unbounded MM:SS once past an hour.
+    if(totalMin>=60){
+      const h=Math.floor(totalMin/60), m=totalMin%60;
+      el.textContent=h+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    } else {
+      el.textContent=String(totalMin).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    }
   };
   tick();
   if(!document.getElementById('hero-countdown-'+key)) return;
@@ -1051,14 +1075,14 @@ async function fetchScores(silent=false){
     // game for a team that's already played this season (ranks with live/starting,
     // it's about to become a hero), and a season-opener countdown for a team with
     // no completed game yet (ranks with offseason, ordered by days-out below).
-    const rank=s=>
+    const rank=(s,key)=>
       s.featuredStatus==='live'||s.featuredStatus==='starting' ? 0 :
-      s.featuredStatus==='upcoming'                             ? (s.lastResult&&(s.featuredDateMs-Date.now())<=60*60*1000&&(s.featuredDateMs-Date.now())>-30*60*1000?1:2) :
+      s.featuredStatus==='upcoming'                             ? (s.lastResult&&heroWindowOk(s.featuredDateMs,TEAMS[key].path)?1:2) :
       s.featuredStatus==='final'                                ? 2 : 3;
-    // 'upcoming' teams beyond the 60-min hero window fall back to rank 2, tied
+    // 'upcoming' teams beyond the hero window fall back to rank 2, tied
     // with finals — sorted below by completedDateMs/nextGameDateMs together.
     const sorted=TEAM_ORDER.map(k=>({key:k,data:scores[k]})).sort((a,b)=>{
-      const ra=rank(a.data), rb=rank(b.data);
+      const ra=rank(a.data,a.key), rb=rank(b.data,b.key);
       if(ra!==rb) return ra-rb;
       if(ra===3) return (daysUntil(a.data.nextGameDateMs)??9999)-(daysUntil(b.data.nextGameDateMs)??9999);
       return (b.data.completedDateMs||0)-(a.data.completedDateMs||0);

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NFL Scores — The Score</title>
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#08090d" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f3ef" media="(prefers-color-scheme: light)">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500&family=Barlow+Condensed:wght@300;400;600;700;900&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="light.css" media="(prefers-color-scheme: light)">
+<link rel="stylesheet" href="nfl-week.css">
+</head>
+<body>
+<header class="wk-header">
+  <a class="wk-back" href="index.html" aria-label="Back to The Score">&#8592; The Score</a>
+  <h1 class="wk-title" id="wk-title">NFL — Week</h1>
+  <div class="status">
+    <span class="dot" id="status-dot" aria-hidden="true"></span>
+    <span id="update-time">Fetching scores…</span>
+  </div>
+</header>
+
+<div id="error-banner" role="alert"><div id="error-banner-inner"></div></div>
+
+<main class="wk-main" id="wk-main" aria-label="NFL scores this week"></main>
+
+<footer>
+  Live data via ESPN
+</footer>
+
+<script src="nfl-week.js"></script>
+</body>
+</html>
