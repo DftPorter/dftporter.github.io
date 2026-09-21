@@ -9,12 +9,11 @@
 
 .wk-main{max-width:1200px;margin:0 auto;padding:28px 32px 40px;display:block;}
 
-.wk-grid{column-width:300px;column-gap:14px;}
+.wk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;align-items:start;}
 
 /* ── Plain card (final / upcoming) ── */
 .wk-card{position:relative;overflow:hidden;border-radius:3px;border:1px solid var(--line);
   background:var(--surface);animation:tsRise .4s ease both;}
-.wk-grid .wk-card{break-inside:avoid;margin-bottom:14px;}
 .wk-plain{display:flex;flex-direction:column;padding:16px 18px;}
 .wk-daylabel{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;
   color:var(--muted);height:14px;margin-bottom:6px;}
@@ -71,7 +70,7 @@
   .wk-header{padding:16px 16px 13px;}
   .wk-title{font-size:26px;order:-1;flex:0 0 100%;}
   .wk-main{padding:20px 16px 30px;}
-  .wk-grid{column-width:auto;column-count:1;}
+  .wk-grid{grid-template-columns:1fr;}
   .wk-live{padding:20px 18px 24px;}
   .wk-live-score{font-size:clamp(40px,13vw,56px);}
   .wk-live-wm{width:180px;height:180px;}

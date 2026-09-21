@@ -131,6 +131,7 @@ header{background:rgba(245,243,239,.9);border-bottom-color:rgba(0,0,0,.14);}
 .wk-plain-score.win{color:#15803d;}
 .wk-plain-time{color:#3a3f4a;}
 .wk-plain-status{border-top-color:rgba(0,0,0,.08);}
+.wk-plain-status.pre{color:var(--muted-dim);}
 .wk-countdown{color:#111;}
 .wk-logo.mono{filter:grayscale(1) contrast(1.1) brightness(.9) opacity(.65);}
 .wk-bye b{color:var(--muted);}
