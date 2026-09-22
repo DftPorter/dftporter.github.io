@@ -22,4 +22,4 @@ Static site. No build step.
 - Live data comes from free public services: Nominatim (geocoding and places) and OSRM (drive times). Both rate-limit at about one request a second and ask for a contact in the User-Agent for heavy use. Fine for personal traffic; swap in keyed providers if it gets popular.
 - Drive times are free-flow, with no traffic.
 - The page is fetched network-first, so a new deploy lands on the next visit; icons and assets are cache-first.
-- `index.html` carries a `hw-deployed` meta stamp — that is what switches the service worker on. Re-bundling from the project re-adds it.
+- The service worker registers on any https host except the authoring preview (which serves from a `/serve/` path).
