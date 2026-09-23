@@ -333,21 +333,29 @@ async function fetchTeamData(key){
 
   if(!nextGame){
     // The team-schedule endpoint sometimes stops at the end of the current
-    // season type (e.g. preseason) and omits the next one's opener, even
-    // though it's only days away — pull a dated range directly as a backstop.
+    // season type (e.g. preseason), or — as with MLS — just stalls on a stale
+    // page of already-completed games, and omits the next one's opener even
+    // though it's only days away. Used to backstop this with one dated-range
+    // request ("dates=START-END"), but ESPN's scoreboard now 400s on that
+    // range syntax for every league we've checked, so walk forward day-by-day
+    // instead (a batch of days at a time, to keep this from being 20+ serial
+    // round-trips), starting from a day early so a game ESPN still buckets
+    // under today's (US) date isn't skipped by a UTC rollover.
     const spanDays = isOffseason ? 35 : 21;
-    const endDt = new Date(now + spanDays*24*60*60*1000);
-    // Building the range from UTC "now" can already read as tomorrow's date
-    // once it's past 8pm ET (UTC has rolled over) — start a day early so a game
-    // ESPN still buckets under today's (US) date isn't skipped.
-    const startStr = new Date(now-24*60*60*1000).toISOString().slice(0,10).replace(/-/g,'');
-    const endStr = endDt.toISOString().slice(0,10).replace(/-/g,'');
-    const sb = await espnFetch(base+'/scoreboard?dates='+startStr+'-'+endStr+'&limit=300').catch(()=>null);
-    if(sb?.events){
-      const teamEvents=sb.events.filter(e=>e.competitions?.[0]?.competitors?.some(c=>String(c.team?.id)===String(teamId)));
-      for(const ev of teamEvents.sort((a,b)=>new Date(a.date)-new Date(b.date))){
-        const p = parseEvent(ev, teamId, path);
-        if(p && !p.completed && p.dateMs > now - 30*60*1000){ nextGame = p; break; }
+    const BATCH_DAYS = 7;
+    for(let start=-1; start<spanDays && !nextGame; start+=BATCH_DAYS){
+      const offsets=[...Array(Math.min(BATCH_DAYS, spanDays-start))].map((_,i)=>start+i);
+      const boards=await Promise.all(offsets.map(d=>{
+        const dateStr=new Date(now+d*24*60*60*1000).toISOString().slice(0,10).replace(/-/g,'');
+        return espnFetch(base+'/scoreboard?dates='+dateStr).catch(()=>null);
+      }));
+      for(const sb of boards){
+        if(nextGame || !sb?.events) continue;
+        const teamEvents=sb.events.filter(e=>e.competitions?.[0]?.competitors?.some(c=>String(c.team?.id)===String(teamId)));
+        for(const ev of teamEvents.sort((a,b)=>new Date(a.date)-new Date(b.date))){
+          const p = parseEvent(ev, teamId, path);
+          if(p && !p.completed && p.dateMs > now - 30*60*1000){ nextGame = p; break; }
+        }
       }
     }
   }
