@@ -125,7 +125,12 @@ header{background:rgba(245,243,239,.9);border-bottom-color:rgba(0,0,0,.14);}
 .wk-back:hover{color:#000;}
 .wk-section-label{border-bottom-color:rgba(0,0,0,.1);}
 .wk-section-label.live{color:#000;}
-.wk-card{background:var(--surface);}
+/* :not(.wk-live) — the live card is also a .wk-card, and this rule would
+   otherwise tie with .wk-live's colored gradient on specificity and win on
+   load order (light.css loads last), silently blanking the live band to
+   plain white. The live band stays dark in light mode on purpose (see note
+   at top of file), so it must keep its own background untouched here. */
+.wk-card:not(.wk-live){background:var(--surface);}
 .wk-plain-abbr{color:#20232b;}
 .wk-plain-score{color:#111;}
 .wk-plain-score.win{color:#15803d;}
