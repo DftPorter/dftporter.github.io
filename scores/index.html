@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Score</title>
+<!-- Paints the right background immediately, before base.css/light.css finish
+     downloading — otherwise the browser's default white shows through on every
+     load/reload (a flash before the real stylesheet takes over). Kept in sync
+     with the --bg values below and the theme-color metas above. -->
+<style>html,body{background:#08090d}
+@media(prefers-color-scheme:light){html,body{background:#f5f3ef}}</style>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon.png">

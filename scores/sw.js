@@ -1,4 +1,4 @@
-const VERSION = 'the-score-v16';
+const VERSION = 'the-score-v17';
 const SHELL = ['./', './index.html', './scores.js', './base.css', './light.css', './manifest.json', './icon.png', './icon-192.png', './icon-512.png',
   './nfl-week.html', './nfl-week.js', './nfl-week.css',
   './nba-day.html', './nba-day.js'];
