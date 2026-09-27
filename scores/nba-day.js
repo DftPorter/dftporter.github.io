@@ -13,6 +13,15 @@ function fmtTime(ms){
   return new Date(ms).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})
     .replace(':00','').replace(' AM','a').replace(' PM','p');
 }
+// The live card's diagonal split doubles as a lead indicator, same as the main
+// dashboard's hero: away's (left) share of the card tracks its share of the
+// score. Smoothed (+1 each) so a 1-0 start isn't a shutout of the frame, and
+// clamped to 34–66% so the seam can never cross either score column.
+function computeSplit(awayScore,homeScore){
+  if(typeof awayScore!=='number'||typeof homeScore!=='number'||(!awayScore&&!homeScore)) return 50;
+  const share=(awayScore+1)/(awayScore+homeScore+2);
+  return Math.round(Math.max(.34,Math.min(.66,share))*100);
+}
 async function espnFetch(url){
   const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),8000);
   try{ const r=await fetch(url,{signal:ctrl.signal}); if(!r.ok) throw new Error('ESPN '+r.status); return r.json(); }
@@ -101,7 +110,8 @@ function renderPlainCard(g){
 
 function renderLiveCard(g){
   const c1=g.away.color||'#3d3d3d', c2=g.home.color||'#3d3d3d';
-  return '<div class="wk-card wk-live" style="--c1:'+c1+';--c2:'+c2+'" role="group" aria-label="'+escHtml(ariaLabel(g))+'">'
+  const splitPct=computeSplit(g.away.score,g.home.score);
+  return '<div class="wk-card wk-live" style="--c1:'+c1+';--c2:'+c2+';--split:'+splitPct+'%" role="group" aria-label="'+escHtml(ariaLabel(g))+'">'
     +'<div class="wk-live-status"><span class="dot"></span>'+escHtml(liveStatusText(g))+'</div>'
     +'<div class="wk-live-teams">'
     +team(g.away,g.away.score>g.home.score)
