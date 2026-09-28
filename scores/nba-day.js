@@ -109,10 +109,12 @@ function renderPlainCard(g){
 }
 
 function renderLiveCard(g){
+  const isFinal=g.completed;
   const c1=g.away.color||'#3d3d3d', c2=g.home.color||'#3d3d3d';
   const splitPct=computeSplit(g.away.score,g.home.score);
-  return '<div class="wk-card wk-live" style="--c1:'+c1+';--c2:'+c2+';--split:'+splitPct+'%" role="group" aria-label="'+escHtml(ariaLabel(g))+'">'
-    +'<div class="wk-live-status"><span class="dot"></span>'+escHtml(liveStatusText(g))+'</div>'
+  const statusText=isFinal?'Final':liveStatusText(g);
+  return '<div class="wk-card wk-live'+(isFinal?' wk-final':'')+'" style="--c1:'+c1+';--c2:'+c2+';--split:'+splitPct+'%" role="group" aria-label="'+escHtml(ariaLabel(g))+'">'
+    +'<div class="wk-live-status">'+(isFinal?'':'<span class="dot"></span>')+escHtml(statusText)+'</div>'
     +'<div class="wk-live-teams">'
     +team(g.away,g.away.score>g.home.score)
     +'<div class="wk-live-vs"><span class="wk-live-rule"></span></div>'
@@ -126,11 +128,36 @@ function renderLiveCard(g){
   }
 }
 
+// Set true the one time a countdown's expiry triggers an extra fetch (see
+// tickCountdowns below), and never reset — including by the render() that
+// fetch itself causes. It used to get cleared at the top of every render(),
+// which included the render from this very fetch: as long as ESPN hadn't
+// flipped the game live yet, the still-expired countdown re-armed the flag
+// and fired another fetch a second later, forever (a visible flash every
+// second from the full re-render, until the game finally went live).
 let countdownFetchDone=false;
 let pollTimer=null;
 
+// Same client-side tracking as the main dashboard: ESPN gives us no "game
+// ended at" timestamp (only the kickoff/tip-off time), so we stamp the first
+// moment we observe a game as completed and use that to decide whether it's
+// still within the "stay large after final" window. Keyed by ESPN's event id
+// since each game already has a unique one (no team-key disambiguation needed).
+const HERO_FINAL_WINDOW_MS=60*60*1000;
+let finalSeenAt={};
+function heroFinalWindowOk(seenAtMs){
+  return !!seenAtMs && (Date.now()-seenAtMs)<=HERO_FINAL_WINDOW_MS;
+}
+function updateFinalSeenAt(games){
+  const ids=new Set(games.map(g=>g.id));
+  Object.keys(finalSeenAt).forEach(id=>{ if(!ids.has(id)) delete finalSeenAt[id]; });
+  games.forEach(g=>{
+    if(g.completed){ if(!finalSeenAt[g.id]) finalSeenAt[g.id]=Date.now(); }
+    else delete finalSeenAt[g.id];
+  });
+}
+
 function render(games,feedDate){
-  countdownFetchDone=false;
   // ESPN's scoreboard returns the next date that has games, not necessarily
   // today — label the page with the date the feed actually gave us.
   const d=feedDate?new Date(feedDate.slice(0,4)+'-'+feedDate.slice(4,6)+'-'+feedDate.slice(6,8)+'T12:00:00'):new Date();
@@ -140,8 +167,15 @@ function render(games,feedDate){
   const main=document.getElementById('wk-main');
   if(!games.length){ main.innerHTML='<div class="wk-loading">No games scheduled today.</div>'; return; }
 
-  const live=games.filter(g=>g.state==='in');
-  const rest=games.filter(g=>g.state!=='in').sort((a,b)=>a.dateMs-b.dateMs);
+  updateFinalSeenAt(games);
+  const stayLarge=g=>g.completed&&heroFinalWindowOk(finalSeenAt[g.id]);
+  const live=games.filter(g=>g.state==='in'||stayLarge(g))
+    .sort((a,b)=>{
+      const rank=g=>g.state==='in'?0:1;
+      const r=rank(a)-rank(b);
+      return r||((finalSeenAt[b.id]||0)-(finalSeenAt[a.id]||0));
+    });
+  const rest=games.filter(g=>!(g.state==='in'||stayLarge(g))).sort((a,b)=>a.dateMs-b.dateMs);
 
   let html=live.map(renderLiveCard).join('');
   html+='<div class="wk-grid">'+rest.map(renderPlainCard).join('')+'</div>';

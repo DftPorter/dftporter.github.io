@@ -611,6 +611,7 @@ function daysUntil(ms){
 function renderHero(key,data){
   const t=TEAMS[key], f=data.featured;
   const isCountdown=data.featuredStatus==='upcoming';
+  const isFinal=data.featuredStatus==='final';
   const phiS=f.phiScore??0, oppS=f.oppScore??0;
   const phiLeads=phiS>oppS, oppLeads=oppS>phiS;
   const lift=cls=>t.liftLogo?cls+' lift':cls;
@@ -635,7 +636,7 @@ function renderHero(key,data){
   const vs=isCountdown
     ?'<div class="hero-vs hero-vs-countdown"><div class="hero-countdown" id="hero-countdown-'+key+'">--:--</div><span>Starts in</span></div>'
     :'<div class="hero-vs"><div class="hero-rule"></div><span>AT</span><div class="hero-rule"></div></div>';
-  const kickerText=t.sport+' · '+t.name+(isCountdown?' starting soon':data.featuredStatus==='starting'?' starting':' live')
+  const kickerText=t.sport+' · '+t.name+(isCountdown?' starting soon':data.featuredStatus==='starting'?' starting':isFinal?' final':' live')
     +(f.isPlayoff?' · '+fmtPlayoffNote(f.gameNote):'');
   const broadcast=[f.broadcast,f.venue].filter(Boolean).join(' · ');
   const situationText=[f.situation,f.possession].filter(Boolean).join(' · ');
@@ -660,7 +661,7 @@ function renderHero(key,data){
   }
   return '<section class="hero'+(f&&f.isHome?' home':'')+'" id="hero-'+key+'" data-team="'+key+'" style="--team-color:'+t.color+(heroOppColor?';--opp-color:'+heroOppColor+';--split:'+splitPct+'%':'')+'">'
     +'<div class="hero-top">'
-      +'<div class="hero-kicker"><span class="dot" aria-hidden="true"></span><span>'+escHtml(kickerText)+'</span></div>'
+      +'<div class="hero-kicker">'+(isFinal?'':'<span class="dot" aria-hidden="true"></span>')+'<span>'+escHtml(kickerText)+'</span></div>'
       +(broadcast?'<div class="hero-broadcast">'+escHtml(broadcast)+'</div>':'')
     +'</div>'
     +'<div class="hero-grid">'+(f.isHome?oppSide+vs+phiSide:phiSide+vs+oppSide)+'</div>'
@@ -687,6 +688,31 @@ function heroWindowOk(featuredDateMs,path){
   const diff=featuredDateMs-Date.now();
   if(diff<=60*60*1000&&diff>-30*60*1000) return true;
   return path==='football/nfl'&&isGameDayMorning(featuredDateMs);
+}
+// Keep a just-finished game full-width for a while after the final whistle,
+// rather than dropping straight back to a plain card the instant it ends.
+// Measured from finalSeenAt (see its declaration above), NOT completedDateMs —
+// that's the game's kickoff time, already hours in the past by the time any
+// real game goes final.
+const HERO_FINAL_WINDOW_MS=60*60*1000;
+function heroFinalWindowOk(seenAtMs){
+  return !!seenAtMs && (Date.now()-seenAtMs)<=HERO_FINAL_WINDOW_MS;
+}
+// Called with the {key,data} entries about to be rendered (fresh from a
+// fetch, or restored from the cold-open snapshot) so heroEntries below can
+// look up how long ago (in wall-clock time) each final was first seen.
+function updateFinalSeenAt(entries){
+  entries.forEach(({key,data})=>{
+    if(data?.featuredStatus==='final'&&data.completedDateMs){
+      const prev=finalSeenAt[key];
+      // Same completed game we already stamped (matched by its kickoff time,
+      // which is unique per game) — keep the original stamp. A different
+      // (newer) completed game, or nothing tracked yet — stamp it now.
+      if(!prev||prev.dateMs!==data.completedDateMs) finalSeenAt[key]={dateMs:data.completedDateMs,seenAt:Date.now()};
+    } else {
+      delete finalSeenAt[key];
+    }
+  });
 }
 function soonText(ms){
   const min=Math.round((ms-Date.now())/60000);
@@ -875,11 +901,17 @@ function renderWire(items){
 
 function renderAll(sorted,newsItems){
   sorted.forEach(({key,data})=>{ _cardData[key]=data; });
+  updateFinalSeenAt(sorted);
   const heroEntries=sorted.filter(e=>e.data.featuredStatus==='live'||e.data.featuredStatus==='starting'
-    ||(e.data.featuredStatus==='upcoming'&&e.data.featured&&heroWindowOk(e.data.featuredDateMs,TEAMS[e.key].path)))
+    ||(e.data.featuredStatus==='upcoming'&&e.data.featured&&heroWindowOk(e.data.featuredDateMs,TEAMS[e.key].path))
+    ||(e.data.featuredStatus==='final'&&heroFinalWindowOk(finalSeenAt[e.key]?.seenAt)))
     .sort((a,b)=>{
-      const rank=s=>s.featuredStatus==='live'||s.featuredStatus==='starting'?0:1;
-      return rank(a.data)-rank(b.data);
+      const rank=s=>s.featuredStatus==='live'||s.featuredStatus==='starting'?0:s.featuredStatus==='final'?1:2;
+      const r=rank(a.data)-rank(b.data);
+      // Among finals, the one we most recently saw go final leads (kickoff
+      // time isn't a proxy for that — a late-starting game can finish before
+      // an earlier one that's still in overtime).
+      return r||((finalSeenAt[b.key]?.seenAt||0)-(finalSeenAt[a.key]?.seenAt||0));
     });
   const heroKeys=new Set(heroEntries.map(e=>e.key));
   const isOpenerCountdown=e=>e.data.featuredStatus==='upcoming'&&!e.data.lastResult;
@@ -960,6 +992,16 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 let countdownSeconds=300, countdownInterval=null, refreshTimeout=null, prevScores={};
+// ESPN's feeds never say when a game actually ENDED — completedDateMs is the
+// kickoff/tipoff time, which by the time a game is final is already well past
+// an hour ago for anything but the shortest game. So the "keep the hero up
+// for an hour after final" window can't be measured from that timestamp; it's
+// measured from the moment WE first observe the game as final instead, kept
+// here across poll cycles the same way prevScores is. Keyed by team, each
+// entry is the completed game's own kickoff time (to recognize "this is a
+// different final game than the one already being tracked") plus the wall
+// clock time we first saw it.
+let finalSeenAt={};
 let heroCountdownIntervals={};
 function startHeroCountdown(key,targetMs){
   clearInterval(heroCountdownIntervals[key]);

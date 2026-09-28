@@ -115,11 +115,12 @@ function renderPlainCard(g,dayLabelText){
 }
 
 function renderLiveCard(g){
-  const statusText='Q'+g.period+' · '+g.clock;
+  const isFinal=g.completed;
+  const statusText=isFinal?'Final':'Q'+g.period+' · '+g.clock;
   const c1=g.away.color||'#3d3d3d', c2=g.home.color||'#3d3d3d';
   const splitPct=computeSplit(g.away.score,g.home.score);
-  return '<div class="wk-card wk-live" style="--c1:'+c1+';--c2:'+c2+';--split:'+splitPct+'%" role="group" aria-label="'+escHtml(ariaLabel(g))+'">'
-    +'<div class="wk-live-status"><span class="dot"></span>'+escHtml(statusText)
+  return '<div class="wk-card wk-live'+(isFinal?' wk-final':'')+'" style="--c1:'+c1+';--c2:'+c2+';--split:'+splitPct+'%" role="group" aria-label="'+escHtml(ariaLabel(g))+'">'
+    +'<div class="wk-live-status">'+(isFinal?'':'<span class="dot"></span>')+escHtml(statusText)
     +(g.isRedZone?'<span class="rz">Red Zone</span>':'')+'</div>'
     +'<div class="wk-live-teams">'
     +team(g.away,g.away.score>g.home.score)
@@ -134,17 +135,51 @@ function renderLiveCard(g){
   }
 }
 
+// Set true the one time a countdown's expiry triggers an extra fetch (see
+// tickCountdowns below), and never reset — including by the render() that
+// fetch itself causes. It used to get cleared at the top of every render(),
+// which included the render from this very fetch: as long as ESPN hadn't
+// flipped the game live yet, the still-expired countdown re-armed the flag
+// and fired another fetch a second later, forever (a visible flash every
+// second from the full re-render, until the game finally went live).
 let countdownFetchDone=false;
 let pollTimer=null;
 
+// Keep a just-finished game full-width for a while after the final whistle,
+// rather than dropping straight back to the small grid the instant it ends
+// (mirrors the main dashboard's hero). ESPN never says when a game actually
+// ENDED, only when it started, so this is measured from the moment WE first
+// observe each game (by its own id) as completed — not from anything ESPN
+// gives us — and kept across polls for as long as that game's id keeps
+// showing up in the week's feed.
+const HERO_FINAL_WINDOW_MS=60*60*1000;
+let finalSeenAt={};
+function heroFinalWindowOk(seenAtMs){
+  return !!seenAtMs && (Date.now()-seenAtMs)<=HERO_FINAL_WINDOW_MS;
+}
+function updateFinalSeenAt(games){
+  const ids=new Set(games.map(g=>g.id));
+  Object.keys(finalSeenAt).forEach(id=>{ if(!ids.has(id)) delete finalSeenAt[id]; });
+  games.forEach(g=>{
+    if(g.completed){ if(!finalSeenAt[g.id]) finalSeenAt[g.id]=Date.now(); }
+    else delete finalSeenAt[g.id];
+  });
+}
+
 function render(games,weekNumber){
-  countdownFetchDone=false;
   document.getElementById('wk-title').textContent='NFL — Week '+(weekNumber||'');
   const main=document.getElementById('wk-main');
   if(!games.length){ main.innerHTML='<div class="wk-loading">No games found.</div>'; return; }
 
-  const live=games.filter(g=>g.state==='in');
-  const rest=games.filter(g=>g.state!=='in').sort((a,b)=>a.dateMs-b.dateMs);
+  updateFinalSeenAt(games);
+  const stayLarge=g=>g.completed&&heroFinalWindowOk(finalSeenAt[g.id]);
+  const live=games.filter(g=>g.state==='in'||stayLarge(g))
+    .sort((a,b)=>{
+      const rank=g=>g.state==='in'?0:1;
+      const r=rank(a)-rank(b);
+      return r||((finalSeenAt[b.id]||0)-(finalSeenAt[a.id]||0));
+    });
+  const rest=games.filter(g=>!(g.state==='in'||stayLarge(g))).sort((a,b)=>a.dateMs-b.dateMs);
 
   let html='';
   if(live.length){
