@@ -138,23 +138,17 @@ function renderLiveCard(g){
 let countdownFetchDone=false;
 let pollTimer=null;
 
-// Same client-side tracking as the main dashboard: ESPN gives us no "game
-// ended at" timestamp (only the kickoff/tip-off time), so we stamp the first
-// moment we observe a game as completed and use that to decide whether it's
-// still within the "stay large after final" window. Keyed by ESPN's event id
-// since each game already has a unique one (no team-key disambiguation needed).
-const HERO_FINAL_WINDOW_MS=60*60*1000;
-let finalSeenAt={};
-function heroFinalWindowOk(seenAtMs){
-  return !!seenAtMs && (Date.now()-seenAtMs)<=HERO_FINAL_WINDOW_MS;
-}
-function updateFinalSeenAt(games){
-  const ids=new Set(games.map(g=>g.id));
-  Object.keys(finalSeenAt).forEach(id=>{ if(!ids.has(id)) delete finalSeenAt[id]; });
-  games.forEach(g=>{
-    if(g.completed){ if(!finalSeenAt[g.id]) finalSeenAt[g.id]=Date.now(); }
-    else delete finalSeenAt[g.id];
-  });
+// Same estimate-based approach as the main dashboard and NFL Week: ESPN gives
+// us no "game ended at" timestamp (only the tip-off time, g.dateMs), so this
+// estimates the final buzzer as tip-off plus a typical NBA game length, then
+// stays large for a further buffer on top of that. Stable across page
+// reloads, unlike tracking "when we first saw this go final" (which resets
+// to "just now" on every refresh).
+const NBA_AVG_GAME_DURATION_MS=135*60*1000; // ~2h15m
+const HERO_STAY_BUFFER_MS=2*60*60*1000; // stay large for 2 hours past the estimated final buzzer
+function estimatedFinalMs(tipoffMs){ return tipoffMs+NBA_AVG_GAME_DURATION_MS; }
+function heroFinalWindowOk(g){
+  return g.completed && Date.now()<=estimatedFinalMs(g.dateMs)+HERO_STAY_BUFFER_MS;
 }
 
 function render(games,feedDate){
@@ -167,15 +161,13 @@ function render(games,feedDate){
   const main=document.getElementById('wk-main');
   if(!games.length){ main.innerHTML='<div class="wk-loading">No games scheduled today.</div>'; return; }
 
-  updateFinalSeenAt(games);
-  const stayLarge=g=>g.completed&&heroFinalWindowOk(finalSeenAt[g.id]);
-  const live=games.filter(g=>g.state==='in'||stayLarge(g))
+  const live=games.filter(g=>g.state==='in'||heroFinalWindowOk(g))
     .sort((a,b)=>{
       const rank=g=>g.state==='in'?0:1;
       const r=rank(a)-rank(b);
-      return r||((finalSeenAt[b.id]||0)-(finalSeenAt[a.id]||0));
+      return r||(estimatedFinalMs(b.dateMs)-estimatedFinalMs(a.dateMs));
     });
-  const rest=games.filter(g=>!(g.state==='in'||stayLarge(g))).sort((a,b)=>a.dateMs-b.dateMs);
+  const rest=games.filter(g=>!(g.state==='in'||heroFinalWindowOk(g))).sort((a,b)=>a.dateMs-b.dateMs);
 
   let html=live.map(renderLiveCard).join('');
   html+='<div class="wk-grid">'+rest.map(renderPlainCard).join('')+'</div>';

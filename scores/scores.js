@@ -691,28 +691,27 @@ function heroWindowOk(featuredDateMs,path){
 }
 // Keep a just-finished game full-width for a while after the final whistle,
 // rather than dropping straight back to a plain card the instant it ends.
-// Measured from finalSeenAt (see its declaration above), NOT completedDateMs —
-// that's the game's kickoff time, already hours in the past by the time any
-// real game goes final.
-const HERO_FINAL_WINDOW_MS=60*60*1000;
-function heroFinalWindowOk(seenAtMs){
-  return !!seenAtMs && (Date.now()-seenAtMs)<=HERO_FINAL_WINDOW_MS;
+// ESPN never tells us when a game actually ENDED — completedDateMs is the
+// kickoff/tipoff time — so instead of tracking "when we first observed this
+// as final" (which resets to "just now" on every page reload, showing every
+// final as freshly-ended right after a refresh), estimate the final whistle
+// as kickoff + a typical game length for the sport, then stay large for a
+// further buffer on top of that. It's an estimate — a game that runs long
+// (overtime, rain delay) can still get cut off early — but it's stable
+// across reloads, which matters more here than exact precision.
+const AVG_GAME_DURATION_MS={
+  NFL: 195*60*1000, // ~3h15m
+  NBA: 135*60*1000, // ~2h15m
+  NHL: 140*60*1000, // ~2h20m
+  MLB: 165*60*1000, // ~2h45m (post pitch-clock)
+  MLS: 120*60*1000, // ~2h (90 min + stoppage + halftime)
+};
+const HERO_STAY_BUFFER_MS=2*60*60*1000; // stay large for 2 hours past the estimated final whistle
+function estimatedFinalMs(sport,kickoffMs){
+  return kickoffMs+(AVG_GAME_DURATION_MS[sport]||150*60*1000);
 }
-// Called with the {key,data} entries about to be rendered (fresh from a
-// fetch, or restored from the cold-open snapshot) so heroEntries below can
-// look up how long ago (in wall-clock time) each final was first seen.
-function updateFinalSeenAt(entries){
-  entries.forEach(({key,data})=>{
-    if(data?.featuredStatus==='final'&&data.completedDateMs){
-      const prev=finalSeenAt[key];
-      // Same completed game we already stamped (matched by its kickoff time,
-      // which is unique per game) — keep the original stamp. A different
-      // (newer) completed game, or nothing tracked yet — stamp it now.
-      if(!prev||prev.dateMs!==data.completedDateMs) finalSeenAt[key]={dateMs:data.completedDateMs,seenAt:Date.now()};
-    } else {
-      delete finalSeenAt[key];
-    }
-  });
+function heroFinalWindowOk(sport,kickoffMs){
+  return !!kickoffMs && Date.now()<=estimatedFinalMs(sport,kickoffMs)+HERO_STAY_BUFFER_MS;
 }
 function soonText(ms){
   const min=Math.round((ms-Date.now())/60000);
@@ -901,17 +900,16 @@ function renderWire(items){
 
 function renderAll(sorted,newsItems){
   sorted.forEach(({key,data})=>{ _cardData[key]=data; });
-  updateFinalSeenAt(sorted);
   const heroEntries=sorted.filter(e=>e.data.featuredStatus==='live'||e.data.featuredStatus==='starting'
     ||(e.data.featuredStatus==='upcoming'&&e.data.featured&&heroWindowOk(e.data.featuredDateMs,TEAMS[e.key].path))
-    ||(e.data.featuredStatus==='final'&&heroFinalWindowOk(finalSeenAt[e.key]?.seenAt)))
+    ||(e.data.featuredStatus==='final'&&heroFinalWindowOk(TEAMS[e.key].sport,e.data.completedDateMs)))
     .sort((a,b)=>{
       const rank=s=>s.featuredStatus==='live'||s.featuredStatus==='starting'?0:s.featuredStatus==='final'?1:2;
       const r=rank(a.data)-rank(b.data);
-      // Among finals, the one we most recently saw go final leads (kickoff
-      // time isn't a proxy for that — a late-starting game can finish before
-      // an earlier one that's still in overtime).
-      return r||((finalSeenAt[b.key]?.seenAt||0)-(finalSeenAt[a.key]?.seenAt||0));
+      // Among finals, the one with the latest estimated final whistle leads —
+      // an estimate, since ESPN gives us no real end time, but stable across
+      // reloads unlike "which one we happened to observe as final most recently".
+      return r||(estimatedFinalMs(TEAMS[b.key].sport,b.data.completedDateMs||0)-estimatedFinalMs(TEAMS[a.key].sport,a.data.completedDateMs||0));
     });
   const heroKeys=new Set(heroEntries.map(e=>e.key));
   const isOpenerCountdown=e=>e.data.featuredStatus==='upcoming'&&!e.data.lastResult;
@@ -992,16 +990,6 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 let countdownSeconds=300, countdownInterval=null, refreshTimeout=null, prevScores={};
-// ESPN's feeds never say when a game actually ENDED — completedDateMs is the
-// kickoff/tipoff time, which by the time a game is final is already well past
-// an hour ago for anything but the shortest game. So the "keep the hero up
-// for an hour after final" window can't be measured from that timestamp; it's
-// measured from the moment WE first observe the game as final instead, kept
-// here across poll cycles the same way prevScores is. Keyed by team, each
-// entry is the completed game's own kickoff time (to recognize "this is a
-// different final game than the one already being tracked") plus the wall
-// clock time we first saw it.
-let finalSeenAt={};
 let heroCountdownIntervals={};
 function startHeroCountdown(key,targetMs){
   clearInterval(heroCountdownIntervals[key]);

@@ -148,22 +148,16 @@ let pollTimer=null;
 // Keep a just-finished game full-width for a while after the final whistle,
 // rather than dropping straight back to the small grid the instant it ends
 // (mirrors the main dashboard's hero). ESPN never says when a game actually
-// ENDED, only when it started, so this is measured from the moment WE first
-// observe each game (by its own id) as completed — not from anything ESPN
-// gives us — and kept across polls for as long as that game's id keeps
-// showing up in the week's feed.
-const HERO_FINAL_WINDOW_MS=60*60*1000;
-let finalSeenAt={};
-function heroFinalWindowOk(seenAtMs){
-  return !!seenAtMs && (Date.now()-seenAtMs)<=HERO_FINAL_WINDOW_MS;
-}
-function updateFinalSeenAt(games){
-  const ids=new Set(games.map(g=>g.id));
-  Object.keys(finalSeenAt).forEach(id=>{ if(!ids.has(id)) delete finalSeenAt[id]; });
-  games.forEach(g=>{
-    if(g.completed){ if(!finalSeenAt[g.id]) finalSeenAt[g.id]=Date.now(); }
-    else delete finalSeenAt[g.id];
-  });
+// ENDED, only when it started (g.dateMs), so this estimates the final whistle
+// as kickoff plus a typical NFL game length, then stays large for a further
+// buffer on top of that. Unlike tracking "when we first saw this go final",
+// this is stable across page reloads — the estimate is what resets on reload
+// to "just now" is the actual problem this replaces.
+const NFL_AVG_GAME_DURATION_MS=195*60*1000; // ~3h15m
+const HERO_STAY_BUFFER_MS=2*60*60*1000; // stay large for 2 hours past the estimated final whistle
+function estimatedFinalMs(kickoffMs){ return kickoffMs+NFL_AVG_GAME_DURATION_MS; }
+function heroFinalWindowOk(g){
+  return g.completed && Date.now()<=estimatedFinalMs(g.dateMs)+HERO_STAY_BUFFER_MS;
 }
 
 function render(games,weekNumber){
@@ -171,15 +165,13 @@ function render(games,weekNumber){
   const main=document.getElementById('wk-main');
   if(!games.length){ main.innerHTML='<div class="wk-loading">No games found.</div>'; return; }
 
-  updateFinalSeenAt(games);
-  const stayLarge=g=>g.completed&&heroFinalWindowOk(finalSeenAt[g.id]);
-  const live=games.filter(g=>g.state==='in'||stayLarge(g))
+  const live=games.filter(g=>g.state==='in'||heroFinalWindowOk(g))
     .sort((a,b)=>{
       const rank=g=>g.state==='in'?0:1;
       const r=rank(a)-rank(b);
-      return r||((finalSeenAt[b.id]||0)-(finalSeenAt[a.id]||0));
+      return r||(estimatedFinalMs(b.dateMs)-estimatedFinalMs(a.dateMs));
     });
-  const rest=games.filter(g=>!(g.state==='in'||stayLarge(g))).sort((a,b)=>a.dateMs-b.dateMs);
+  const rest=games.filter(g=>!(g.state==='in'||heroFinalWindowOk(g))).sort((a,b)=>a.dateMs-b.dateMs);
 
   let html='';
   if(live.length){
