@@ -412,9 +412,20 @@ async function fetchTeamData(key){
 
   const seasonTypeNum=typeof seasonType==='object'?seasonType?.type:seasonType;
   const isPlayoffSeason=seasonTypeNum===3;
-  const isEliminated=!isOffseason&&isPlayoffSeason&&!nextGame&&!!lastCompleted;
+  // "No next game scheduled" is only good evidence of elimination/missing the
+  // playoffs once it's had a couple of days to be true. Two failure modes
+  // otherwise: (1) a live game right now can be missed by the schedule
+  // endpoint's own "upcoming" window (it only recognizes a game as "next"
+  // within 30 min of first pitch/puck/etc — once well underway it falls out
+  // of that window entirely) while the scoreboard clearly shows it in
+  // progress; (2) between a completed playoff game and ESPN posting the next
+  // one in the series (which can take a while if the day/time isn't fixed
+  // until necessary), there's genuinely no "next game" yet even though the
+  // series — and the team's season — is still alive.
+  const recentEnoughToWait=!!lastCompleted&&(now-lastCompleted.dateMs<=48*60*60*1000);
+  const isEliminated=!isOffseason&&isPlayoffSeason&&!nextGame&&!activeLive&&!!lastCompleted&&!recentEnoughToWait;
   const isRegularSeason=seasonTypeNum===2;
-  const missedPlayoffs=!isOffseason&&isRegularSeason&&!nextGame&&!!lastCompleted;
+  const missedPlayoffs=!isOffseason&&isRegularSeason&&!nextGame&&!activeLive&&!!lastCompleted&&!recentEnoughToWait;
   const effectiveOffseason=isOffseason||isEliminated||missedPlayoffs;
 
   const featured=effectiveOffseason?null:
