@@ -113,6 +113,11 @@
   .hero-score{position:relative;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:clamp(96px,16.5vw,220px);
     line-height:.86;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.72);text-shadow:0 6px 40px rgba(0,0,0,.45);}
   .hero-score.leading{color:#fff;}
+  /* NBA leading scorer, centered under the score: "J. BROWN 22". */
+  .hero-leader{position:relative;display:flex;justify-content:center;align-items:baseline;gap:7px;margin-top:10px;
+    font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.78);
+    text-shadow:0 1px 6px rgba(0,0,0,.6);white-space:nowrap;}
+  .hero-leader b{color:#fff;font-weight:600;font-variant-numeric:tabular-nums;}
   /* De-emphasised by size and tracking, not opacity — the split gradient puts
      saturated team color directly behind the records at both outer edges. */
   .hero-record{position:relative;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.18em;
@@ -310,6 +315,7 @@
     .hero-wm{display:none;}
     .hero-abbr{font-size:30px;}
     .hero-score{font-size:clamp(74px,26vw,108px);}
+    .hero-leader{font-size:9.5px;letter-spacing:.06em;gap:5px;margin-top:7px;flex-wrap:wrap;white-space:normal;max-width:100%;}
     .hero-countdown{font-size:clamp(56px,22vw,84px);}
     .hero-rule{height:34px;}
     .hero-foot{gap:6px;padding:0 16px 8px;}

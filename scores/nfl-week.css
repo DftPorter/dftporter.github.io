@@ -67,6 +67,11 @@
 .wk-live-score{position:relative;z-index:1;font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,8vw,84px);line-height:.9;
   letter-spacing:.02em;color:rgba(255,255,255,.68);font-variant-numeric:tabular-nums;text-shadow:0 6px 30px rgba(0,0,0,.45);}
 .wk-live-score.lead{color:#fff;}
+/* NBA Today: top scorer under each live score, e.g. "J. BROWN 22". */
+.wk-live-leader{position:relative;z-index:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:5px;max-width:100%;
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.78);
+  text-shadow:0 1px 6px rgba(0,0,0,.6);text-align:center;}
+.wk-live-leader b{color:#fff;font-weight:600;font-variant-numeric:tabular-nums;}
 .wk-live-vs{display:flex;justify-content:center;}
 .wk-live-rule{width:1px;height:clamp(50px,9vh,90px);background:rgba(255,255,255,.22);}
 

@@ -47,6 +47,15 @@ function periodLabel(p,state,detail){
   return (p===5?'':(p-4)+'')+'OT';
 }
 
+// A live game's competitors carry leaders[]; the 'points' entry's first athlete
+// is that team's top scorer so far.
+function topScorer(c,state){
+  if(state!=='in') return null;
+  const l=(c.leaders||[]).find(x=>x.name==='points')?.leaders?.[0];
+  const nm=l?.athlete?.shortName||l?.athlete?.displayName;
+  return nm&&l.displayValue!=null ? {name:nm, pts:String(l.displayValue)} : null;
+}
+
 function parseGame(ev){
   const comp=ev.competitions?.[0]; if(!comp) return null;
   const home=comp.competitors?.find(c=>c.homeAway==='home');
@@ -62,9 +71,9 @@ function parseGame(ev){
   return {
     id:ev.id, dateMs, state, completed, period, clock, detail,
     away:{abbr:away.team?.abbreviation||'—', name:away.team?.displayName||'', logo:away.team?.logo||null,
-      color:pickTeamColor(away.team), score:parseInt(away.score)||0, record:getRecord(away), winner:!!away.winner},
+      color:pickTeamColor(away.team), score:parseInt(away.score)||0, record:getRecord(away), winner:!!away.winner, leader:topScorer(away,state)},
     home:{abbr:home.team?.abbreviation||'—', name:home.team?.displayName||'', logo:home.team?.logo||null,
-      color:pickTeamColor(home.team), score:parseInt(home.score)||0, record:getRecord(home), winner:!!home.winner},
+      color:pickTeamColor(home.team), score:parseInt(home.score)||0, record:getRecord(home), winner:!!home.winner, leader:topScorer(home,state)},
   };
 }
 
@@ -124,7 +133,9 @@ function renderLiveCard(g){
     return '<div class="wk-live-team">'
       +(t.logo?'<img class="wk-live-wm" src="'+t.logo+'" alt="" loading="lazy">':'')
       +'<span class="wk-live-abbr">'+escHtml(t.abbr)+'</span>'
-      +'<span class="wk-live-score'+(lead?' lead':'')+'">'+t.score+'</span></div>';
+      +'<span class="wk-live-score'+(lead?' lead':'')+'">'+t.score+'</span>'
+      +(t.leader?'<div class="wk-live-leader"><span>'+escHtml(t.leader.name)+'</span><b>'+escHtml(t.leader.pts)+'</b></div>':'')
+      +'</div>';
   }
 }
 
