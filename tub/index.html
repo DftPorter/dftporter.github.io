@@ -323,6 +323,84 @@
 
   .undo-btn:hover { background: oklch(100% 0 0 / 0.28); }
 
+  .header-right { display: flex; align-items: center; gap: 4px; }
+
+  .icon-btn {
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 14px;
+    background: transparent;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .icon-btn:hover { background: var(--tile-btn); }
+  .icon-btn svg { width: 22px; height: 22px; }
+
+  .sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    background: oklch(25% 0.04 228 / 0.45);
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 10;
+  }
+  .sheet-backdrop[data-open="1"] { display: flex; }
+
+  .sheet {
+    width: 100%;
+    max-width: 430px;
+    max-height: 88vh;
+    overflow-y: auto;
+    background: var(--surface);
+    border-radius: 28px 28px 0 0;
+    padding: 22px 20px calc(20px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .sheet h2 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+  .sheet-sub { font-size: 13px; color: var(--text-muted); margin-top: -8px; }
+
+  .setting-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .setting-name { font-size: 15px; font-weight: 600; }
+  .setting-input { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); }
+  .setting-input input {
+    width: 76px;
+    min-height: 44px;
+    border: 1.5px solid var(--tile-btn-hover);
+    border-radius: 12px;
+    background: var(--tile-btn);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .sheet-actions { display: flex; gap: 10px; padding-top: 4px; }
+  .sheet-actions button {
+    flex: 1;
+    min-height: 48px;
+    border: 0;
+    border-radius: 16px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    background: var(--tile-btn);
+    color: var(--accent-deep);
+  }
+  .sheet-actions .save { background: var(--accent-deep); color: #fff; }
+  .sheet-error { color: oklch(45% 0.15 30); font-size: 13px; font-weight: 600; min-height: 0; }
+
+  .icon-btn:focus-visible,
+  .sheet-actions button:focus-visible,
+  .setting-input input:focus-visible,
   .primary-btn:focus-visible,
   .done-btn:focus-visible,
   .undo-btn:focus-visible,
@@ -340,7 +418,12 @@
 <div class="page">
   <header>
     <div class="wordmark">Spa Care</div>
-    <div class="date-line" id="date-line"></div>
+    <div class="header-right">
+      <div class="date-line" id="date-line"></div>
+      <button class="icon-btn" type="button" id="settings-btn" aria-label="Settings">
+        <svg viewBox="0 0 24 24" fill="none"><path stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M4 7h10M18 7h2M4 17h2M10 17h10M16 4.5v5M8 14.5v5"/></svg>
+      </button>
+    </div>
   </header>
 
   <section class="hero" id="hero"></section>
@@ -359,6 +442,20 @@
   <div class="toast">
     <div class="toast-label" id="toast-label"></div>
     <button class="undo-btn" type="button" id="undo-btn">Undo</button>
+  </div>
+</div>
+
+<div class="sheet-backdrop" id="sheet-backdrop">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <h2 id="sheet-title">Task intervals</h2>
+    <div class="sheet-sub">How often each task should be done.</div>
+    <div id="settings-rows" style="display:flex; flex-direction:column; gap:12px;"></div>
+    <div class="sheet-error" id="sheet-error" role="alert"></div>
+    <div class="sheet-actions">
+      <button type="button" id="reset-intervals">Reset</button>
+      <button type="button" id="cancel-settings">Cancel</button>
+      <button type="button" class="save" id="save-settings">Save</button>
+    </div>
   </div>
 </div>
 
@@ -386,6 +483,16 @@
   ];
 
   const STORAGE_KEY = 'spa-care:last-done:v1';
+  const INTERVALS_KEY = 'spa-care:intervals:v1';
+  const DEFAULT_INTERVALS = {};
+  TASKS.forEach((t) => { DEFAULT_INTERVALS[t.key] = t.interval; });
+  try {
+    const saved = JSON.parse(localStorage.getItem(INTERVALS_KEY) || '{}');
+    TASKS.forEach((t) => {
+      const n = saved[t.key];
+      if (Number.isInteger(n) && n >= 1 && n <= 999) t.interval = n;
+    });
+  } catch (e) {}
   const pad = (n) => String(n).padStart(2, '0');
   const fmt = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
@@ -615,6 +722,52 @@
     : 'This browser is blocking local storage, so changes here won’t be saved.';
 
   render();
+
+  const backdrop = document.getElementById('sheet-backdrop');
+  const rowsEl = document.getElementById('settings-rows');
+  const errEl = document.getElementById('sheet-error');
+
+  function openSettings() {
+    rowsEl.innerHTML = '';
+    errEl.textContent = '';
+    TASKS.forEach((t) => {
+      const row = document.createElement('label');
+      row.className = 'setting-row';
+      row.innerHTML = '<span class="setting-name"></span><span class="setting-input"><input type="number" inputmode="numeric" min="1" max="999" step="1"> days</span>';
+      row.querySelector('.setting-name').textContent = t.name;
+      const input = row.querySelector('input');
+      input.dataset.key = t.key;
+      input.value = t.interval;
+      rowsEl.appendChild(row);
+    });
+    backdrop.setAttribute('data-open', '1');
+  }
+
+  function closeSettings() { backdrop.removeAttribute('data-open'); }
+
+  document.getElementById('settings-btn').addEventListener('click', openSettings);
+  document.getElementById('cancel-settings').addEventListener('click', closeSettings);
+  backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeSettings(); });
+  document.getElementById('reset-intervals').addEventListener('click', () => {
+    rowsEl.querySelectorAll('input').forEach((i) => { i.value = DEFAULT_INTERVALS[i.dataset.key]; });
+    errEl.textContent = '';
+  });
+  document.getElementById('save-settings').addEventListener('click', () => {
+    const next = {};
+    for (const input of rowsEl.querySelectorAll('input')) {
+      const n = Number(input.value);
+      if (!Number.isInteger(n) || n < 1 || n > 999) {
+        errEl.textContent = 'Enter a whole number of days from 1 to 999.';
+        input.focus();
+        return;
+      }
+      next[input.dataset.key] = n;
+    }
+    TASKS.forEach((t) => { t.interval = next[t.key]; });
+    try { localStorage.setItem(INTERVALS_KEY, JSON.stringify(next)); } catch (e) {}
+    closeSettings();
+    render();
+  });
 
   // A Home Screen app stays alive in the background; refresh when reopened so
   // the date and day counts roll over at midnight.
