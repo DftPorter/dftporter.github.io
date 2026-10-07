@@ -32,7 +32,8 @@
   }
 
   * { box-sizing: border-box; }
-  html, body { margin: 0; }
+  html, body { margin: 0; overflow-x: hidden; max-width: 100%; }
+  html { -webkit-text-size-adjust: 100%; touch-action: manipulation; }
 
   body {
     min-height: 100vh;
@@ -162,6 +163,9 @@
     padding: 0;
     margin: 0;
     cursor: pointer;
+    font-size: 16px;
+    -webkit-appearance: none;
+    appearance: none;
     color-scheme: light;
   }
 
@@ -419,6 +423,9 @@
   function persist() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(done)); } catch (e) {}
   }
+  // Save seeded dates right away so untouched tasks age normally instead of
+  // being re-seeded relative to "today" on every launch.
+  persist();
 
   function statusFor(daysAgo, interval) {
     const left = Math.round(interval - daysAgo);
@@ -502,10 +509,16 @@
     const input = document.createElement('input');
     input.type = 'date';
     input.max = today;
-    input.addEventListener('change', () => {
+    input.value = done[key] || today;
+    // iOS fires 'change' while the wheel spins (and on open), and re-rendering
+    // detaches the picker. Commit only once the picker closes.
+    const commit = () => {
       const v = input.value;
-      // Defer so iOS Safari's native picker isn't detached mid-interaction.
-      setTimeout(() => setDone(key, v, 'date updated'), 0);
+      if (v && v !== done[key]) setTimeout(() => setDone(key, v, 'date updated'), 0);
+    };
+    input.addEventListener('blur', commit);
+    input.addEventListener('change', () => {
+      if (document.activeElement !== input) commit();
     });
     wrap.appendChild(input);
     return wrap;
@@ -602,6 +615,18 @@
     : 'This browser is blocking local storage, so changes here won’t be saved.';
 
   render();
+
+  // A Home Screen app stays alive in the background; refresh when reopened so
+  // the date and day counts roll over at midnight.
+  let renderedOn = fmt(new Date());
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible' || fmt(new Date()) === renderedOn) return;
+    renderedOn = fmt(new Date());
+    document.getElementById('date-line').textContent = new Date().toLocaleDateString('en-US', {
+      weekday: 'short', month: 'short', day: 'numeric'
+    });
+    render();
+  });
 </script>
 </body>
 </html>
