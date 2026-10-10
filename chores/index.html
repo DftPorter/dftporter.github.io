@@ -373,7 +373,7 @@ function build(weeks,key,name){
     streakLine: streak===1 ? 'day in a row' : streak ? 'days in a row' : 'Make your bed to start one',
     streakColor: P.streak[tier], tierLine:tierLine, tierColor: next ? v('accent') : v('pos'),
     completionLabel: Math.round((aTot ? aDone/aTot : 0)*100)+'%',
-    owedLead: debt ? 'You owe' : 'Saved up',
+    owedLead: debt ? 'You owe' : 'Owed',
     owedLabel: (debt?'\u2212$':'$')+Math.abs(owed).toFixed(2),
     moneyIcon: debt ? '\ud83d\udcb8' : '\ud83d\udcb0',
     hasArt: !debt && !!MONEY_ART,
