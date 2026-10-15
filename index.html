@@ -8,11 +8,13 @@
   <meta property="og:type"        content="website">
   <meta property="og:title"       content="Tim Allen — Art Director">
   <meta property="og:description" content="Art Director and Graphic Designer with 20+ years of experience in e-learning, brand identity, motion graphics, and corporate creative.">
-  <meta property="og:image"       content="images/og-preview.jpg">
+  <meta property="og:image"       content="https://dftporter.github.io/images/og-preview.jpg">
+  <meta property="og:url"         content="https://dftporter.github.io/">
+  <link rel="canonical" href="https://dftporter.github.io/">
   <meta name="twitter:card"       content="summary_large_image">
   <meta name="twitter:title"      content="Tim Allen — Art Director">
   <meta name="twitter:description" content="Art Director and Graphic Designer with 20+ years of experience in e-learning, brand identity, motion graphics, and corporate creative.">
-  <meta name="twitter:image"      content="images/og-preview.jpg">
+  <meta name="twitter:image"      content="https://dftporter.github.io/images/og-preview.jpg">
   <link rel="icon" href="favicon.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -622,11 +624,6 @@
       aspect-ratio: 16 / 9;
     }
 
-    .work-tile--wide {
-      grid-column: span 2;
-      aspect-ratio: 16 / 9;
-    }
-
     .work-caption {
       position: absolute;
       bottom: 0;
@@ -660,24 +657,6 @@
       opacity: 0.7;
       margin-top: 0.2rem;
       font-weight: 300;
-    }
-
-    .work-tile--placeholder {
-      cursor: default;
-      border: 2px dashed var(--border);
-      background: transparent;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .work-tile--placeholder::after {
-      content: 'Image coming soon';
-      font-size: 0.6875rem;
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--border);
     }
 
     .work-more {
@@ -773,7 +752,7 @@
       justify-content: space-between;
       align-items: center;
       font-size: 0.8125rem;
-      color: rgba(255,255,255,0.3);
+      color: rgba(255,255,255,0.55);
       font-weight: 300;
     }
 
@@ -902,7 +881,6 @@
       .work-grid        { grid-template-columns: 1fr; }
       .work-tile        { aspect-ratio: 16/9; }
       .work-tile:first-child { aspect-ratio: 16/9; grid-column: auto; }
-      .work-tile--wide  { grid-column: auto; }
 
       .billboard        { height: 55vh; min-height: 260px; }
       .hero-portrait-wrap { width: 60%; }
@@ -933,7 +911,7 @@
 <!-- ── STICKY NAV ────────────────────────────── -->
 <nav class="site-nav" id="site-nav" aria-label="Site navigation">
   <span class="site-nav-name" aria-hidden="true">Tim Allen</span>
-  <a class="site-nav-cta" id="site-nav-cta" href="#">Get in touch</a>
+  <a class="site-nav-cta" id="site-nav-cta" href="#contact-heading">Get in touch</a>
 </nav>
 
 <!-- ── HERO ───────────────────────────────────── -->
@@ -943,7 +921,7 @@
   </div>
 
   <div class="hero-content" id="main-content">
-    <div class="hero-eyebrow" aria-hidden="true">
+    <div class="hero-eyebrow">
       <span>Southeast Pennsylvania</span>
       <div class="hero-dot"></div>
       <span>Since 2005</span>
@@ -1135,7 +1113,7 @@
 
     <div class="work-tile reveal" tabindex="0" role="button"
          aria-label="Identity Theft — Motion Graphics. Click to view."
-         data-video="https://www.youtube.com/embed/b_bQ8HuHYG4?autoplay=1">
+         data-video="https://www.youtube-nocookie.com/embed/b_bQ8HuHYG4?autoplay=1&rel=0">
       <img src="images/1.jpg" alt="" loading="lazy">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">Identity Theft</span>
@@ -1155,7 +1133,7 @@
 
     <div class="work-tile reveal reveal-delay-2" tabindex="0" role="button"
          aria-label="Wildwood Crest 2020 — Drone Video Production. Click to view."
-         data-video="https://www.youtube.com/embed/cD-AYvzeO2I?autoplay=1">
+         data-video="https://www.youtube-nocookie.com/embed/cD-AYvzeO2I?autoplay=1&rel=0">
       <img src="images/13.jpg" alt="" loading="lazy">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">Wildwood Crest 2020</span>
@@ -1185,7 +1163,7 @@
 
        <div class="work-tile reveal reveal-delay-2" tabindex="0" role="button"
          aria-label="Wild in the Woods — Video Production. Click to view."
-         data-video="https://www.youtube.com/embed/deWNU_QlI5g?autoplay=1">
+         data-video="https://www.youtube-nocookie.com/embed/deWNU_QlI5g?autoplay=1&rel=0">
       <img src="images/12.jpg" alt="" loading="lazy">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">Wild in the Woods</span>
@@ -1261,7 +1239,7 @@
       <a class="link-pill" href="https://www.instagram.com/daftporter/" target="_blank" rel="noopener" aria-label="Instagram (opens in new tab)">Instagram</a>
       <a class="link-pill" href="https://bsky.app/profile/daftporter.bsky.social" target="_blank" rel="noopener" aria-label="Bluesky (opens in new tab)">Bluesky</a>
       <a class="link-pill" href="https://www.youtube.com/@daftporter" target="_blank" rel="noopener" aria-label="YouTube (opens in new tab)">YouTube</a>
-      <a class="link-pill link-cta" id="contact-link" href="#">Let's work together &rarr;</a>
+      <a class="link-pill link-cta" id="contact-link" href="https://www.linkedin.com/in/redartist/">Let's work together &rarr;</a>
     </div>
   </div>
 </section>
@@ -1269,7 +1247,7 @@
 <!-- ── FOOTER ─────────────────────────────────── -->
 <footer>
   <span class="footer-name">Tim Allen</span>
-  <span>&copy; 2026</span>
+  <span>&copy; <span id="year">2026</span></span>
 </footer>
 
 <!-- ── LIGHTBOX ───────────────────────────────── -->
@@ -1287,6 +1265,8 @@
   var emailStr = 'porter.allen' + '\x40' + 'gmail' + '.' + 'com';
   document.getElementById('contact-link').href  = 'mailto:' + emailStr;
   document.getElementById('site-nav-cta').href  = 'mailto:' + emailStr;
+
+  document.getElementById('year').textContent = new Date().getFullYear();
 
   // ── Sticky nav ──
   var siteNav = document.getElementById('site-nav');
@@ -1401,6 +1381,10 @@
   lbClose.addEventListener('click', closeLb);
 
   document.addEventListener('keydown', function(e) {
+    if (e.key === 'Tab' && lb.classList.contains('is-open')) {
+      e.preventDefault();
+      lbClose.focus();
+    }
     if (e.key === 'Escape' && lb.classList.contains('is-open')) closeLb();
   });
 
