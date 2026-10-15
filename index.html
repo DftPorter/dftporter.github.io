@@ -99,8 +99,15 @@
       letter-spacing: -0.01em;
     }
 
+    .site-nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1.75rem;
+    }
+
+    .site-nav-link,
     .site-nav-cta {
-      font-size: 0.6875rem;
+      font-size: 0.75rem;
       font-weight: 500;
       letter-spacing: 0.12em;
       text-transform: uppercase;
@@ -109,8 +116,16 @@
       transition: color 0.15s;
     }
 
+    .site-nav-link:hover,
+    .site-nav-link:focus-visible,
     .site-nav-cta:hover,
     .site-nav-cta:focus-visible { color: var(--accent); }
+
+    @media (max-width: 600px) {
+      .site-nav-links { gap: 1.1rem; }
+      .site-nav-name  { display: none; }
+      .site-nav       { justify-content: flex-end; }
+    }
 
     /* ── HERO ─────────────────────────────────── */
     .hero {
@@ -138,7 +153,7 @@
       position: absolute;
       right: 0;
       bottom: 0;
-      width: 52%;
+      width: min(52%, 1000px);
       height: 100%;
       overflow: hidden;
     }
@@ -177,6 +192,8 @@
       z-index: 2;
       padding: 0 5vw 6vh;
       width: 100%;
+      max-width: 1600px;
+      margin: 0 auto;
     }
 
     .hero-eyebrow {
@@ -187,7 +204,7 @@
     }
 
     .hero-eyebrow span {
-      font-size: 0.6875rem;
+      font-size: 0.75rem;
       font-weight: 500;
       letter-spacing: 0.14em;
       text-transform: uppercase;
@@ -237,7 +254,7 @@
       align-items: center;
       gap: 0.5rem;
       color: rgba(255,255,255,0.3);
-      font-size: 0.625rem;
+      font-size: 0.6875rem;
       letter-spacing: 0.18em;
       text-transform: uppercase;
     }
@@ -284,7 +301,7 @@
       align-items: center;
       gap: 1.25rem;
       padding: 0 1.25rem;
-      font-size: 0.6875rem;
+      font-size: 0.75rem;
       font-weight: 500;
       letter-spacing: 0.13em;
       text-transform: uppercase;
@@ -329,7 +346,7 @@
 
     /* h2 used for section labels — reset heading defaults */
     .sec-label {
-      font-size: 0.6875rem;
+      font-size: 0.75rem;
       font-weight: 500;
       letter-spacing: 0.14em;
       text-transform: uppercase;
@@ -357,6 +374,7 @@
       height: 56vh;
       min-height: 320px;
       overflow: hidden;
+      background: var(--dark);
     }
 
     .billboard-img {
@@ -394,7 +412,7 @@
 
     .billboard-eyebrow {
       display: block;
-      font-size: 0.625rem;
+      font-size: 0.6875rem;
       font-weight: 500;
       letter-spacing: 0.16em;
       text-transform: uppercase;
@@ -414,7 +432,7 @@
     .billboard-label-sub {
       display: block;
       margin-top: 0.35rem;
-      font-size: 0.6875rem;
+      font-size: 0.75rem;
       font-weight: 400;
       letter-spacing: 0.08em;
       color: rgba(255,255,255,0.65); /* raised for contrast */
@@ -586,7 +604,7 @@
     .work-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0.625rem;
+      gap: 0.6875rem;
     }
 
     .work-tile {
@@ -595,8 +613,12 @@
       aspect-ratio: 4 / 3;
       cursor: zoom-in;
       position: relative;
+      box-shadow: 0 0 0 rgba(26,23,20,0);
+      transition: box-shadow 0.3s ease;
       /* keyboard focus indicator */
     }
+
+    .work-tile:hover { box-shadow: 0 12px 32px rgba(26,23,20,0.28); }
 
     .work-tile:focus-visible {
       outline: 3px solid var(--accent);
@@ -629,19 +651,16 @@
       bottom: 0;
       left: 0;
       right: 0;
-      padding: 1.5rem;
-      background: linear-gradient(to top, rgba(26,23,20,0.78) 0%, transparent 100%);
+      padding: 2.5rem 1.5rem 1.25rem;
+      background: linear-gradient(to top, rgba(26,23,20,0.75) 0%, transparent 100%);
       color: #fff;
-      opacity: 0;
-      transition: opacity 0.3s ease;
+      transition: background 0.3s ease;
       pointer-events: none;
     }
 
     .work-tile:hover .work-caption,
-    .work-tile:focus-visible .work-caption { opacity: 1; }
-
-    @media (hover: none) {
-      .work-caption { opacity: 1; }
+    .work-tile:focus-visible .work-caption {
+      background: linear-gradient(to top, rgba(26,23,20,0.9) 0%, transparent 100%);
     }
 
     .work-caption-title {
@@ -681,7 +700,7 @@
 
     /* ── FIND ME ──────────────────────────────── */
     .find-section {
-      background: var(--fg);
+      background: #2a2420;
       padding: 7rem 5vw;
     }
 
@@ -706,7 +725,7 @@
       color: rgba(255,255,255,0.45);
     }
 
-    .links { display: flex; flex-wrap: wrap; gap: 0.625rem; }
+    .links { display: flex; flex-wrap: wrap; gap: 0.6875rem; }
 
     .link-pill {
       display: inline-block;
@@ -819,6 +838,40 @@
     .lightbox-close:hover,
     .lightbox-close:focus-visible { color: #fff; }
 
+    .lightbox-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 1;
+      background: rgba(26,23,20,0.5);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 50%;
+      width: 3rem;
+      height: 3rem;
+      color: rgba(255,255,255,0.8);
+      font-size: 1.75rem;
+      line-height: 1;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .lightbox-prev { left: 1rem; }
+    .lightbox-next { right: 1rem; }
+
+    .lightbox-nav:hover,
+    .lightbox-nav:focus-visible {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    @media (max-width: 600px) {
+      .lightbox-nav { top: auto; bottom: 1rem; transform: none; }
+      .lightbox-prev { left: calc(50% - 3.5rem); }
+      .lightbox-next { right: calc(50% - 3.5rem); }
+    }
+
     #lightbox-video {
       display: none;
       width: min(900px, 100%);
@@ -891,7 +944,7 @@
       .links {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 0.625rem;
+        gap: 0.6875rem;
       }
 
       /* 5th social link spans full width so nothing is orphaned */
@@ -911,7 +964,11 @@
 <!-- ── STICKY NAV ────────────────────────────── -->
 <nav class="site-nav" id="site-nav" aria-label="Site navigation">
   <span class="site-nav-name" aria-hidden="true">Tim Allen</span>
-  <a class="site-nav-cta" id="site-nav-cta" href="#contact-heading">Get in touch</a>
+  <div class="site-nav-links">
+    <a class="site-nav-link" href="#about">About</a>
+    <a class="site-nav-link" href="#work-heading">Work</a>
+    <a class="site-nav-cta" id="site-nav-cta" href="#contact-heading">Get in touch</a>
+  </div>
 </nav>
 
 <!-- ── HERO ───────────────────────────────────── -->
@@ -951,7 +1008,7 @@
 </div>
 
 <!-- ── ABOUT ──────────────────────────────────── -->
-<section class="content-section">
+<section class="content-section" id="about">
   <div class="sec-head reveal">
     <span class="sec-num" aria-hidden="true">01</span>
     <h2 class="sec-label">About</h2>
@@ -1253,9 +1310,12 @@
 <!-- ── LIGHTBOX ───────────────────────────────── -->
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
   <button class="lightbox-close" id="lightbox-close" aria-label="Close image viewer">&times;</button>
+  <button class="lightbox-nav lightbox-prev" id="lightbox-prev" aria-label="Previous item">&lsaquo;</button>
+  <button class="lightbox-nav lightbox-next" id="lightbox-next" aria-label="Next item">&rsaquo;</button>
   <img id="lightbox-img" src="" alt="">
   <iframe id="lightbox-video" src="" title="Portfolio video" frameborder="0"
-          allow="autoplay; encrypted-media" allowfullscreen></iframe>
+          allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen
+          referrerpolicy="strict-origin-when-cross-origin"></iframe>
 </div>
 
 <script>
@@ -1322,26 +1382,31 @@
   var lbImg     = document.getElementById('lightbox-img');
   var lbVideo   = document.getElementById('lightbox-video');
   var lbClose   = document.getElementById('lightbox-close');
+  var lbPrev    = document.getElementById('lightbox-prev');
+  var lbNext    = document.getElementById('lightbox-next');
+  var tiles     = Array.prototype.slice.call(document.querySelectorAll('.work-tile'));
+  var current   = -1;
   var lastFocus = null; // element to return focus to on close
 
-  function openImage(src, label) {
-    lb.classList.remove('is-video');
-    lbImg.src = src;
-    lbImg.alt = label;
+  function show(i) {
+    current = (i + tiles.length) % tiles.length;
+    var tile  = tiles[current];
+    var label = tile.getAttribute('aria-label').replace('. Click to view.', '');
+    lastFocus = tile;
+    lbImg.src   = '';
+    lbVideo.src = '';
+    if (tile.dataset.video) {
+      lb.classList.add('is-video');
+      lbVideo.src = tile.dataset.video;
+      lbVideo.title = label;
+    } else {
+      lb.classList.remove('is-video');
+      lbImg.src = tile.querySelector('img').src;
+      lbImg.alt = label;
+    }
     lb.setAttribute('aria-label', label);
     lb.classList.add('is-open');
     document.body.style.overflow = 'hidden';
-    lbClose.focus();
-  }
-
-  function openVideo(url, label) {
-    lb.classList.add('is-video');
-    lbVideo.src = url;
-    lbVideo.title = label;
-    lb.setAttribute('aria-label', label);
-    lb.classList.add('is-open');
-    document.body.style.overflow = 'hidden';
-    lbClose.focus();
   }
 
   function closeLb() {
@@ -1354,15 +1419,10 @@
   }
 
   // Attach to work tiles (click + keyboard)
-  document.querySelectorAll('.work-tile').forEach(function(tile) {
+  tiles.forEach(function(tile, i) {
     function activate() {
-      lastFocus = tile;
-      var label = tile.getAttribute('aria-label').replace('. Click to view.', '');
-      if (tile.dataset.video) {
-        openVideo(tile.dataset.video, label);
-      } else {
-        openImage(tile.querySelector('img').src, label);
-      }
+      show(i);
+      lbClose.focus();
     }
 
     tile.addEventListener('click', activate);
@@ -1375,17 +1435,26 @@
   });
 
   lb.addEventListener('click', function(e) {
-    if (e.target !== lbImg && e.target !== lbVideo) closeLb();
+    if (e.target === lb) closeLb();
   });
 
   lbClose.addEventListener('click', closeLb);
+  lbPrev.addEventListener('click', function() { show(current - 1); });
+  lbNext.addEventListener('click', function() { show(current + 1); });
 
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Tab' && lb.classList.contains('is-open')) {
+    if (!lb.classList.contains('is-open')) return;
+    if (e.key === 'Escape') closeLb();
+    if (e.key === 'ArrowLeft')  show(current - 1);
+    if (e.key === 'ArrowRight') show(current + 1);
+    if (e.key === 'Tab') {
+      // keep focus cycling inside the lightbox
+      var stops = [lbPrev, lbClose, lbNext];
+      var idx   = stops.indexOf(document.activeElement);
       e.preventDefault();
-      lbClose.focus();
+      idx = idx === -1 ? 1 : (idx + (e.shiftKey ? -1 : 1) + stops.length) % stops.length;
+      stops[idx].focus();
     }
-    if (e.key === 'Escape' && lb.classList.contains('is-open')) closeLb();
   });
 
 })();
