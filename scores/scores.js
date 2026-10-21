@@ -532,10 +532,18 @@ async function fetchTeamData(key){
 }
 
 // ── News ──
-const RSS_PROXY='https://api.rss2json.com/v1/api.json?rss_url=';
+// Free RSS→JSON proxies, tried in order per feed. rss2json has started throwing
+// Cloudflare challenges at times, so feedrapp (Google Feed API format) backs it up.
+const RSS_PROXIES=[
+  { url:f=>'https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(f)+'&_='+Math.floor(Date.now()/300000),
+    items:d=>(d?.items||[]).map(i=>({title:i.title,link:i.link,pubDate:i.pubDate})) },
+  { url:f=>'https://feedrapp.info/?num=5&q='+encodeURIComponent(f),
+    items:d=>(d?.responseData?.feed?.entries||[]).map(i=>({title:i.title,link:i.link,pubDate:i.publishedDate})) },
+];
 let newsCache={items:[],byTeam:{},fetchedAt:0};
 const NEWS_TTL=5*60*1000;
-function parseRssDate(str){ if(!str) return 0; return new Date(str.replace(' ','T')+'Z').getTime()||0; }
+// rss2json gives "2026-10-21 03:30:05" (UTC, no zone); feedrapp gives full ISO.
+function parseRssDate(str){ if(!str) return 0; const s=str.replace(' ','T'); return new Date(/Z|[+-]\d\d:?\d\d$/.test(s)?s:s+'Z').getTime()||0; }
 function escHtml(s){ const d=document.createElement('div'); d.textContent=String(s||''); return d.innerHTML; }
 function fmtPlayoffNote(note){
   if(!note) return 'Playoffs';
@@ -557,13 +565,20 @@ function fetchWithTimeout(url,ms){
   const t=setTimeout(()=>ac.abort(),ms);
   return fetch(url,{signal:ac.signal}).finally(()=>clearTimeout(t));
 }
+async function fetchFeedItems(feedUrl){
+  for(const p of RSS_PROXIES){
+    const d=await fetchWithTimeout(p.url(feedUrl),9000).then(r=>r.ok?r.json():null).catch(()=>null);
+    const items=p.items(d);
+    if(items.length) return items;
+  }
+  return [];
+}
 async function fetchNews(){
   if(Date.now()-newsCache.fetchedAt<NEWS_TTL) return newsCache.items;
   try{
     const results=await Promise.all(NEWS_FEEDS.map(async feed=>{
-      const d=await fetchWithTimeout(RSS_PROXY+encodeURIComponent(feed.url)+'&_='+Math.floor(Date.now()/300000),9000)
-        .then(r=>r.json()).catch(()=>null);
-      return (d?.items||[]).slice(0,5).map(item=>({title:item.title?.trim(),link:item.link,pubDate:item.pubDate,team:feed.team,color:feed.color}));
+      const items=await fetchFeedItems(feed.url);
+      return items.slice(0,5).map(item=>({title:item.title?.trim(),link:item.link,pubDate:item.pubDate,team:feed.team,color:feed.color}));
     }));
     const allItems=results.flat().filter(i=>i.title&&i.pubDate).sort((a,b)=>parseRssDate(b.pubDate)-parseRssDate(a.pubDate));
     const byTeam={};
