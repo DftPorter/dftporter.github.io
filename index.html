@@ -133,8 +133,15 @@
       text-transform: uppercase;
       color: rgba(255,255,255,0.6);
       text-decoration: none;
-      transition: color 0.15s;
+      padding-bottom: 3px;
+      background: linear-gradient(currentColor, currentColor) left bottom / 0 1px no-repeat;
+      transition: color 0.15s, background-size 0.45s cubic-bezier(0.16,1,0.3,1);
     }
+
+    .site-nav-link:hover,
+    .site-nav-link:focus-visible,
+    .site-nav-cta:hover,
+    .site-nav-cta:focus-visible { background-size: 100% 1px; }
 
     .site-nav-link:hover,
     .site-nav-link:focus-visible,
@@ -253,6 +260,38 @@
     .hero-name em {
       font-style: italic;
       color: var(--accent);
+    }
+
+    /* each line rises from behind a mask on load */
+    .hero-line {
+      display: block;
+      overflow: hidden;
+      padding: 0 0.12em 0.1em 0;   /* room for italic overhang */
+      margin-bottom: -0.1em;
+    }
+
+    .hero-line > span {
+      display: inline-block;
+      animation: hero-rise 1.2s cubic-bezier(0.16,1,0.3,1) 0.15s both;
+    }
+
+    .hero-line + .hero-line > span { animation-delay: 0.28s; }
+
+    .hero-eyebrow { animation: hero-fade 1s ease 0.05s both; }
+    .hero-sub     { animation: hero-fade 1s ease 0.7s both; }
+
+    @keyframes hero-rise {
+      from { transform: translateY(105%); }
+      to   { transform: translateY(0); }
+    }
+
+    @keyframes hero-fade {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero-line > span, .hero-eyebrow, .hero-sub { animation: none; }
     }
 
     .hero-sub {
@@ -406,6 +445,15 @@
       object-position: top;
       display: block;
       will-change: transform;
+      /* settles from a slight zoom as it scrolls in (separate from parallax transform) */
+      scale: 1.06;
+      transition: scale 1.8s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .billboard.is-visible .billboard-img { scale: 1; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .billboard-img { scale: 1; transition: none; }
     }
 
     .billboard-overlay {
@@ -591,6 +639,40 @@
       border: 1.5px solid var(--accent);
       margin-top: 0.5rem;
       flex-shrink: 0;
+      background: transparent;
+      transition: background-color 0.3s ease;
+    }
+
+    /* timeline: a thin line draws from each dot to the next, filling dots in turn */
+    .exp-item { position: relative; }
+
+    .exp-item:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 3px;
+      top: calc(2rem + 7px);      /* item padding + pip margin + pip height */
+      height: calc(100% - 7px);   /* ends at the next pip */
+      width: 1px;
+      background: var(--accent);
+      opacity: 0.6;
+      transform: scaleY(0);
+      transform-origin: top;
+      transition: transform 0.55s cubic-bezier(0.65,0,0.35,1);
+    }
+
+    .exp-item.is-visible::before   { transform: scaleY(1); }
+    .exp-item.is-visible .exp-pip  { background-color: var(--accent); }
+
+    .exp-item:nth-child(1) .exp-pip  { transition-delay: 0.3s; }
+    .exp-item:nth-child(1)::before   { transition-delay: 0.4s; }
+    .exp-item:nth-child(2) .exp-pip  { transition-delay: 0.95s; }
+    .exp-item:nth-child(2)::before   { transition-delay: 1.05s; }
+    .exp-item:nth-child(3) .exp-pip  { transition-delay: 1.6s; }
+    .exp-item:nth-child(3)::before   { transition-delay: 1.7s; }
+    .exp-item:nth-child(4) .exp-pip  { transition-delay: 2.25s; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .exp-item::before, .exp-pip { transition: none !important; }
     }
 
     .exp-role {
@@ -663,6 +745,31 @@
 
     .work-tile--top img { object-position: top center; }
 
+    /* play badge on video tiles */
+    .work-tile[data-video]::after {
+      content: '';
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1;
+      width: 2.75rem;
+      height: 2.75rem;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.6);
+      background: rgba(26,23,20,0.35) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 6.5v11l8.5-5.5z' fill='white'/%3E%3C/svg%3E") center / 45% no-repeat;
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+      pointer-events: none;
+      transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .work-tile[data-video]:hover::after,
+    .work-tile[data-video]:focus-visible::after {
+      background-color: var(--accent);
+      border-color: var(--accent);
+      transform: scale(1.08);
+    }
+
     .work-tile:first-child {
       grid-column: span 2;
       aspect-ratio: 16 / 9;
@@ -707,17 +814,21 @@
       font-weight: 300;
     }
 
+    /* underline draws in left-to-right over a faint resting line */
     .work-more a {
       color: var(--fg);
-      text-underline-offset: 3px;
-      text-decoration-color: var(--border);
-      transition: color 0.15s, text-decoration-color 0.15s;
+      text-decoration: none;
+      padding-bottom: 2px;
+      background:
+        linear-gradient(var(--accent), var(--accent)) left bottom / 0 1px no-repeat,
+        linear-gradient(var(--border), var(--border)) left bottom / 100% 1px no-repeat;
+      transition: color 0.15s, background-size 0.45s cubic-bezier(0.16,1,0.3,1);
     }
 
     .work-more a:hover,
     .work-more a:focus-visible {
       color: var(--accent);
-      text-decoration-color: var(--accent);
+      background-size: 100% 1px, 100% 1px;
     }
 
     /* ── FIND ME ──────────────────────────────── */
@@ -901,6 +1012,13 @@
       box-shadow: 0 8px 80px rgba(0,0,0,0.8);
     }
 
+    /* crossfade when stepping between items */
+    .lightbox img,
+    #lightbox-video { transition: opacity 0.2s ease; }
+
+    .lightbox.is-swapping img,
+    .lightbox.is-swapping #lightbox-video { opacity: 0; }
+
     .lightbox.is-video #lightbox-img   { display: none; }
     .lightbox.is-video #lightbox-video { display: block; }
 
@@ -1007,7 +1125,7 @@
       <div class="hero-dot"></div>
       <span>Since 2005</span>
     </div>
-    <h1 class="hero-name">Tim<br><em>Allen</em></h1>
+    <h1 class="hero-name" aria-label="Tim Allen"><span class="hero-line" aria-hidden="true"><span>Tim</span></span><span class="hero-line" aria-hidden="true"><span><em>Allen</em></span></span></h1>
     <p class="hero-sub">Art Director, Creative, &amp; Problem Solver</p>
   </div>
 
@@ -1407,6 +1525,7 @@
   }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
 
   revealEls.forEach(function(el) { io.observe(el); });
+  billboards.forEach(function(el) { io.observe(el); });
 
   // ── Lightbox ──
   var lb        = document.getElementById('lightbox');
@@ -1419,9 +1538,25 @@
   var current   = -1;
   var lastFocus = null; // element to return focus to on close
 
+  var swapTimer = null;
+
+  function endSwap() { lb.classList.remove('is-swapping'); }
+  lbImg.addEventListener('load', endSwap);
+
   function show(i) {
     current = (i + tiles.length) % tiles.length;
-    var tile  = tiles[current];
+    clearTimeout(swapTimer);
+    // already open: fade out, swap, fade back in
+    if (lb.classList.contains('is-open') && !reduced) {
+      lb.classList.add('is-swapping');
+      swapTimer = setTimeout(function() { load(current); }, 200);
+    } else {
+      load(current);
+    }
+  }
+
+  function load(i) {
+    var tile  = tiles[i];
     var label = tile.getAttribute('aria-label').replace(/ ((play video|view larger))$/, '');
     lastFocus = tile;
     lbImg.src   = '';
@@ -1430,9 +1565,11 @@
       lb.classList.add('is-video');
       lbVideo.src = tile.dataset.video;
       lbVideo.title = label;
+      swapTimer = setTimeout(endSwap, 80);
     } else {
       lb.classList.remove('is-video');
       lbImg.src = tile.dataset.img;
+      swapTimer = setTimeout(endSwap, 800); // fallback if load is slow or fails
       lbImg.alt = label;
     }
     lb.setAttribute('aria-label', label);
@@ -1441,7 +1578,8 @@
   }
 
   function closeLb() {
-    lb.classList.remove('is-open', 'is-video');
+    clearTimeout(swapTimer);
+    lb.classList.remove('is-open', 'is-video', 'is-swapping');
     document.body.style.overflow = '';
     lbImg.src   = '';
     lbVideo.src = '';
