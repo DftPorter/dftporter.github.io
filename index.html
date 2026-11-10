@@ -16,6 +16,26 @@
   <meta name="twitter:description" content="Art Director and Graphic Designer with 20+ years of experience in e-learning, brand identity, motion graphics, and corporate creative.">
   <meta name="twitter:image"      content="https://dftporter.github.io/images/og-preview.jpg">
   <link rel="icon" href="favicon.png" type="image/png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Tim Allen",
+    "jobTitle": "Art Director",
+    "url": "https://dftporter.github.io/",
+    "image": "https://dftporter.github.io/images/og-preview.jpg",
+    "worksFor": { "@type": "Organization", "name": "Performance Development Group" },
+    "address": { "@type": "PostalAddress", "addressRegion": "PA", "addressCountry": "US" },
+    "knowsAbout": ["Art Direction", "Graphic Design", "Motion Graphics", "Digital Illustration", "Brand Identity", "eLearning Design"],
+    "sameAs": [
+      "https://www.linkedin.com/in/redartist/",
+      "https://www.behance.net/redartist",
+      "https://www.instagram.com/daftporter/",
+      "https://bsky.app/profile/daftporter.bsky.social",
+      "https://www.youtube.com/@daftporter"
+    ]
+  }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
@@ -467,6 +487,8 @@
 
     .dark-section .sec-num  { color: var(--accent); }
     .dark-section .sec-label { color: rgba(255,255,255,0.45); }
+
+    .wrap-wide { max-width: 1100px; margin: 0 auto; }
 
     /* ── SKILLS ───────────────────────────────── */
     .skills-grid {
@@ -972,12 +994,14 @@
 </nav>
 
 <!-- ── HERO ───────────────────────────────────── -->
+<main id="main-content">
+
 <section class="hero" aria-label="Tim Allen, Art Director">
   <div class="hero-portrait-wrap">
-    <img class="hero-portrait" id="hero-portrait" src="images/photo.jpg" alt="" aria-hidden="true">
+    <img class="hero-portrait" id="hero-portrait" src="images/web/photo-1600.webp" srcset="images/web/photo-800.webp 800w, images/web/photo-1600.webp 1600w" sizes="(max-width: 600px) 60vw, 52vw" width="1600" height="2134" fetchpriority="high" alt="" aria-hidden="true">
   </div>
 
-  <div class="hero-content" id="main-content">
+  <div class="hero-content">
     <div class="hero-eyebrow">
       <span>Southeast Pennsylvania</span>
       <div class="hero-dot"></div>
@@ -1022,7 +1046,7 @@
 
 <!-- ── BILLBOARD 1: Leadership Base Camp ──────── -->
 <div class="billboard" id="billboard-1">
-  <img class="billboard-img" src="images/6.jpg" alt="Leadership Base Camp — corporate leadership event presentation design" loading="lazy">
+  <img class="billboard-img" src="images/web/6-1600.webp" srcset="images/web/6-800.webp 800w, images/web/6-1600.webp 1600w" sizes="100vw" width="1600" height="900" decoding="async" alt="Leadership Base Camp — corporate leadership event presentation design" loading="lazy">
   <div class="billboard-overlay" aria-hidden="true"></div>
   <div class="billboard-num" aria-hidden="true">01</div>
   <div class="billboard-label">
@@ -1034,7 +1058,7 @@
 
 <!-- ── WHAT I DO ──────────────────────────────── -->
 <section class="dark-section" aria-labelledby="skills-heading">
-  <div style="max-width:1100px;margin:0 auto;">
+  <div class="wrap-wide">
     <div class="sec-head reveal">
       <span class="sec-num" aria-hidden="true">02</span>
       <h2 class="sec-label" id="skills-heading">What I Do</h2>
@@ -1065,7 +1089,7 @@
         <span class="skill-num" aria-hidden="true">04</span>
         <div class="skill-body">
           <h3>Digital Illustration</h3>
-          <p>Digital illustration work across the full Adobe suite.</p>
+          <p>Portraits, character work, and technical illustration, drawn digitally and finished across the Adobe suite.</p>
         </div>
       </li>
       <li class="skill-item reveal reveal-delay-1">
@@ -1088,7 +1112,7 @@
 
 <!-- ── BILLBOARD 2: SWAGGER ───────────────────── -->
 <div class="billboard" id="billboard-2">
-  <img class="billboard-img" src="images/7.jpg" alt="SWAGGER — cinematic motion graphics piece" loading="lazy">
+  <img class="billboard-img" src="images/web/7-1600.webp" srcset="images/web/7-800.webp 800w, images/web/7-1600.webp 1600w" sizes="100vw" width="1600" height="900" decoding="async" alt="SWAGGER — cinematic motion graphics piece" loading="lazy">
   <div class="billboard-overlay" aria-hidden="true"></div>
   <div class="billboard-num" aria-hidden="true">02</div>
   <div class="billboard-label">
@@ -1150,7 +1174,7 @@
 
 <!-- ── BILLBOARD 3: Migraine Journey ──────────── -->
 <div class="billboard" id="billboard-3">
-  <img class="billboard-img" src="images/9.jpg" alt="The Migraine Journey — eLearning design" loading="lazy">
+  <img class="billboard-img" src="images/web/9-1600.webp" srcset="images/web/9-800.webp 800w, images/web/9-1600.webp 1600w" sizes="100vw" width="1600" height="900" decoding="async" alt="The Migraine Journey — eLearning design" loading="lazy">
   <div class="billboard-overlay" aria-hidden="true"></div>
   <div class="billboard-num" aria-hidden="true">03</div>
   <div class="billboard-label">
@@ -1169,9 +1193,9 @@
   <div class="work-grid">
 
     <div class="work-tile reveal" tabindex="0" role="button"
-         aria-label="Identity Theft — Motion Graphics. Click to view."
+         aria-label="Identity Theft — Motion Graphics (play video)"
          data-video="https://www.youtube-nocookie.com/embed/b_bQ8HuHYG4?autoplay=1&rel=0">
-      <img src="images/1.jpg" alt="" loading="lazy">
+      <img src="images/web/1-1600.webp" srcset="images/web/1-800.webp 800w, images/web/1-1600.webp 1600w" sizes="(max-width: 600px) 100vw, 1100px" width="1600" height="900" alt="" loading="lazy" decoding="async">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">Identity Theft</span>
         <span class="work-caption-sub">Motion Graphics</span>
@@ -1179,9 +1203,9 @@
     </div>
 
     <div class="work-tile reveal reveal-delay-1" tabindex="0" role="button"
-         aria-label="KAM Summit — Brand Identity. Click to view."
-         data-img="images/4.png">
-      <img src="images/4.png" alt="" loading="lazy">
+         aria-label="KAM Summit — Brand Identity (view larger)"
+         data-img="images/web/4-1600.webp">
+      <img src="images/web/4-1600.webp" srcset="images/web/4-800.webp 800w, images/web/4-1600.webp 1600w" sizes="(max-width: 600px) 100vw, 545px" width="1600" height="900" alt="" loading="lazy" decoding="async">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">KAM Summit</span>
         <span class="work-caption-sub">Brand Identity</span>
@@ -1189,9 +1213,9 @@
     </div>
 
     <div class="work-tile reveal reveal-delay-2" tabindex="0" role="button"
-         aria-label="Wildwood Crest 2020 — Drone Video Production. Click to view."
+         aria-label="Wildwood Crest 2020 — Drone Video Production (play video)"
          data-video="https://www.youtube-nocookie.com/embed/cD-AYvzeO2I?autoplay=1&rel=0">
-      <img src="images/13.jpg" alt="" loading="lazy">
+      <img src="images/web/13-1600.webp" srcset="images/web/13-800.webp 800w, images/web/13-1600.webp 1280w" sizes="(max-width: 600px) 100vw, 545px" width="1280" height="720" alt="" loading="lazy" decoding="async">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">Wildwood Crest 2020</span>
         <span class="work-caption-sub">Drone Video Production</span>
@@ -1199,9 +1223,9 @@
     </div>
 
     <div class="work-tile reveal reveal-delay-1" tabindex="0" role="button"
-         aria-label="Basketball Portrait — Digital Illustration. Click to view."
-         data-img="images/2.png">
-      <img src="images/2.png" alt="" loading="lazy">
+         aria-label="Basketball Portrait — Digital Illustration (view larger)"
+         data-img="images/web/2-1600.webp">
+      <img src="images/web/2-1600.webp" srcset="images/web/2-800.webp 800w, images/web/2-1600.webp 1600w" sizes="(max-width: 600px) 100vw, 545px" width="1600" height="900" alt="" loading="lazy" decoding="async">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">Basketball Portrait</span>
         <span class="work-caption-sub">Digital Illustration</span>
@@ -1209,9 +1233,9 @@
     </div>
 
     <div class="work-tile reveal reveal-delay-1" tabindex="0" role="button"
-         aria-label="Women's Health Elite — Logo and Identity. Click to view."
-         data-img="images/3.jpg">
-      <img src="images/3.jpg" alt="" loading="lazy">
+         aria-label="Women's Health Elite — Logo and Identity (view larger)"
+         data-img="images/web/3-1600.webp">
+      <img src="images/web/3-1600.webp" srcset="images/web/3-800.webp 800w, images/web/3-1600.webp 1080w" sizes="(max-width: 600px) 100vw, 545px" width="1080" height="644" alt="" loading="lazy" decoding="async">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">Women's Health Elite</span>
         <span class="work-caption-sub">Logo &amp; Identity</span>
@@ -1219,9 +1243,9 @@
     </div>
 
        <div class="work-tile reveal reveal-delay-2" tabindex="0" role="button"
-         aria-label="Wild in the Woods — Video Production. Click to view."
+         aria-label="Wild in the Woods — Video Production (play video)"
          data-video="https://www.youtube-nocookie.com/embed/deWNU_QlI5g?autoplay=1&rel=0">
-      <img src="images/12.jpg" alt="" loading="lazy">
+      <img src="images/web/12-1600.webp" srcset="images/web/12-800.webp 800w, images/web/12-1600.webp 1280w" sizes="(max-width: 600px) 100vw, 545px" width="1280" height="814" alt="" loading="lazy" decoding="async">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">Wild in the Woods</span>
         <span class="work-caption-sub">Long Form Video Production</span>
@@ -1229,9 +1253,9 @@
     </div>
 
     <div class="work-tile work-tile--top reveal reveal-delay-1" tabindex="0" role="button"
-         aria-label="Patient Stories — Digital Publication. Click to view."
-         data-img="images/5.png">
-      <img src="images/5.png" alt="" loading="lazy">
+         aria-label="Patient Stories — Digital Publication (view larger)"
+         data-img="images/web/5-1600.webp">
+      <img src="images/web/5-1600.webp" sizes="(max-width: 600px) 100vw, 545px" width="720" height="960" alt="" loading="lazy" decoding="async">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">Patient Stories</span>
         <span class="work-caption-sub">Digital Publication</span>
@@ -1239,9 +1263,9 @@
     </div>
 
     <div class="work-tile reveal reveal-delay-2" tabindex="0" role="button"
-         aria-label="Portrait Study — Digital Illustration. Click to view."
-         data-img="images/11.png">
-      <img src="images/11.png" alt="" loading="lazy">
+         aria-label="Portrait Study — Digital Illustration (view larger)"
+         data-img="images/web/11p-1600.webp">
+      <img src="images/web/11p-1600.webp" srcset="images/web/11p-800.webp 800w, images/web/11p-1600.webp 1274w" sizes="(max-width: 600px) 100vw, 545px" width="1274" height="1920" alt="" loading="lazy" decoding="async">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">Portrait Study</span>
         <span class="work-caption-sub">Digital Illustration</span>
@@ -1249,9 +1273,9 @@
     </div>
 
     <div class="work-tile reveal reveal-delay-1" tabindex="0" role="button"
-         aria-label="Payer Landscape — eLearning Module. Click to view."
-         data-img="images/11.jpg">
-      <img src="images/11.jpg" alt="" loading="lazy">
+         aria-label="Payer Landscape — eLearning Module (view larger)"
+         data-img="images/web/11-1600.webp">
+      <img src="images/web/11-1600.webp" srcset="images/web/11-800.webp 800w, images/web/11-1600.webp 1600w" sizes="(max-width: 600px) 100vw, 545px" width="1600" height="900" alt="" loading="lazy" decoding="async">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">Payer Landscape</span>
         <span class="work-caption-sub">eLearning Module</span>
@@ -1259,9 +1283,9 @@
     </div>
 
     <div class="work-tile reveal reveal-delay-2" tabindex="0" role="button"
-         aria-label="Migraine Treatment Drug Classes — Reference Design. Click to view."
-         data-img="images/10.jpg">
-      <img src="images/10.jpg" alt="" loading="lazy">
+         aria-label="Migraine Treatment Drug Classes — Reference Design (view larger)"
+         data-img="images/web/10-1600.webp">
+      <img src="images/web/10-1600.webp" srcset="images/web/10-800.webp 800w, images/web/10-1600.webp 1600w" sizes="(max-width: 600px) 100vw, 545px" width="1600" height="900" alt="" loading="lazy" decoding="async">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">Migraine Treatment</span>
         <span class="work-caption-sub">Reference Design</span>
@@ -1269,9 +1293,9 @@
     </div>
 
     <div class="work-tile reveal reveal-delay-1" tabindex="0" role="button"
-         aria-label="KAM Summit 2025 — Presentation Design. Click to view."
-         data-img="images/8.jpg">
-      <img src="images/8.jpg" alt="" loading="lazy">
+         aria-label="KAM Summit 2025 — Presentation Design (view larger)"
+         data-img="images/web/8-1600.webp">
+      <img src="images/web/8-1600.webp" srcset="images/web/8-800.webp 800w, images/web/8-1600.webp 1600w" sizes="(max-width: 600px) 100vw, 545px" width="1600" height="900" alt="" loading="lazy" decoding="async">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">KAM Summit 2025</span>
         <span class="work-caption-sub">Presentation Design</span>
@@ -1300,6 +1324,8 @@
     </div>
   </div>
 </section>
+
+</main>
 
 <!-- ── FOOTER ─────────────────────────────────── -->
 <footer>
@@ -1361,7 +1387,12 @@
     });
   }
 
-  window.addEventListener('scroll', runParallax, { passive: true });
+  var ticking = false;
+  window.addEventListener('scroll', function() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function() { runParallax(); ticking = false; });
+  }, { passive: true });
   runParallax();
 
   // ── Scroll reveal ──
@@ -1391,7 +1422,7 @@
   function show(i) {
     current = (i + tiles.length) % tiles.length;
     var tile  = tiles[current];
-    var label = tile.getAttribute('aria-label').replace('. Click to view.', '');
+    var label = tile.getAttribute('aria-label').replace(/ ((play video|view larger))$/, '');
     lastFocus = tile;
     lbImg.src   = '';
     lbVideo.src = '';
@@ -1401,7 +1432,7 @@
       lbVideo.title = label;
     } else {
       lb.classList.remove('is-video');
-      lbImg.src = tile.querySelector('img').src;
+      lbImg.src = tile.dataset.img;
       lbImg.alt = label;
     }
     lb.setAttribute('aria-label', label);

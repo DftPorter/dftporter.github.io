@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dftporter.github.io/sitemap.xml
