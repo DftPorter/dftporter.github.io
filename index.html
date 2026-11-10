@@ -8,13 +8,13 @@
   <meta property="og:type"        content="website">
   <meta property="og:title"       content="Tim Allen — Art Director">
   <meta property="og:description" content="Art Director and Graphic Designer with 20+ years of experience in e-learning, brand identity, motion graphics, and corporate creative.">
-  <meta property="og:image"       content="https://dftporter.github.io/images/og-preview.jpg">
+  <meta property="og:image"       content="https://dftporter.github.io/images/og-preview.jpg?v=2">
   <meta property="og:url"         content="https://dftporter.github.io/">
   <link rel="canonical" href="https://dftporter.github.io/">
   <meta name="twitter:card"       content="summary_large_image">
   <meta name="twitter:title"      content="Tim Allen — Art Director">
   <meta name="twitter:description" content="Art Director and Graphic Designer with 20+ years of experience in e-learning, brand identity, motion graphics, and corporate creative.">
-  <meta name="twitter:image"      content="https://dftporter.github.io/images/og-preview.jpg">
+  <meta name="twitter:image"      content="https://dftporter.github.io/images/og-preview.jpg?v=2">
   <link rel="icon" href="favicon.png" type="image/png">
   <script type="application/ld+json">
   {
@@ -23,7 +23,7 @@
     "name": "Tim Allen",
     "jobTitle": "Art Director",
     "url": "https://dftporter.github.io/",
-    "image": "https://dftporter.github.io/images/og-preview.jpg",
+    "image": "https://dftporter.github.io/images/og-preview.jpg?v=2",
     "worksFor": { "@type": "Organization", "name": "Performance Development Group" },
     "address": { "@type": "PostalAddress", "addressRegion": "PA", "addressCountry": "US" },
     "knowsAbout": ["Art Direction", "Graphic Design", "Motion Graphics", "Digital Illustration", "Brand Identity", "eLearning Design"],
@@ -38,26 +38,28 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&display=swap" rel="stylesheet">
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:      #f3ede2;
-      --fg:      #1a1714;
-      --muted:   #6e6560;   /* darkened from #8a7f74 — passes WCAG AA on --bg */
-      --accent:  #b85c38;
-      --border:  #ddd7cc;
-      --surface: #ede7dc;
-      --dark:    #1a1714;
+      --bg:      #f3f3f0;
+      --fg:      #121316;
+      --muted:   #5f6168;
+      --accent:  #2747d0;
+      --accent-dark: #7b93ff;  /* lighter cobalt for text on dark sections */
+      --border:  #dcdcd6;
+      --surface: #e9e9e5;
+      --dark:    #121316;
+      --font:    'Archivo', system-ui, sans-serif;
     }
 
     html { scroll-behavior: smooth; overflow-x: hidden; }
 
     body {
       overflow-x: hidden;
-      font-family: 'Inter', system-ui, sans-serif;
+      font-family: var(--font);
       background: var(--bg);
       color: var(--fg);
       line-height: 1.6;
@@ -100,7 +102,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(26,23,20,0.9);
+      background: rgba(18,19,22,0.9);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       transform: translateY(-100%);
@@ -112,11 +114,12 @@
     }
 
     .site-nav-name {
-      font-family: 'DM Serif Display', Georgia, serif;
-      font-style: italic;
-      font-size: 1rem;
+      font-variation-settings: 'wdth' 125;
+      font-weight: 800;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
       color: #fff;
-      letter-spacing: -0.01em;
     }
 
     .site-nav-links {
@@ -219,8 +222,6 @@
       z-index: 2;
       padding: 0 5vw 6vh;
       width: 100%;
-      max-width: 1600px;
-      margin: 0 auto;
     }
 
     .hero-eyebrow {
@@ -248,17 +249,18 @@
     }
 
     .hero-name {
-      font-family: 'DM Serif Display', Georgia, serif;
-      font-weight: 400;
-      font-size: clamp(4.5rem, 16vw, 14rem);
-      line-height: 0.88;
-      letter-spacing: -0.035em;
+      font-variation-settings: 'wdth' 125;
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: clamp(3.5rem, 16.5vw, 19rem);   /* poster scale: ALLEN crosses the portrait */
+      line-height: 0.84;
+      letter-spacing: -0.03em;
       color: #fff;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
 
     .hero-name em {
-      font-style: italic;
+      font-style: normal;
       color: var(--accent);
     }
 
@@ -266,8 +268,8 @@
     .hero-line {
       display: block;
       overflow: hidden;
-      padding: 0 0.12em 0.1em 0;   /* room for italic overhang */
-      margin-bottom: -0.1em;
+      padding-bottom: 0.06em;      /* keep the mask clear of the baseline */
+      margin-bottom: -0.06em;
     }
 
     .hero-line > span {
@@ -295,11 +297,10 @@
     }
 
     .hero-sub {
-      font-family: 'DM Serif Display', Georgia, serif;
-      font-style: italic;
-      font-size: clamp(1rem, 2.2vw, 1.5rem);
-      color: rgba(255,255,255,0.65); /* raised from 0.45 for contrast */
-      letter-spacing: -0.01em;
+      font-size: clamp(1rem, 1.6vw, 1.25rem);
+      font-weight: 400;
+      color: rgba(255,255,255,0.7);
+      letter-spacing: 0;
       line-height: 1.4;
     }
 
@@ -333,16 +334,14 @@
     /* ── MARQUEE ──────────────────────────────── */
     .marquee-wrap {
       overflow: hidden;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      padding: 0.9375rem 0;
-      background: var(--bg);
+      padding: 1.1rem 0 1.2rem;
+      background: var(--accent);
     }
 
     .marquee-track {
       display: flex;
       width: max-content;
-      animation: marquee 28s linear infinite;
+      animation: marquee 70s linear infinite;
     }
 
     @keyframes marquee {
@@ -358,23 +357,25 @@
     .marquee-track span {
       display: inline-flex;
       align-items: center;
-      gap: 1.25rem;
-      padding: 0 1.25rem;
-      font-size: 0.75rem;
-      font-weight: 500;
-      letter-spacing: 0.13em;
+      gap: 0.55em;
+      padding: 0 0.55em;
+      font-variation-settings: 'wdth' 125;
+      font-size: clamp(1.75rem, 4.5vw, 4rem);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.01em;
       text-transform: uppercase;
-      color: var(--muted);
+      color: #fff;
       white-space: nowrap;
     }
 
     .marquee-track span::after {
       content: '';
       display: inline-block;
-      width: 4px;
-      height: 4px;
+      width: 0.2em;
+      height: 0.2em;
       border-radius: 50%;
-      background: var(--accent);
+      background: var(--dark);
       flex-shrink: 0;
     }
 
@@ -395,9 +396,9 @@
     }
 
     .sec-num {
-      font-family: 'DM Serif Display', Georgia, serif;
-      font-style: italic;
-      font-size: 0.9375rem;
+      font-weight: 700;
+      font-size: 0.75rem;
+      font-variant-numeric: tabular-nums;
       color: var(--accent);
       line-height: 1;
       opacity: 0.85;
@@ -410,7 +411,7 @@
       letter-spacing: 0.14em;
       text-transform: uppercase;
       color: var(--muted);
-      font-family: 'Inter', system-ui, sans-serif;
+      font-family: var(--font);
     }
 
     /* ── ABOUT ────────────────────────────────── */
@@ -433,7 +434,16 @@
       height: 56vh;
       min-height: 320px;
       overflow: hidden;
-      background: var(--dark);
+      /* background matches the section above so the mockups rise out of it */
+      --bb-from: var(--dark);
+      background: var(--bb-from);
+    }
+
+    .bb-from-light { --bb-from: var(--bg); }
+
+    .bb-from-light .billboard-num {
+      color: rgba(18,19,22,0.12);
+      text-shadow: none;
     }
 
     .billboard-img {
@@ -456,26 +466,19 @@
       .billboard-img { scale: 1; transition: none; }
     }
 
-    .billboard-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        to top,
-        rgba(26,23,20,0.72) 0%,
-        rgba(26,23,20,0.15) 55%,
-        transparent 100%
-      );
-      z-index: 1;
-    }
-
     .billboard-label {
       position: absolute;
-      bottom: 2.75rem;
+      bottom: 2rem;
       left: 5vw;
       z-index: 2;
       color: #fff;
       border-left: 2px solid var(--accent);
-      padding-left: 1rem;
+      padding: 0.9rem 1.25rem 1rem 1.1rem;
+      max-width: calc(100% - 10vw);
+      /* solid caption panel: stays readable over busy mockups */
+      background: rgba(18,19,22,0.82);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
     }
 
     .billboard-eyebrow {
@@ -489,11 +492,13 @@
     }
 
     .billboard-label-title {
-      font-family: 'DM Serif Display', Georgia, serif;
-      font-size: clamp(1.25rem, 3.5vw, 2.5rem);
-      font-weight: 400;
-      letter-spacing: -0.02em;
-      line-height: 1.1;
+      font-variation-settings: 'wdth' 125;
+      font-size: clamp(1.25rem, 3vw, 2.25rem);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+      line-height: 1;
+      text-shadow: 0 2px 24px rgba(0,0,0,0.45);  /* holds up over bright mockups */
       display: block;
     }
 
@@ -511,8 +516,8 @@
       top: 3rem;
       right: 5vw;
       z-index: 2;
-      font-family: 'DM Serif Display', Georgia, serif;
-      font-style: italic;
+      font-variation-settings: 'wdth' 125;
+      font-weight: 800;
       font-size: clamp(5rem, 15vw, 12rem);
       color: rgba(255,255,255,0.22);
       text-shadow: 0 0 80px rgba(0,0,0,0.4), 0 0 40px rgba(0,0,0,0.25);
@@ -562,9 +567,9 @@
     .skills-grid .skill-item:nth-child(even) { padding-left: 2.5rem; }
 
     .skill-num {
-      font-family: 'DM Serif Display', Georgia, serif;
-      font-style: italic;
-      font-size: 1rem;
+      font-weight: 700;
+      font-size: 0.75rem;
+      font-variant-numeric: tabular-nums;
       color: var(--accent);
       opacity: 0.75;
       padding-top: 0.15rem;
@@ -606,19 +611,20 @@
     }
 
     .exp-intro {
-      font-size: clamp(2rem, 3.2vw, 3.25rem);
-      font-family: 'DM Serif Display', Georgia, serif;
-      font-style: italic;
-      line-height: 1.35;
+      font-size: clamp(1.75rem, 2.6vw, 2.5rem);
+      font-weight: 400;
+      line-height: 1.2;
       letter-spacing: -0.02em;
       color: var(--muted);
     }
+
+    .exp-intro em { font-style: normal; }
 
     .exp-intro p + p { margin-top: 1.5rem; }
 
     .exp-intro strong {
       color: var(--fg);
-      font-style: normal;
+      font-weight: 700;
     }
 
     .exp-list { list-style: none; }
@@ -703,26 +709,34 @@
       padding: 7rem 5vw;
       max-width: 1100px;
       margin: 0 auto;
+      container-type: inline-size;   /* lets the grid size rows from its own width */
     }
 
+    /* magazine grid: 3 columns, each row one 16:9 cell tall; tiles span cells */
     .work-grid {
+      --gap: 0.6875rem;
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.6875rem;
+      grid-template-columns: repeat(3, 1fr);
+      grid-auto-rows: calc((100cqw - 2 * var(--gap)) / 3 * 0.5625);
+      gap: var(--gap);
     }
+
+    .tile-full  { grid-column: span 3; grid-row: span 2; }  /* cinematic banner */
+    .tile-big   { grid-column: span 2; grid-row: span 2; }  /* ~16:9 feature */
+    .tile-tall  { grid-row: span 3; }                       /* ~3:5 portrait */
+    .tile-tall2 { grid-row: span 2; }                       /* ~8:9 portrait */
 
     .work-tile {
       background: var(--surface);
       overflow: hidden;
-      aspect-ratio: 4 / 3;
       cursor: zoom-in;
       position: relative;
-      box-shadow: 0 0 0 rgba(26,23,20,0);
+      box-shadow: 0 0 0 rgba(18,19,22,0);
       transition: box-shadow 0.3s ease;
       /* keyboard focus indicator */
     }
 
-    .work-tile:hover { box-shadow: 0 12px 32px rgba(26,23,20,0.28); }
+    .work-tile:hover { box-shadow: 0 12px 32px rgba(18,19,22,0.28); }
 
     .work-tile:focus-visible {
       outline: 3px solid var(--accent);
@@ -756,7 +770,7 @@
       height: 2.75rem;
       border-radius: 50%;
       border: 1px solid rgba(255,255,255,0.6);
-      background: rgba(26,23,20,0.35) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 6.5v11l8.5-5.5z' fill='white'/%3E%3C/svg%3E") center / 45% no-repeat;
+      background: rgba(18,19,22,0.35) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 6.5v11l8.5-5.5z' fill='white'/%3E%3C/svg%3E") center / 45% no-repeat;
       -webkit-backdrop-filter: blur(6px);
       backdrop-filter: blur(6px);
       pointer-events: none;
@@ -770,18 +784,13 @@
       transform: scale(1.08);
     }
 
-    .work-tile:first-child {
-      grid-column: span 2;
-      aspect-ratio: 16 / 9;
-    }
-
     .work-caption {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
       padding: 2.5rem 1.5rem 1.25rem;
-      background: linear-gradient(to top, rgba(26,23,20,0.75) 0%, transparent 100%);
+      background: linear-gradient(to top, rgba(18,19,22,0.75) 0%, transparent 100%);
       color: #fff;
       transition: background 0.3s ease;
       pointer-events: none;
@@ -789,7 +798,7 @@
 
     .work-tile:hover .work-caption,
     .work-tile:focus-visible .work-caption {
-      background: linear-gradient(to top, rgba(26,23,20,0.9) 0%, transparent 100%);
+      background: linear-gradient(to top, rgba(18,19,22,0.9) 0%, transparent 100%);
     }
 
     .work-caption-title {
@@ -833,29 +842,31 @@
 
     /* ── FIND ME ──────────────────────────────── */
     .find-section {
-      background: #2a2420;
+      background: var(--accent);
       padding: 7rem 5vw;
     }
 
     .find-inner { max-width: 1100px; margin: 0 auto; }
 
-    .find-section .sec-head   { border-bottom-color: rgba(255,255,255,0.1); }
-    .find-section .sec-num    { color: var(--accent); }
-    .find-section .sec-label  { color: rgba(255,255,255,0.45); }
+    .find-section .sec-head   { border-bottom-color: rgba(255,255,255,0.3); }
+    .find-section .sec-num    { color: #fff; opacity: 1; }
+    .find-section .sec-label  { color: rgba(255,255,255,0.8); }
+    .find-section :focus-visible { outline-color: #fff; }
 
     .find-tagline {
-      font-family: 'DM Serif Display', Georgia, serif;
-      font-size: clamp(2rem, 6vw, 4.5rem);
-      font-weight: 400;
-      letter-spacing: -0.03em;
-      line-height: 1.05;
+      font-variation-settings: 'wdth' 125;
+      font-size: clamp(2rem, 5.5vw, 4.25rem);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      line-height: 0.95;
       color: #fff;
       margin-bottom: 3rem;
     }
 
     .find-tagline em {
-      font-style: italic;
-      color: rgba(255,255,255,0.45);
+      font-style: normal;
+      color: var(--dark);
     }
 
     .links { display: flex; flex-wrap: wrap; gap: 0.6875rem; }
@@ -863,8 +874,8 @@
     .link-pill {
       display: inline-block;
       padding: 0.75rem 1.5rem;
-      border: 1px solid rgba(255,255,255,0.2);
-      color: rgba(255,255,255,0.75);
+      border: 1px solid rgba(255,255,255,0.55);
+      color: #fff;
       font-size: 0.875rem;
       font-weight: 400;
       text-decoration: none;
@@ -874,14 +885,14 @@
 
     .link-pill:hover,
     .link-pill:focus-visible {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
+      background: #fff;
+      border-color: #fff;
+      color: var(--accent);
     }
 
     .link-cta {
-      background: var(--accent);
-      border-color: var(--accent);
+      background: var(--dark);
+      border-color: var(--dark);
       color: #fff;
       flex-basis: 100%;
       text-align: center;
@@ -892,7 +903,7 @@
     .link-cta:focus-visible {
       background: #fff;
       border-color: #fff;
-      color: var(--fg);
+      color: var(--dark);
     }
 
     /* ── FOOTER ───────────────────────────────── */
@@ -909,11 +920,12 @@
     }
 
     .footer-name {
-      font-family: 'DM Serif Display', Georgia, serif;
-      font-style: italic;
-      font-size: 1rem;
+      font-variation-settings: 'wdth' 125;
+      font-weight: 800;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
       color: rgba(255,255,255,0.55);
-      letter-spacing: -0.01em;
     }
 
     /* ── LIGHTBOX ─────────────────────────────── */
@@ -921,7 +933,7 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(26, 23, 20, 0.95);
+      background: rgba(18,19,22, 0.95);
       z-index: 200;
       align-items: center;
       justify-content: center;
@@ -943,7 +955,6 @@
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
-      box-shadow: 0 8px 80px rgba(0,0,0,0.8);
       animation: lb-scale 0.25s ease;
       cursor: default;
     }
@@ -976,7 +987,7 @@
       top: 50%;
       transform: translateY(-50%);
       z-index: 1;
-      background: rgba(26,23,20,0.5);
+      background: rgba(18,19,22,0.5);
       border: 1px solid rgba(255,255,255,0.2);
       border-radius: 50%;
       width: 3rem;
@@ -1060,20 +1071,20 @@
     }
 
     @media (max-width: 600px) {
-      .hero-name        { font-size: clamp(3.5rem, 18vw, 5.5rem); }
+      .hero-name        { font-size: 17vw; }
       .content-section  { padding: 4rem 1.5rem; }
       .dark-section     { padding: 4rem 1.5rem; }
       .exp-section      { padding: 4rem 1.5rem; }
       .work-section     { padding: 4rem 1.5rem; }
       .find-section     { padding: 4rem 1.5rem; }
 
-      .exp-intro        { font-size: 1.375rem; }
+      .exp-intro        { font-size: 1.375rem; line-height: 1.25; }
 
       .find-tagline     { font-size: clamp(1.75rem, 8vw, 3rem); }
 
-      .work-grid        { grid-template-columns: 1fr; }
-      .work-tile        { aspect-ratio: 16/9; }
-      .work-tile:first-child { aspect-ratio: 16/9; grid-column: auto; }
+      .work-grid        { grid-template-columns: 1fr; grid-auto-rows: auto; }
+      .work-tile        { aspect-ratio: 16/9; grid-column: auto; grid-row: auto; }
+      .tile-tall, .tile-tall2 { aspect-ratio: 4/5; }
 
       .billboard        { height: 55vh; min-height: 260px; }
       .hero-portrait-wrap { width: 60%; }
@@ -1095,6 +1106,16 @@
         margin-top: 0;
       }
     }
+
+    /* cobalt: lighter accent wherever it sits on a dark background */
+    .hero-name em, .billboard-eyebrow, .skill-num,
+    .dark-section .sec-num,
+    .site-nav-link:hover, .site-nav-link:focus-visible,
+    .site-nav-cta:hover, .site-nav-cta:focus-visible { color: var(--accent-dark); }
+    .hero-dot { background: var(--accent-dark); }
+    .billboard-label { border-left-color: var(--accent-dark); }
+    .site-nav :focus-visible, .dark-section :focus-visible,
+    .lightbox :focus-visible { outline-color: var(--accent-dark); }
   </style>
 </head>
 <body>
@@ -1163,9 +1184,8 @@
 </section>
 
 <!-- ── BILLBOARD 1: Leadership Base Camp ──────── -->
-<div class="billboard" id="billboard-1">
-  <img class="billboard-img" src="images/web/6-1600.webp" srcset="images/web/6-800.webp 800w, images/web/6-1600.webp 1600w" sizes="100vw" width="1600" height="900" decoding="async" alt="Leadership Base Camp — corporate leadership event presentation design" loading="lazy">
-  <div class="billboard-overlay" aria-hidden="true"></div>
+<div class="billboard bb-from-light" id="billboard-1">
+  <img class="billboard-img" src="images/web/6-1600.webp" srcset="images/web/6-800.webp 800w, images/web/6-1600.webp 1600w, images/web/6-2400.webp 2400w" sizes="100vw" width="1600" height="900" decoding="async" alt="Leadership Base Camp — corporate leadership event presentation design" loading="lazy">
   <div class="billboard-num" aria-hidden="true">01</div>
   <div class="billboard-label">
     <span class="billboard-eyebrow">Selected Work</span>
@@ -1230,8 +1250,7 @@
 
 <!-- ── BILLBOARD 2: SWAGGER ───────────────────── -->
 <div class="billboard" id="billboard-2">
-  <img class="billboard-img" src="images/web/7-1600.webp" srcset="images/web/7-800.webp 800w, images/web/7-1600.webp 1600w" sizes="100vw" width="1600" height="900" decoding="async" alt="SWAGGER — cinematic motion graphics piece" loading="lazy">
-  <div class="billboard-overlay" aria-hidden="true"></div>
+  <img class="billboard-img" src="images/web/7-1600.webp" srcset="images/web/7-800.webp 800w, images/web/7-1600.webp 1600w, images/web/7-2400.webp 2400w" sizes="100vw" width="1600" height="900" decoding="async" alt="SWAGGER — cinematic motion graphics piece" loading="lazy">
   <div class="billboard-num" aria-hidden="true">02</div>
   <div class="billboard-label">
     <span class="billboard-eyebrow">Selected Work</span>
@@ -1291,9 +1310,8 @@
 </section>
 
 <!-- ── BILLBOARD 3: Migraine Journey ──────────── -->
-<div class="billboard" id="billboard-3">
-  <img class="billboard-img" src="images/web/9-1600.webp" srcset="images/web/9-800.webp 800w, images/web/9-1600.webp 1600w" sizes="100vw" width="1600" height="900" decoding="async" alt="The Migraine Journey — eLearning design" loading="lazy">
-  <div class="billboard-overlay" aria-hidden="true"></div>
+<div class="billboard bb-from-light" id="billboard-3">
+  <img class="billboard-img" src="images/web/9-1600.webp" srcset="images/web/9-800.webp 800w, images/web/9-1600.webp 1600w, images/web/9-2400.webp 2400w" sizes="100vw" width="1600" height="900" decoding="async" alt="The Migraine Journey — eLearning design" loading="lazy">
   <div class="billboard-num" aria-hidden="true">03</div>
   <div class="billboard-label">
     <span class="billboard-eyebrow">Selected Work</span>
@@ -1310,7 +1328,7 @@
   </div>
   <div class="work-grid">
 
-    <div class="work-tile reveal" tabindex="0" role="button"
+    <div class="work-tile tile-full reveal" tabindex="0" role="button"
          aria-label="Identity Theft — Motion Graphics (play video)"
          data-video="https://www.youtube-nocookie.com/embed/b_bQ8HuHYG4?autoplay=1&rel=0">
       <img src="images/web/1-1600.webp" srcset="images/web/1-800.webp 800w, images/web/1-1600.webp 1600w" sizes="(max-width: 600px) 100vw, 1100px" width="1600" height="900" alt="" loading="lazy" decoding="async">
@@ -1320,20 +1338,30 @@
       </div>
     </div>
 
-    <div class="work-tile reveal reveal-delay-1" tabindex="0" role="button"
+    <div class="work-tile tile-big reveal reveal-delay-1" tabindex="0" role="button"
          aria-label="KAM Summit — Brand Identity (view larger)"
          data-img="images/web/4-1600.webp">
-      <img src="images/web/4-1600.webp" srcset="images/web/4-800.webp 800w, images/web/4-1600.webp 1600w" sizes="(max-width: 600px) 100vw, 545px" width="1600" height="900" alt="" loading="lazy" decoding="async">
+      <img src="images/web/4-1600.webp" srcset="images/web/4-800.webp 800w, images/web/4-1600.webp 1600w" sizes="(max-width: 600px) 100vw, 730px" width="1600" height="900" alt="" loading="lazy" decoding="async">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">KAM Summit</span>
         <span class="work-caption-sub">Brand Identity</span>
       </div>
     </div>
 
-    <div class="work-tile reveal reveal-delay-2" tabindex="0" role="button"
+    <div class="work-tile work-tile--top tile-tall reveal reveal-delay-2" tabindex="0" role="button"
+         aria-label="Portrait Study — Digital Illustration (view larger)"
+         data-img="images/web/11p-1600.webp">
+      <img src="images/web/11p-1600.webp" srcset="images/web/11p-800.webp 800w, images/web/11p-1600.webp 1274w" sizes="(max-width: 600px) 100vw, 365px" width="1274" height="1920" alt="" loading="lazy" decoding="async">
+      <div class="work-caption" aria-hidden="true">
+        <span class="work-caption-title">Portrait Study</span>
+        <span class="work-caption-sub">Digital Illustration</span>
+      </div>
+    </div>
+
+    <div class="work-tile reveal" tabindex="0" role="button"
          aria-label="Wildwood Crest 2020 — Drone Video Production (play video)"
          data-video="https://www.youtube-nocookie.com/embed/cD-AYvzeO2I?autoplay=1&rel=0">
-      <img src="images/web/13-1600.webp" srcset="images/web/13-800.webp 800w, images/web/13-1600.webp 1280w" sizes="(max-width: 600px) 100vw, 545px" width="1280" height="720" alt="" loading="lazy" decoding="async">
+      <img src="images/web/13-1600.webp" srcset="images/web/13-800.webp 800w, images/web/13-1600.webp 1280w" sizes="(max-width: 600px) 100vw, 365px" width="1280" height="720" alt="" loading="lazy" decoding="async">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">Wildwood Crest 2020</span>
         <span class="work-caption-sub">Drone Video Production</span>
@@ -1343,77 +1371,67 @@
     <div class="work-tile reveal reveal-delay-1" tabindex="0" role="button"
          aria-label="Basketball Portrait — Digital Illustration (view larger)"
          data-img="images/web/2-1600.webp">
-      <img src="images/web/2-1600.webp" srcset="images/web/2-800.webp 800w, images/web/2-1600.webp 1600w" sizes="(max-width: 600px) 100vw, 545px" width="1600" height="900" alt="" loading="lazy" decoding="async">
+      <img src="images/web/2-1600.webp" srcset="images/web/2-800.webp 800w, images/web/2-1600.webp 1600w" sizes="(max-width: 600px) 100vw, 365px" width="1600" height="900" alt="" loading="lazy" decoding="async">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">Basketball Portrait</span>
         <span class="work-caption-sub">Digital Illustration</span>
       </div>
     </div>
 
-    <div class="work-tile reveal reveal-delay-1" tabindex="0" role="button"
-         aria-label="Women's Health Elite — Logo and Identity (view larger)"
-         data-img="images/web/3-1600.webp">
-      <img src="images/web/3-1600.webp" srcset="images/web/3-800.webp 800w, images/web/3-1600.webp 1080w" sizes="(max-width: 600px) 100vw, 545px" width="1080" height="644" alt="" loading="lazy" decoding="async">
-      <div class="work-caption" aria-hidden="true">
-        <span class="work-caption-title">Women's Health Elite</span>
-        <span class="work-caption-sub">Logo &amp; Identity</span>
-      </div>
-    </div>
-
-       <div class="work-tile reveal reveal-delay-2" tabindex="0" role="button"
-         aria-label="Wild in the Woods — Video Production (play video)"
-         data-video="https://www.youtube-nocookie.com/embed/deWNU_QlI5g?autoplay=1&rel=0">
-      <img src="images/web/12-1600.webp" srcset="images/web/12-800.webp 800w, images/web/12-1600.webp 1280w" sizes="(max-width: 600px) 100vw, 545px" width="1280" height="814" alt="" loading="lazy" decoding="async">
-      <div class="work-caption" aria-hidden="true">
-        <span class="work-caption-title">Wild in the Woods</span>
-        <span class="work-caption-sub">Long Form Video Production</span>
-      </div>
-    </div>
-
-    <div class="work-tile work-tile--top reveal reveal-delay-1" tabindex="0" role="button"
+    <div class="work-tile work-tile--top tile-tall2 reveal reveal-delay-2" tabindex="0" role="button"
          aria-label="Patient Stories — Digital Publication (view larger)"
          data-img="images/web/5-1600.webp">
-      <img src="images/web/5-1600.webp" sizes="(max-width: 600px) 100vw, 545px" width="720" height="960" alt="" loading="lazy" decoding="async">
+      <img src="images/web/5-1600.webp" sizes="(max-width: 600px) 100vw, 365px" width="720" height="960" alt="" loading="lazy" decoding="async">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">Patient Stories</span>
         <span class="work-caption-sub">Digital Publication</span>
       </div>
     </div>
 
-    <div class="work-tile reveal reveal-delay-2" tabindex="0" role="button"
-         aria-label="Portrait Study — Digital Illustration (view larger)"
-         data-img="images/web/11p-1600.webp">
-      <img src="images/web/11p-1600.webp" srcset="images/web/11p-800.webp 800w, images/web/11p-1600.webp 1274w" sizes="(max-width: 600px) 100vw, 545px" width="1274" height="1920" alt="" loading="lazy" decoding="async">
-      <div class="work-caption" aria-hidden="true">
-        <span class="work-caption-title">Portrait Study</span>
-        <span class="work-caption-sub">Digital Illustration</span>
-      </div>
-    </div>
-
-    <div class="work-tile reveal reveal-delay-1" tabindex="0" role="button"
+    <div class="work-tile tile-big reveal" tabindex="0" role="button"
          aria-label="Payer Landscape — eLearning Module (view larger)"
          data-img="images/web/11-1600.webp">
-      <img src="images/web/11-1600.webp" srcset="images/web/11-800.webp 800w, images/web/11-1600.webp 1600w" sizes="(max-width: 600px) 100vw, 545px" width="1600" height="900" alt="" loading="lazy" decoding="async">
+      <img src="images/web/11-1600.webp" srcset="images/web/11-800.webp 800w, images/web/11-1600.webp 1600w" sizes="(max-width: 600px) 100vw, 730px" width="1600" height="900" alt="" loading="lazy" decoding="async">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">Payer Landscape</span>
         <span class="work-caption-sub">eLearning Module</span>
       </div>
     </div>
 
+    <div class="work-tile reveal reveal-delay-1" tabindex="0" role="button"
+         aria-label="Women's Health Elite — Logo and Identity (view larger)"
+         data-img="images/web/3-1600.webp">
+      <img src="images/web/3-1600.webp" srcset="images/web/3-800.webp 800w, images/web/3-1600.webp 1080w" sizes="(max-width: 600px) 100vw, 365px" width="1080" height="644" alt="" loading="lazy" decoding="async">
+      <div class="work-caption" aria-hidden="true">
+        <span class="work-caption-title">Women's Health Elite</span>
+        <span class="work-caption-sub">Logo &amp; Identity</span>
+      </div>
+    </div>
+
     <div class="work-tile reveal reveal-delay-2" tabindex="0" role="button"
+         aria-label="Wild in the Woods — Video Production (play video)"
+         data-video="https://www.youtube-nocookie.com/embed/deWNU_QlI5g?autoplay=1&rel=0">
+      <img src="images/web/12-1600.webp" srcset="images/web/12-800.webp 800w, images/web/12-1600.webp 1280w" sizes="(max-width: 600px) 100vw, 365px" width="1280" height="814" alt="" loading="lazy" decoding="async">
+      <div class="work-caption" aria-hidden="true">
+        <span class="work-caption-title">Wild in the Woods</span>
+        <span class="work-caption-sub">Long Form Video Production</span>
+      </div>
+    </div>
+
+    <div class="work-tile reveal" tabindex="0" role="button"
          aria-label="Migraine Treatment Drug Classes — Reference Design (view larger)"
          data-img="images/web/10-1600.webp">
-      <img src="images/web/10-1600.webp" srcset="images/web/10-800.webp 800w, images/web/10-1600.webp 1600w" sizes="(max-width: 600px) 100vw, 545px" width="1600" height="900" alt="" loading="lazy" decoding="async">
+      <img src="images/web/10-1600.webp" srcset="images/web/10-800.webp 800w, images/web/10-1600.webp 1600w" sizes="(max-width: 600px) 100vw, 365px" width="1600" height="900" alt="" loading="lazy" decoding="async">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">Migraine Treatment</span>
         <span class="work-caption-sub">Reference Design</span>
       </div>
     </div>
 
-    <div class="work-tile reveal reveal-delay-1" tabindex="0" role="button"
+    <div class="work-tile tile-full reveal reveal-delay-1" tabindex="0" role="button"
          aria-label="KAM Summit 2025 — Presentation Design (view larger)"
          data-img="images/web/8-1600.webp">
-      <img src="images/web/8-1600.webp" srcset="images/web/8-800.webp 800w, images/web/8-1600.webp 1600w" sizes="(max-width: 600px) 100vw, 545px" width="1600" height="900" alt="" loading="lazy" decoding="async">
+      <img src="images/web/8-1600.webp" srcset="images/web/8-800.webp 800w, images/web/8-1600.webp 1600w" sizes="(max-width: 600px) 100vw, 1100px" width="1600" height="900" alt="" loading="lazy" decoding="async">
       <div class="work-caption" aria-hidden="true">
         <span class="work-caption-title">KAM Summit 2025</span>
         <span class="work-caption-sub">Presentation Design</span>

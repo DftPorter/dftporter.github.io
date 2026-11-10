@@ -8,13 +8,14 @@
   <link rel="icon" href="/favicon.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --fg:     #1a1714;
-      --accent: #b85c38;
+      --fg:     #121316;
+      --accent: #7b93ff;      /* light cobalt for text on dark */
+      --accent-fill: #2747d0; /* deep cobalt for button fill */
     }
 
     body {
@@ -25,7 +26,7 @@
       padding: 0 5vw;
       background: var(--fg);
       color: #fff;
-      font-family: 'Inter', system-ui, sans-serif;
+      font-family: 'Archivo', system-ui, sans-serif;
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
     }
@@ -42,9 +43,8 @@
     }
 
     h1 {
-      font-family: 'DM Serif Display', Georgia, serif;
-      font-style: italic;
-      font-weight: 400;
+      font-variation-settings: 'wdth' 125;
+      font-weight: 800;
       font-size: clamp(6rem, 24vw, 16rem);
       line-height: 0.88;
       letter-spacing: -0.035em;
@@ -53,9 +53,8 @@
     }
 
     p {
-      font-family: 'DM Serif Display', Georgia, serif;
-      font-style: italic;
-      font-size: clamp(1.25rem, 3vw, 2rem);
+      font-weight: 400;
+      font-size: clamp(1.125rem, 2.4vw, 1.5rem);
       color: rgba(255,255,255,0.7);
       margin-bottom: 2.5rem;
     }
@@ -72,8 +71,8 @@
     }
 
     a:hover, a:focus-visible {
-      background: var(--accent);
-      border-color: var(--accent);
+      background: var(--accent-fill);
+      border-color: var(--accent-fill);
       color: #fff;
     }
   </style>
