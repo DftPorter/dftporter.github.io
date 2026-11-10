@@ -66,6 +66,11 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    /* ── TEXT WRAPPING: no single-word last lines ─ */
+    p, li, figcaption { text-wrap: pretty; }
+    h1, h2, h3, .ai-statement, .find-tagline,
+    .billboard-label-title, .work-caption-title { text-wrap: balance; }
+
     /* ── SKIP LINK ────────────────────────────── */
     .skip-link {
       position: absolute;
@@ -334,14 +339,14 @@
     /* ── MARQUEE ──────────────────────────────── */
     .marquee-wrap {
       overflow: hidden;
-      padding: 1.1rem 0 1.2rem;
+      padding: 0.8rem 0 0.85rem;
       background: var(--accent);
     }
 
     .marquee-track {
       display: flex;
       width: max-content;
-      animation: marquee 70s linear infinite;
+      animation: marquee 50s linear infinite;
     }
 
     @keyframes marquee {
@@ -360,7 +365,7 @@
       gap: 0.55em;
       padding: 0 0.55em;
       font-variation-settings: 'wdth' 125;
-      font-size: clamp(1.75rem, 4.5vw, 4rem);
+      font-size: clamp(1.125rem, 2.4vw, 2.125rem);
       font-weight: 800;
       line-height: 1;
       letter-spacing: -0.01em;
@@ -840,6 +845,81 @@
       background-size: 100% 1px, 100% 1px;
     }
 
+    /* ── ON AI ────────────────────────────────── */
+    .ai-statement {
+      font-variation-settings: 'wdth' 125;
+      font-size: clamp(2rem, 5.5vw, 4.25rem);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      line-height: 0.95;
+      color: #fff;
+      margin-bottom: 3.5rem;
+    }
+
+    .ai-statement em { font-style: normal; color: var(--accent-dark); }
+
+    .ai-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr;
+      gap: 5rem;
+      align-items: start;
+    }
+
+    .ai-intro {
+      font-size: clamp(1.125rem, 1.6vw, 1.375rem);
+      font-weight: 300;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.75);
+    }
+
+    .ai-points { list-style: none; }
+
+    .ai-point {
+      display: grid;
+      grid-template-columns: 3rem 1fr;
+      gap: 0 1.5rem;
+      padding: 1.5rem 0;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .ai-point:last-child { border-bottom: 1px solid rgba(255,255,255,0.1); }
+
+    .ai-point-num {
+      font-weight: 700;
+      font-size: 0.75rem;
+      font-variant-numeric: tabular-nums;
+      color: var(--accent-dark);
+      padding-top: 0.3rem;
+    }
+
+    .ai-point h3 {
+      font-variation-settings: 'wdth' 125;
+      font-weight: 800;
+      font-size: 1.125rem;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      line-height: 1.15;
+      color: #fff;
+      margin-bottom: 0.4rem;
+    }
+
+    .ai-point p {
+      font-size: 0.9375rem;
+      font-weight: 300;
+      line-height: 1.65;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .ai-closer {
+      margin-top: 3.5rem;
+      padding-left: 1rem;
+      border-left: 2px solid var(--accent-dark);
+      font-size: clamp(1.125rem, 1.8vw, 1.5rem);
+      color: #fff;
+      max-width: 40rem;
+    }
+
     /* ── FIND ME ──────────────────────────────── */
     .find-section {
       background: var(--accent);
@@ -873,7 +953,10 @@
 
     .link-pill {
       display: inline-block;
-      padding: 0.75rem 1.5rem;
+      flex: 1 1 0;           /* social buttons split the row evenly, matching the CTA width */
+      min-width: 6rem;       /* below this they wrap; wrapped rows still stretch full width */
+      text-align: center;
+      padding: 0.75rem 0.5rem;
       border: 1px solid rgba(255,255,255,0.55);
       color: #fff;
       font-size: 0.875rem;
@@ -1054,6 +1137,8 @@
 
     /* ── RESPONSIVE ───────────────────────────── */
     @media (max-width: 900px) {
+      .ai-layout   { grid-template-columns: 1fr; gap: 2.5rem; }
+
       .exp-layout  { grid-template-columns: 1fr; gap: 3rem; }
       .skills-grid { grid-template-columns: 1fr; }
 
@@ -1080,7 +1165,8 @@
 
       .exp-intro        { font-size: 1.375rem; line-height: 1.25; }
 
-      .find-tagline     { font-size: clamp(1.75rem, 8vw, 3rem); }
+      .ai-statement     { font-size: 7vw; }
+      .find-tagline     { font-size: 6.4vw; }  /* sized so "SOMETHING GREAT." fits on one line */
 
       .work-grid        { grid-template-columns: 1fr; grid-auto-rows: auto; }
       .work-tile        { aspect-ratio: 16/9; grid-column: auto; grid-row: auto; }
@@ -1147,7 +1233,7 @@
       <span>Since 2005</span>
     </div>
     <h1 class="hero-name" aria-label="Tim Allen"><span class="hero-line" aria-hidden="true"><span>Tim</span></span><span class="hero-line" aria-hidden="true"><span><em>Allen</em></span></span></h1>
-    <p class="hero-sub">Art Director, Creative, &amp; Problem Solver</p>
+    <p class="hero-sub">Art Director, Creative, &amp; Problem&nbsp;Solver</p>
   </div>
 
   <div class="hero-scroll" aria-hidden="true">
@@ -1177,9 +1263,9 @@
     <h2 class="sec-label">About</h2>
   </div>
   <div class="about-body">
-    <p class="reveal reveal-delay-1"><strong>Art Director and Graphic Designer with over 20 years of experience</strong> leading creative across elearning, product support, corporate communications, and digital campaigns. I work across illustration, animation, and design, building visual systems that are eye-catching, strategic, and thoughtful.</p>
-    <p class="reveal reveal-delay-2">My background spans the life sciences industry where I developed training content, technical illustrations, product support materials, and corporate event identities. Since 2011 I've been at Performance Development Group in Malvern, PA, where I moved from Senior Graphic Designer into my current role as Art Director.</p>
-    <p class="reveal reveal-delay-3">Outside work: Sports fan, gamer, beach lover, occasional aerial photographer, and sometimes disc golfer.</p>
+    <p class="reveal reveal-delay-1"><strong>Art Director and Graphic Designer with over 20 years of experience</strong> leading creative across elearning, product support, corporate communications, and digital campaigns. I work across illustration, animation, and design, building visual systems that are eye-catching, strategic, and&nbsp;thoughtful.</p>
+    <p class="reveal reveal-delay-2">My background spans the life sciences industry where I developed training content, technical illustrations, product support materials, and corporate event identities. Since 2011 I've been at Performance Development Group in Malvern, PA, where I moved from Senior Graphic Designer into my current role as Art&nbsp;Director.</p>
+    <p class="reveal reveal-delay-3">Outside work: Sports fan, gamer, beach lover, occasional aerial photographer, and sometimes disc&nbsp;golfer.</p>
   </div>
 </section>
 
@@ -1206,42 +1292,42 @@
         <span class="skill-num" aria-hidden="true">01</span>
         <div class="skill-body">
           <h3>Graphic Design</h3>
-          <p>Print, digital, identity, and collateral. Two decades of making things look exactly right.</p>
+          <p>Print, digital, identity, and collateral. Two decades of making things look exactly&nbsp;right.</p>
         </div>
       </li>
       <li class="skill-item reveal reveal-delay-2">
         <span class="skill-num" aria-hidden="true">02</span>
         <div class="skill-body">
           <h3>Art Direction</h3>
-          <p>Defining and guiding the visual voice of a project, from first concept through final delivery.</p>
+          <p>Defining and guiding the visual voice of a project, from first concept through final&nbsp;delivery.</p>
         </div>
       </li>
       <li class="skill-item reveal reveal-delay-1">
         <span class="skill-num" aria-hidden="true">03</span>
         <div class="skill-body">
           <h3>Video &amp; Motion</h3>
-          <p>Editing, animation, and motion graphics for training, product launches, and internal comms.</p>
+          <p>Editing, animation, and motion graphics for training, product launches, and internal&nbsp;comms.</p>
         </div>
       </li>
       <li class="skill-item reveal reveal-delay-2">
         <span class="skill-num" aria-hidden="true">04</span>
         <div class="skill-body">
           <h3>Digital Illustration</h3>
-          <p>Portraits, character work, and technical illustration, drawn digitally and finished across the Adobe suite.</p>
+          <p>Portraits, character work, and technical illustration, drawn digitally and finished across the Adobe&nbsp;suite.</p>
         </div>
       </li>
       <li class="skill-item reveal reveal-delay-1">
         <span class="skill-num" aria-hidden="true">05</span>
         <div class="skill-body">
           <h3>Modern Toolset</h3>
-          <p>Figma for UI and collaborative design. Adobe Creative Suite across the board. Actively working with Claude AI to accelerate ideation, sharpen copy, and push creative problem-solving further.</p>
+          <p>Figma for UI and collaborative design. Adobe Creative Suite across the board. Actively working with Claude AI to accelerate ideation, sharpen copy, and push creative problem-solving&nbsp;further.</p>
         </div>
       </li>
       <li class="skill-item reveal reveal-delay-2">
         <span class="skill-num" aria-hidden="true">06</span>
         <div class="skill-body">
           <h3>Team Leadership</h3>
-          <p>Manage teams during high-volume periods, keeping work on schedule and quality high. Contribute to cross-functional brainstorming and internal initiatives around employee engagement.</p>
+          <p>Manage teams during high-volume periods, keeping work on schedule and quality high. Contribute to cross-functional brainstorming and internal initiatives around employee&nbsp;engagement.</p>
         </div>
       </li>
     </ul>
@@ -1268,8 +1354,8 @@
     </div>
     <div class="exp-layout">
       <div class="exp-intro reveal reveal-delay-1">
-        <p><strong>20+ years of creative</strong> work across pharma, life sciences, and corporate learning &amp; development.</p>
-        <p><em>From designer to director, creating work that rewards a closer look.</em></p>
+        <p><strong>20+ years of creative</strong> work across pharma, life sciences, and corporate learning &amp;&nbsp;development.</p>
+        <p><em>From designer to director, creating work that rewards a closer&nbsp;look.</em></p>
       </div>
       <ul class="exp-list">
         <li class="exp-item reveal reveal-delay-1">
@@ -1442,14 +1528,52 @@
   <p class="work-more reveal">More work available on <a href="https://www.behance.net/redartist" target="_blank" rel="noopener" aria-label="Behance profile (opens in new tab)">Behance</a>.</p>
 </section>
 
+<!-- ── ON AI ──────────────────────────────────── -->
+<section class="dark-section" aria-labelledby="ai-heading">
+  <div class="wrap-wide">
+    <div class="sec-head reveal">
+      <span class="sec-num" aria-hidden="true">05</span>
+      <h2 class="sec-label" id="ai-heading">On AI</h2>
+    </div>
+    <p class="ai-statement reveal reveal-delay-1">More room for<br><em>the human&nbsp;part.</em></p>
+    <div class="ai-layout">
+      <p class="ai-intro reveal reveal-delay-1">I use AI the way I use any good tool: on purpose. It's at its best on the work that slows a creative team down, and the time it gives back goes into the ideas, craft, and judgment that only people&nbsp;bring.</p>
+      <ol class="ai-points">
+        <li class="ai-point reveal reveal-delay-1">
+          <span class="ai-point-num" aria-hidden="true">01</span>
+          <div>
+            <h3>Fill gaps</h3>
+            <p>First drafts, quick references, and rough options when a project needs something now, so momentum never&nbsp;stalls.</p>
+          </div>
+        </li>
+        <li class="ai-point reveal reveal-delay-2">
+          <span class="ai-point-num" aria-hidden="true">02</span>
+          <div>
+            <h3>Find efficiency</h3>
+            <p>Faster versioning, resizing, and production. Fewer hours on repetition, more on&nbsp;refinement.</p>
+          </div>
+        </li>
+        <li class="ai-point reveal reveal-delay-3">
+          <span class="ai-point-num" aria-hidden="true">03</span>
+          <div>
+            <h3>Off-load the tedious</h3>
+            <p>Renaming, formatting, transcribing, tagging. The busywork that eats a day,&nbsp;handled.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+    <p class="ai-closer reveal">The concept, the taste, and the final call stay&nbsp;human.</p>
+  </div>
+</section>
+
 <!-- ── FIND ME ────────────────────────────────── -->
 <section class="find-section" aria-labelledby="contact-heading">
   <div class="find-inner">
     <div class="sec-head reveal">
-      <span class="sec-num" aria-hidden="true">05</span>
+      <span class="sec-num" aria-hidden="true">06</span>
       <h2 class="sec-label" id="contact-heading">Find Me</h2>
     </div>
-    <p class="find-tagline reveal reveal-delay-1">Let's make<br><em>something great.</em></p>
+    <p class="find-tagline reveal reveal-delay-1">Let's make<br><em>something&nbsp;great.</em></p>
     <div class="links reveal reveal-delay-2">
       <a class="link-pill" href="https://www.linkedin.com/in/redartist/" target="_blank" rel="noopener" aria-label="LinkedIn (opens in new tab)">LinkedIn</a>
       <a class="link-pill" href="https://www.behance.net/redartist" target="_blank" rel="noopener" aria-label="Behance (opens in new tab)">Behance</a>
